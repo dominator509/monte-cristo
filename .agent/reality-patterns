@@ -1,0 +1,15 @@
+TODO|FIXME|XXX|HACK
+todo!\(|unimplemented!\(|unreachable!\("not
+NotImplementedError|raise NotImplemented
+not implemented|Not implemented|NOT IMPLEMENTED
+PLACEHOLDER|__REPLACE__|CHANGEME|changeme
+\{\{[A-Z_]+\}\}
+lorem ipsum|Lorem Ipsum
+example\.com/api|sk-test-|xxxx-xxxx
+demo_mode|demo-mode|DEMO_MODE
+fake_|_fake\b|dummy_|_dummy\b
+stub_|_stub\b|mock_|_mock\b
+#\[cfg\(feature = "simulate
+return Ok\(\(\)\) // *(later|for now|temporarily)
+placeholder_hash|hardcoded_seed_for_now
+panic!\("not yet

@@ -1,0 +1,38 @@
+# Build output
+/target
+**/target
+*.rs.bk
+
+# Environment (never commit: preflight requires it, git must not see it)
+.env
+
+# Operator data roots (declared in .env; contents are runtime state, not source)
+/.local-data
+/target/artifacts
+
+# Vendored crates when CARGO_REGISTRY_MODE=vendored
+/vendor
+
+# Baked content pack output (reproducible from content/ sources)
+/content.pack
+/content.pack.blake3
+
+# Fuzzing artifacts (corpora ARE committed; crashes and coverage are not)
+/fuzz/artifacts
+/fuzz/coverage
+/fuzz/target
+
+# Coverage output
+/lcov.info
+/coverage
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# NEVER ignore these: they are the pack.
+!.agent/
+!scripts/
