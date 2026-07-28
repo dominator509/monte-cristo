@@ -48,3 +48,4 @@
 2026-07-28T20:56:01Z | hermes-ipman | EP-003 | LEASE_RELEASE | EP-003 done
 2026-07-28T21:14:40Z | hermes-ipman | EP-004 | LEASE | node start
 2026-07-28T21:16:35Z | hermes-ipman | EP-004 | MILESTONE_PASS | M1 command bus rejects cleanly
+2026-07-28T21:17:46Z | hermes-ipman | EP-004 | MILESTONE_PASS | M2 tick contract holds
