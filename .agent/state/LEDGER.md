@@ -79,3 +79,5 @@
 2026-07-28T22:09:18Z | hermes-ipman | EP-006 | NODE_DONE | EP-006 complete - security baseline
 2026-07-28T22:09:18Z | hermes-ipman | EP-006 | LEASE_RELEASE | EP-006 done
 2026-07-28T22:09:32Z | hermes-ipman | EP-007 | LEASE | node start
+2026-07-28T22:27:34Z | hermes-ipman | EP-007 | MILESTONE_PASS | M1 content complete
+2026-07-28T22:27:34Z | hermes-ipman | EP-007 | MILESTONE_PASS | M2 combat and poison properties hold
