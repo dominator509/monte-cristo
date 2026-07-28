@@ -19,3 +19,8 @@
 2026-07-28T18:47:02Z | hermes-ipman | EP-001 | MILESTONE_PASS | M7 four gates ok
 2026-07-28T18:47:15Z | hermes-ipman | EP-001 | MILESTONE_PASS | M8 ci contains no gate logic
 2026-07-28T18:48:47Z | hermes-ipman | EP-001 | MILESTONE_PASS | M9 verify: ok
+2026-07-28T18:49:01Z | hermes-ipman | EP-001 | NODE_DONE | EP-001 complete - workspace, five crates, all gates green
+2026-07-28T18:49:06Z | hermes-ipman | EP-001 | LEASE_RELEASE | EP-001 done
+2026-07-28T18:49:19Z | hermes-ipman | EP-002 | LEASE | node start
+2026-07-28T18:51:28Z | hermes-ipman | EP-002 | MILESTONE_PASS | M1 fx property tests pass, zero floats
+2026-07-28T18:51:28Z | hermes-ipman | EP-002 | MILESTONE_PASS | M2 rng and ids, zero hash maps
