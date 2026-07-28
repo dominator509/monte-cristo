@@ -19,14 +19,22 @@ case "$cmd" in
     ;;
   status)
     node="${1:?node id}"
-    line=$(grep -E "\| $node \| (NODE_DONE|NODE_BLOCKED|LEASE_RELEASE|LEASE) \|" "$LEDGER" | tail -n 1)
-    case "$line" in
-      *"| NODE_DONE |"*)     echo DONE ;;
-      *"| NODE_BLOCKED |"*)  echo BLOCKED ;;
-      *"| LEASE_RELEASE |"*) echo PENDING ;;
-      *"| LEASE |"*)         echo IN_PROGRESS ;;
-      *)                     echo PENDING ;;
-    esac
+    # Terminal states take priority: NODE_DONE and NODE_BLOCKED are final
+    # regardless of any subsequent LEASE_RELEASE events.
+    line=$(grep -E "\\| $node \\| (NODE_DONE|NODE_BLOCKED) \\|" "$LEDGER" | tail -n 1)
+    if [ -n "$line" ]; then
+      case "$line" in
+        *"| NODE_DONE |"*)    echo DONE ;;
+        *"| NODE_BLOCKED |"*) echo BLOCKED ;;
+      esac
+    else
+      line=$(grep -E "\\| $node \\| (LEASE_RELEASE|LEASE) \\|" "$LEDGER" | tail -n 1)
+      case "$line" in
+        *"| LEASE_RELEASE |"*) echo PENDING ;;
+        *"| LEASE |"*)         echo IN_PROGRESS ;;
+        *)                     echo PENDING ;;
+      esac
+    fi
     ;;
   tail)
     n="${1:-30}"

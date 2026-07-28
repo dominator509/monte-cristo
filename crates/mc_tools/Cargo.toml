@@ -1,0 +1,16 @@
+[package]
+name = "mc_tools"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+mc_core = { path = "../mc_core" }
+mc_data = { path = "../mc_data" }
+mc_tape = { path = "../mc_tape" }
+clap = { workspace = true }
+ron = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+thiserror = { workspace = true }
