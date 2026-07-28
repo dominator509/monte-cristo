@@ -17,3 +17,6 @@ macroquad = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 thiserror = { workspace = true }
+serde = { workspace = true }
+blake3 = { workspace = true }
+ron = { workspace = true }

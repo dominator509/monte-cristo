@@ -54,3 +54,8 @@
 2026-07-28T21:30:29Z | hermes-ipman | EP-004 | MILESTONE_PASS | M5 replay CLI available
 2026-07-28T21:30:29Z | hermes-ipman | EP-004 | MILESTONE_PASS | M6 hash: match for act1.tape
 2026-07-28T21:30:29Z | hermes-ipman | EP-004 | MILESTONE_PASS | M7 cross-run and cross-profile hashes match
+2026-07-28T21:30:52Z | hermes-ipman | EP-004 | MILESTONE_PASS | M8 e2e tests: ok
+2026-07-28T21:31:48Z | hermes-ipman | EP-004 | NODE_DONE | EP-004 complete — command bus, tape harness, 47 integration tests, LF-01 proven
+2026-07-28T21:31:48Z | hermes-ipman | EP-004 | LEASE_RELEASE | EP-004 done
+2026-07-28T21:32:15Z | hermes-ipman | EP-005 | LEASE | node start
+2026-07-28T21:40:49Z | hermes-ipman | EP-005 | MILESTONE_PASS | M1 shell builds, headless clean

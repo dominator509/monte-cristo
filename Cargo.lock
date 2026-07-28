@@ -474,10 +474,13 @@ dependencies = [
 name = "mc_shell"
 version = "0.1.0"
 dependencies = [
+ "blake3",
  "macroquad",
  "mc_core",
  "mc_data",
  "mc_tape",
+ "ron",
+ "serde",
  "thiserror",
  "tracing",
  "tracing-subscriber",
