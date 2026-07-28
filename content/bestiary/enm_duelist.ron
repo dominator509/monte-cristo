@@ -1,0 +1,14 @@
+(
+    id: "ENM_DUELIST",
+    name_key: "enm.duelist.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 45, atk: 22, def: 10, spd: 18),
+    resist: [],
+    abilities: ["ABL_FENCING_FEINT"],
+    loot: [],
+    xp: 26,
+    tier: 3,
+    sprite: "duelist",
+)

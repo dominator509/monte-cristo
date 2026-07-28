@@ -1,0 +1,14 @@
+(
+    id: "ENM_MONASTERY_GUARD",
+    name_key: "enm.monastery_guard.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R09_STRASBOURG"],
+    gate: Always,
+    stats: Stats(hp: 40, atk: 14, def: 12, spd: 8),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 18,
+    tier: 2,
+    sprite: "monastery_guard",
+)

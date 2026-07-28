@@ -1,0 +1,14 @@
+(
+    id: "ENM_ESTATE_GUARD",
+    name_key: "enm.estate_guard.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R14_MORCERF_ESTATE"],
+    gate: Always,
+    stats: Stats(hp: 50, atk: 18, def: 14, spd: 10),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 22,
+    tier: 3,
+    sprite: "estate_guard",
+)

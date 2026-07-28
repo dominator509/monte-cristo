@@ -1,0 +1,14 @@
+(
+    id: "ENM_HELOISE_SERVANT",
+    name_key: "enm.heloise_servant.name",
+    family: CRIMINAL,
+    region_affinity: ["R15_VILLEFORT_MANSION"],
+    gate: Always,
+    stats: Stats(hp: 18, atk: 6, def: 3, spd: 10),
+    resist: [],
+    abilities: ["ABL_CHEM_FLASH"],
+    loot: [],
+    xp: 8,
+    tier: 1,
+    sprite: "heloise_servant",
+)

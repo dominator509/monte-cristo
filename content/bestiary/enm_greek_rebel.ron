@@ -1,0 +1,14 @@
+(
+    id: "ENM_GREEK_REBEL",
+    name_key: "enm.greek_rebel.name",
+    family: BANDIT,
+    region_affinity: ["R12_GREECE"],
+    gate: Always,
+    stats: Stats(hp: 45, atk: 18, def: 10, spd: 14),
+    resist: [],
+    abilities: ["ABL_HIST_INSPIRE"],
+    loot: [],
+    xp: 22,
+    tier: 3,
+    sprite: "greek_rebel",
+)

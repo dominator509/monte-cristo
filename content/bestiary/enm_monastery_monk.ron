@@ -1,0 +1,14 @@
+(
+    id: "ENM_MONASTERY_MONK",
+    name_key: "enm.monastery_monk.name",
+    family: CRIMINAL,
+    region_affinity: ["R07_NORMANDY"],
+    gate: Always,
+    stats: Stats(hp: 25, atk: 8, def: 6, spd: 8),
+    resist: [],
+    abilities: ["ABL_NATPHIL_ANALYZE"],
+    loot: [],
+    xp: 12,
+    tier: 1,
+    sprite: "monastery_monk",
+)

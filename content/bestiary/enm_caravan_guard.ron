@@ -1,0 +1,14 @@
+(
+    id: "ENM_CARAVAN_GUARD",
+    name_key: "enm.caravan_guard.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R11_ORIENT"],
+    gate: Always,
+    stats: Stats(hp: 42, atk: 16, def: 14, spd: 10),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 18,
+    tier: 2,
+    sprite: "caravan_guard",
+)

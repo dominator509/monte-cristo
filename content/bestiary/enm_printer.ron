@@ -1,0 +1,14 @@
+(
+    id: "ENM_PRINTER",
+    name_key: "enm.printer.name",
+    family: CRIMINAL,
+    region_affinity: ["R05_PARIS_FAUBOURG"],
+    gate: Always,
+    stats: Stats(hp: 18, atk: 6, def: 3, spd: 8),
+    resist: [],
+    abilities: ["ABL_CHEM_FLASH"],
+    loot: [],
+    xp: 6,
+    tier: 1,
+    sprite: "printer",
+)

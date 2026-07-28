@@ -1,0 +1,14 @@
+(
+    id: "ENM_ROMAN_GUARD",
+    name_key: "enm.roman_guard.name",
+    family: TROOP,
+    region_affinity: ["R04_ROME"],
+    gate: Always,
+    stats: Stats(hp: 45, atk: 16, def: 14, spd: 8),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 18,
+    tier: 2,
+    sprite: "roman_guard",
+)

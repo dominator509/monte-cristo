@@ -1,0 +1,14 @@
+(
+    id: "ENM_FINAL_MONTE_CRISTO",
+    name_key: "enm.final_monte_cristo.name",
+    family: BOSS,
+    region_affinity: ["R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 500, atk: 40, def: 25, spd: 18),
+    resist: [BROKEN_GUARD, TERROR],
+    abilities: ["ABL_FENCING_LUNGE", "ABL_FENCING_RIPOSTE", "ABL_FENCING_FEINT", "ABL_HIST_INSPIRE"],
+    loot: [("ITM_PANACEA", 3)],
+    xp: 500,
+    tier: 6,
+    sprite: "final_monte_cristo",
+)

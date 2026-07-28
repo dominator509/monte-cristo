@@ -1,0 +1,9 @@
+SpawnTable(
+    region: "R14",
+    chapter_stage: 1,
+    pool: 3,
+    entries: [
+        (enemy: "ENM_ESTATE_GUARD", weight: 19, gate: Always),
+        (enemy: "ENM_FERNAND_MONDEGO", weight: 10, gate: Always),
+    ],
+)

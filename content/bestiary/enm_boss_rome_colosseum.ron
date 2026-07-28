@@ -1,0 +1,17 @@
+(
+    id: "ENM_COLOSSEUM_CHAMPION",
+    name_key: "enm.rome_colosseum.name",
+    family: BOSS,
+    region_affinity: ["R04_ROME"],
+    gate: Always,
+    stats: Stats(hp: 250, atk: 30, def: 20, spd: 12),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_FENCING_LUNGE",
+        "ABL_FENCING_RIPOSTE",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 180,
+    tier: 4,
+    sprite: "rome_colosseum",
+)

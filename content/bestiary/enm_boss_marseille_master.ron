@@ -1,0 +1,16 @@
+(
+    id: "ENM_MARSEILLE_MASTER",
+    name_key: "enm.marseille_master.name",
+    family: BOSS,
+    region_affinity: ["R01_MARSEILLE"],
+    gate: Always,
+    stats: Stats(hp: 180, atk: 24, def: 14, spd: 14),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_FENCING_LUNGE",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 130,
+    tier: 3,
+    sprite: "marseille_master",
+)

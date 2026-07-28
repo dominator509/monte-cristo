@@ -1,0 +1,14 @@
+(
+    id: "ENM_CLAN_CHIEFTAIN",
+    name_key: "enm.clan_chieftain.name",
+    family: BANDIT,
+    region_affinity: ["R13_ALBANIA"],
+    gate: Always,
+    stats: Stats(hp: 55, atk: 22, def: 14, spd: 12),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_HIST_INSPIRE"],
+    loot: [],
+    xp: 30,
+    tier: 4,
+    sprite: "clan_chieftain",
+)

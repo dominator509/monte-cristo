@@ -1,0 +1,10 @@
+SpawnTable(
+    region: "R05",
+    chapter_stage: 1,
+    pool: 2,
+    entries: [
+        (enemy: "ENM_HIDDEN_INFORMANT", weight: 7, gate: Always),
+        (enemy: "ENM_REBEL_LEADER", weight: 16, gate: Always),
+        (enemy: "ENM_STREET_PREACHER", weight: 8, gate: Always),
+    ],
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_GERMAN_TRADER",
+    name_key: "enm.german_trader.name",
+    family: CRIMINAL,
+    region_affinity: ["R09_STRASBOURG"],
+    gate: Always,
+    stats: Stats(hp: 25, atk: 8, def: 5, spd: 10),
+    resist: [],
+    abilities: ["ABL_ECON_FUND"],
+    loot: [],
+    xp: 10,
+    tier: 2,
+    sprite: "german_trader",
+)

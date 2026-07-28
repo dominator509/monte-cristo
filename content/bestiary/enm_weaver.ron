@@ -1,0 +1,14 @@
+(
+    id: "ENM_WEAVER",
+    name_key: "enm.weaver.name",
+    family: CRIMINAL,
+    region_affinity: ["R08_LYON"],
+    gate: Always,
+    stats: Stats(hp: 18, atk: 6, def: 3, spd: 8),
+    resist: [],
+    abilities: ["ABL_CHEM_STIM"],
+    loot: [],
+    xp: 6,
+    tier: 1,
+    sprite: "weaver",
+)

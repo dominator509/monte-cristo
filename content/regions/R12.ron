@@ -1,0 +1,9 @@
+(
+    id: "R12_GREECE",
+    name_key: "region.r12.name",
+    description_key: "region.r12.description",
+    tier: 4,
+    connections: ["R11_ORIENT", "R13_ALBANIA"],
+    locked: false,
+    gate: Always,
+)

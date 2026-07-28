@@ -1,0 +1,9 @@
+(
+    id: "R05_PARIS_FAUBOURG",
+    name_key: "region.r05.name",
+    description_key: "region.r05.description",
+    tier: 2,
+    connections: ["R04_ROME", "R06_PARIS_SALON"],
+    locked: false,
+    gate: Always,
+)

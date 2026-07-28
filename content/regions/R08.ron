@@ -1,0 +1,9 @@
+(
+    id: "R08_LYON",
+    name_key: "region.r08.name",
+    description_key: "region.r08.description",
+    tier: 3,
+    connections: ["R06_PARIS_SALON", "R09_STRASBOURG"],
+    locked: false,
+    gate: Always,
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_COASTAL_PATROL",
+    name_key: "enm.coastal_patrol.name",
+    family: TROOP,
+    region_affinity: ["R07_NORMANDY"],
+    gate: Always,
+    stats: Stats(hp: 40, atk: 15, def: 12, spd: 10),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 18,
+    tier: 2,
+    sprite: "coastal_patrol",
+)

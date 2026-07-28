@@ -1,0 +1,14 @@
+(
+    id: "ENM_MOUNTAIN_PASS_BANDIT",
+    name_key: "enm.mountain_pass_bandit.name",
+    family: BANDIT,
+    region_affinity: ["R13_ALBANIA"],
+    gate: Always,
+    stats: Stats(hp: 40, atk: 16, def: 8, spd: 16),
+    resist: [],
+    abilities: ["ABL_ECON_BRIBE"],
+    loot: [],
+    xp: 16,
+    tier: 3,
+    sprite: "mountain_pass_bandit",
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_CITY_GUARD_LYON",
+    name_key: "enm.city_guard_lyon.name",
+    family: TROOP,
+    region_affinity: ["R08_LYON"],
+    gate: Always,
+    stats: Stats(hp: 42, atk: 16, def: 14, spd: 10),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 18,
+    tier: 2,
+    sprite: "city_guard_lyon",
+)

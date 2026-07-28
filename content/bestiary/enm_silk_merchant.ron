@@ -1,0 +1,14 @@
+(
+    id: "ENM_SILK_MERCHANT",
+    name_key: "enm.silk_merchant.name",
+    family: CRIMINAL,
+    region_affinity: ["R08_LYON"],
+    gate: Always,
+    stats: Stats(hp: 22, atk: 8, def: 5, spd: 10),
+    resist: [],
+    abilities: ["ABL_ECON_BRIBE"],
+    loot: [],
+    xp: 10,
+    tier: 2,
+    sprite: "silk_merchant",
+)

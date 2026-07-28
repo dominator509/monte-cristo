@@ -1,0 +1,17 @@
+(
+    id: "ENM_ALBANIA_WARLORD",
+    name_key: "enm.albania_warlord.name",
+    family: BOSS,
+    region_affinity: ["R13_ALBANIA"],
+    gate: Always,
+    stats: Stats(hp: 260, atk: 30, def: 16, spd: 14),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_ECON_BRIBE",
+        "ABL_FENCING_LUNGE",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 185,
+    tier: 5,
+    sprite: "albania_warlord",
+)

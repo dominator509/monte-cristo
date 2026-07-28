@@ -1,0 +1,17 @@
+(
+    id: "ENM_SPYMASTER",
+    name_key: "enm.paris_spymaster.name",
+    family: BOSS,
+    region_affinity: ["R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 220, atk: 28, def: 15, spd: 18),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_LANG_DECIPHER",
+        "ABL_CHEM_FLASH",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 170,
+    tier: 4,
+    sprite: "paris_spymaster",
+)

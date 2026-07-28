@@ -1,0 +1,14 @@
+(
+    id: "ENM_KLEPHT",
+    name_key: "enm.klepht.name",
+    family: BANDIT,
+    region_affinity: ["R12_GREECE"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 16, def: 8, spd: 18),
+    resist: [],
+    abilities: ["ABL_ECON_BRIBE"],
+    loot: [],
+    xp: 18,
+    tier: 3,
+    sprite: "klepht",
+)

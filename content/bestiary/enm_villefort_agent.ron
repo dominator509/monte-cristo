@@ -1,0 +1,14 @@
+(
+    id: "ENM_VILLEFORT_AGENT",
+    name_key: "enm.villefort_agent.name",
+    family: BOSS,
+    region_affinity: ["R15_VILLEFORT_MANSION"],
+    gate: Always,
+    stats: Stats(hp: 280, atk: 32, def: 22, spd: 12),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_CHEM_FLASH", "ABL_FENCING_LUNGE"],
+    loot: [("ITM_EDOUARD_LOCKET", 1)],
+    xp: 190,
+    tier: 5,
+    sprite: "villefort_agent",
+)

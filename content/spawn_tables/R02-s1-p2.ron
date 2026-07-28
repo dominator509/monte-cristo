@@ -1,0 +1,8 @@
+SpawnTable(
+    region: "R02",
+    chapter_stage: 1,
+    pool: 2,
+    entries: [
+        (enemy: "ENM_CHATEAU_SPIDER", weight: 6, gate: Always),
+    ],
+)

@@ -1,0 +1,9 @@
+SpawnTable(
+    region: "R11",
+    chapter_stage: 1,
+    pool: 2,
+    entries: [
+        (enemy: "ENM_CARAVAN_GUARD", weight: 9, gate: Always),
+        (enemy: "ENM_JANISSARY", weight: 6, gate: Always),
+    ],
+)

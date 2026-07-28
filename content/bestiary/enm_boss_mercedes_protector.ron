@@ -1,0 +1,16 @@
+(
+    id: "ENM_MERCEDES_PROTECTOR",
+    name_key: "enm.mercedes_protector.name",
+    family: BOSS,
+    region_affinity: ["R14_MORCERF_ESTATE"],
+    gate: Always,
+    stats: Stats(hp: 200, atk: 24, def: 14, spd: 12),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_FENCING_RIPOSTE",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 140,
+    tier: 4,
+    sprite: "mercedes_protector",
+)

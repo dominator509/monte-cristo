@@ -1,0 +1,14 @@
+(
+    id: "ENM_MERCHANT_CARAVAN",
+    name_key: "enm.merchant_caravan.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R08_LYON"],
+    gate: Always,
+    stats: Stats(hp: 38, atk: 14, def: 12, spd: 8),
+    resist: [],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [],
+    xp: 16,
+    tier: 2,
+    sprite: "merchant_caravan",
+)

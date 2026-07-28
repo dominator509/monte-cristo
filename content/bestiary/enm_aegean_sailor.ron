@@ -1,0 +1,14 @@
+(
+    id: "ENM_AEGEAN_SAILOR",
+    name_key: "enm.aegean_sailor.name",
+    family: SEA,
+    region_affinity: ["R12_GREECE"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 14, def: 8, spd: 12),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 16,
+    tier: 2,
+    sprite: "aegean_sailor",
+)

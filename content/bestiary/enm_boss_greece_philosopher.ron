@@ -1,0 +1,17 @@
+(
+    id: "ENM_GREECE_PHILOSOPHER",
+    name_key: "enm.greece_philosopher.name",
+    family: BOSS,
+    region_affinity: ["R12_GREECE"],
+    gate: Always,
+    stats: Stats(hp: 200, atk: 24, def: 10, spd: 18),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_NATPHIL_ANALYZE",
+        "ABL_MATH_PROBABILITY",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 145,
+    tier: 3,
+    sprite: "greece_philosopher",
+)

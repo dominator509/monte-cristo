@@ -1,0 +1,14 @@
+(
+    id: "ENM_PEASANT",
+    name_key: "enm.peasant.name",
+    family: CRIMINAL,
+    region_affinity: ["R07_NORMANDY"],
+    gate: Always,
+    stats: Stats(hp: 15, atk: 6, def: 3, spd: 8),
+    resist: [],
+    abilities: ["ABL_LANG_PERSUADE"],
+    loot: [],
+    xp: 5,
+    tier: 1,
+    sprite: "peasant",
+)

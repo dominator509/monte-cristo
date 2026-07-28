@@ -1,0 +1,14 @@
+(
+    id: "ENM_ALBANIAN_MERCENARY",
+    name_key: "enm.albanian_mercenary.name",
+    family: BANDIT,
+    region_affinity: ["R13_ALBANIA"],
+    gate: Always,
+    stats: Stats(hp: 45, atk: 18, def: 12, spd: 12),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 22,
+    tier: 3,
+    sprite: "albanian_mercenary",
+)

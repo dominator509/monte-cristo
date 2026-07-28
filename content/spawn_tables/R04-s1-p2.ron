@@ -1,0 +1,10 @@
+SpawnTable(
+    region: "R04",
+    chapter_stage: 1,
+    pool: 2,
+    entries: [
+        (enemy: "ENM_COLOSSEUM_BEAST", weight: 30, gate: Always),
+        (enemy: "ENM_MERCHANT_GUARD", weight: 11, gate: Always),
+        (enemy: "ENM_STREET_VENDOR", weight: 18, gate: Always),
+    ],
+)

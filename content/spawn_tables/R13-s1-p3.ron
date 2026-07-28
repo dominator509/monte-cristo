@@ -1,0 +1,9 @@
+SpawnTable(
+    region: "R13",
+    chapter_stage: 1,
+    pool: 3,
+    entries: [
+        (enemy: "ENM_FORTIFIED_OUTPOST", weight: 24, gate: Always),
+        (enemy: "ENM_MOUNTAIN_PASS_BANDIT", weight: 18, gate: Always),
+    ],
+)

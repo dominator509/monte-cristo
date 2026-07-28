@@ -1,0 +1,14 @@
+(
+    id: "ENM_HIGHLAND_SHAMAN",
+    name_key: "enm.highland_shaman.name",
+    family: CRIMINAL,
+    region_affinity: ["R13_ALBANIA"],
+    gate: Always,
+    stats: Stats(hp: 30, atk: 12, def: 6, spd: 14),
+    resist: [],
+    abilities: ["ABL_CHEM_FLASH"],
+    loot: [],
+    xp: 20,
+    tier: 3,
+    sprite: "highland_shaman",
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_STREET_VENDOR",
+    name_key: "enm.street_vendor.name",
+    family: CRIMINAL,
+    region_affinity: ["R04_ROME"],
+    gate: Always,
+    stats: Stats(hp: 25, atk: 8, def: 4, spd: 14),
+    resist: [],
+    abilities: ["ABL_ECON_BRIBE"],
+    loot: [],
+    xp: 10,
+    tier: 1,
+    sprite: "street_vendor",
+)

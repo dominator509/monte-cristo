@@ -1,0 +1,14 @@
+(
+    id: "ENM_MASKED_STRANGER",
+    name_key: "enm.masked_stranger.name",
+    family: CRIMINAL,
+    region_affinity: ["R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 16, def: 8, spd: 18),
+    resist: [],
+    abilities: ["ABL_CHEM_FLASH"],
+    loot: [],
+    xp: 20,
+    tier: 3,
+    sprite: "masked_stranger",
+)

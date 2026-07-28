@@ -1,0 +1,14 @@
+(
+    id: "ENM_LOCAL_MILITIA",
+    name_key: "enm.local_militia.name",
+    family: TROOP,
+    region_affinity: ["R07_NORMANDY"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 12, def: 10, spd: 8),
+    resist: [],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [],
+    xp: 14,
+    tier: 2,
+    sprite: "local_militia",
+)

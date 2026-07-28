@@ -1,0 +1,35 @@
+Scene(
+    id: "SCN_CONFIDENCE_CF28",
+    act: ActV_PARIS,
+    participants: ["CHR_EDMOND", "CHR_MERCEDES", "CHR_ALBERT", "CHR_VILLEFORT"],
+    nodes: [
+        Node(
+            id: "n0",
+            text_key: "scene.confidence.cf28.n0",
+            choices: [
+                Choice(
+                    text_key: "scene.confidence.cf28.n0.c1",
+                    to: "n1",
+                    trust: Some([
+                        TrustEffect("CHR_MERCEDES", 5),
+                    ]),
+                ),
+                Choice(
+                    text_key: "scene.confidence.cf28.n0.c2",
+                    to: "n2",
+                ),
+            ],
+        ),
+        Node(
+            id: "n1",
+            text_key: "scene.confidence.cf28.n1",
+            choices: [],
+        ),
+        Node(
+            id: "n2",
+            text_key: "scene.confidence.cf28.n2",
+            choices: [],
+        ),
+    ],
+    terminal: false,
+)

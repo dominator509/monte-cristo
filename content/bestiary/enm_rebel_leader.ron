@@ -1,0 +1,14 @@
+(
+    id: "ENM_REBEL_LEADER",
+    name_key: "enm.rebel_leader.name",
+    family: BANDIT,
+    region_affinity: ["R05_PARIS_FAUBOURG"],
+    gate: Always,
+    stats: Stats(hp: 55, atk: 20, def: 12, spd: 14),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_HIST_INSPIRE"],
+    loot: [],
+    xp: 28,
+    tier: 3,
+    sprite: "rebel_leader",
+)

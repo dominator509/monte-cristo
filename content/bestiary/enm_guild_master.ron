@@ -1,0 +1,14 @@
+(
+    id: "ENM_GUILD_MASTER",
+    name_key: "enm.guild_master.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R08_LYON"],
+    gate: Always,
+    stats: Stats(hp: 50, atk: 18, def: 14, spd: 12),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_ECON_FUND"],
+    loot: [],
+    xp: 24,
+    tier: 3,
+    sprite: "guild_master",
+)

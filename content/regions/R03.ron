@@ -3,7 +3,7 @@
     name_key: "region.r03.name",
     description_key: "region.r03.description",
     tier: 1,
-    connections: ["R02_CHATEAU_DIF"],
-    locked: true,
-    gate: All([Set(FlagId(3))]),
+    connections: ["R02_CHATEAU_DIF", "R04_ROME", "R10_MEDITERRANEE"],
+    locked: false,
+    gate: Always,
 )

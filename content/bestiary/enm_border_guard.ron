@@ -1,0 +1,14 @@
+(
+    id: "ENM_BORDER_GUARD",
+    name_key: "enm.border_guard.name",
+    family: TROOP,
+    region_affinity: ["R09_STRASBOURG"],
+    gate: Always,
+    stats: Stats(hp: 45, atk: 16, def: 15, spd: 9),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 20,
+    tier: 3,
+    sprite: "border_guard",
+)

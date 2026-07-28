@@ -1,0 +1,14 @@
+(
+    id: "ENM_SPY",
+    name_key: "enm.spy.name",
+    family: CRIMINAL,
+    region_affinity: ["R05_PARIS_FAUBOURG"],
+    gate: Always,
+    stats: Stats(hp: 28, atk: 12, def: 5, spd: 18),
+    resist: [],
+    abilities: ["ABL_LANG_DECIPHER"],
+    loot: [],
+    xp: 20,
+    tier: 2,
+    sprite: "spy",
+)

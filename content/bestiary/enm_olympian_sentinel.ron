@@ -1,0 +1,14 @@
+(
+    id: "ENM_OLYMPIAN_SENTINEL",
+    name_key: "enm.olympian_sentinel.name",
+    family: HAZARD,
+    region_affinity: ["R12_GREECE"],
+    gate: Always,
+    stats: Stats(hp: 75, atk: 26, def: 18, spd: 14),
+    resist: [TERROR, BROKEN_GUARD],
+    abilities: ["ABL_HIST_INSPIRE"],
+    loot: [],
+    xp: 40,
+    tier: 4,
+    sprite: "olympian_sentinel",
+)

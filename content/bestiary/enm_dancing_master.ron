@@ -1,0 +1,14 @@
+(
+    id: "ENM_DANCING_MASTER",
+    name_key: "enm.dancing_master.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 14, def: 8, spd: 20),
+    resist: [],
+    abilities: ["ABL_FENCING_FEINT"],
+    loot: [],
+    xp: 18,
+    tier: 2,
+    sprite: "dancing_master",
+)

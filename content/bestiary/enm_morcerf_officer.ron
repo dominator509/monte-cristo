@@ -1,0 +1,14 @@
+(
+    id: "ENM_MORCERF_OFFICER",
+    name_key: "enm.morcerf_officer.name",
+    family: TROOP,
+    region_affinity: ["R14_MORCERF_ESTATE"],
+    gate: Always,
+    stats: Stats(hp: 55, atk: 20, def: 16, spd: 12),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [],
+    xp: 26,
+    tier: 4,
+    sprite: "morcerf_officer",
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_GIANT_RAT",
+    name_key: "enm.giant_rat.name",
+    family: VERMIN,
+    region_affinity: ["R02_CHATEAU_DIF", "R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 20, atk: 8, def: 4, spd: 18),
+    resist: [TERROR],
+    abilities: ["ABL_BITE"],
+    loot: [("ITM_POTION", 1)],
+    xp: 8,
+    tier: 1,
+    sprite: "giant_rat",
+)

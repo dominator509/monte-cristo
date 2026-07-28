@@ -1,0 +1,14 @@
+(
+    id: "ENM_STABLE_HAND",
+    name_key: "enm.stable_hand.name",
+    family: CRIMINAL,
+    region_affinity: ["R14_MORCERF_ESTATE"],
+    gate: Always,
+    stats: Stats(hp: 22, atk: 8, def: 4, spd: 10),
+    resist: [],
+    abilities: ["ABL_CHEM_STIM"],
+    loot: [],
+    xp: 8,
+    tier: 1,
+    sprite: "stable_hand",
+)

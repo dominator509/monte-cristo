@@ -1,0 +1,14 @@
+(
+    id: "ENM_HIDDEN_INFORMANT",
+    name_key: "enm.hidden_informant.name",
+    family: CRIMINAL,
+    region_affinity: ["R05_PARIS_FAUBOURG"],
+    gate: Always,
+    stats: Stats(hp: 24, atk: 10, def: 4, spd: 16),
+    resist: [],
+    abilities: ["ABL_LANG_DECIPHER"],
+    loot: [],
+    xp: 12,
+    tier: 2,
+    sprite: "hidden_informant",
+)

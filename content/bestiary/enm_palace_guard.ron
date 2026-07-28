@@ -1,0 +1,14 @@
+(
+    id: "ENM_PALACE_GUARD",
+    name_key: "enm.palace_guard.name",
+    family: TROOP,
+    region_affinity: ["R11_ORIENT"],
+    gate: Always,
+    stats: Stats(hp: 50, atk: 20, def: 18, spd: 10),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 24,
+    tier: 3,
+    sprite: "palace_guard",
+)

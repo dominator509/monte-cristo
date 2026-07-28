@@ -1,0 +1,14 @@
+(
+    id: "ENM_EVIDENCE_KEEPER",
+    name_key: "enm.evidence_keeper.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R15_VILLEFORT_MANSION"],
+    gate: Always,
+    stats: Stats(hp: 40, atk: 14, def: 12, spd: 8),
+    resist: [],
+    abilities: ["ABL_NATPHIL_ANALYZE"],
+    loot: [],
+    xp: 16,
+    tier: 2,
+    sprite: "evidence_keeper",
+)

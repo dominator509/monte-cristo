@@ -4,6 +4,6 @@
     description_key: "region.r02.description",
     tier: 1,
     connections: ["R01_MARSEILLE", "R03_MONTE_CRISTO"],
-    locked: true,
-    gate: All([Set(FlagId(0))]),
+    locked: false,
+    gate: Always,
 )

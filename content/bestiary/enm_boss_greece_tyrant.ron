@@ -1,0 +1,17 @@
+(
+    id: "ENM_GREECE_TYRANT",
+    name_key: "enm.greece_tyrant.name",
+    family: BOSS,
+    region_affinity: ["R12_GREECE"],
+    gate: Always,
+    stats: Stats(hp: 270, atk: 32, def: 18, spd: 14),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_FENCING_LUNGE",
+        "ABL_HIST_INSPIRE",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 195,
+    tier: 5,
+    sprite: "greece_tyrant",
+)

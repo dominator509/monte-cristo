@@ -1,0 +1,14 @@
+(
+    id: "ENM_CHATEAU_SPIDER",
+    name_key: "enm.chateau_spider.name",
+    family: VERMIN,
+    region_affinity: ["R02_CHATEAU_DIF"],
+    gate: Always,
+    stats: Stats(hp: 12, atk: 10, def: 3, spd: 20),
+    resist: [TERROR],
+    abilities: ["ABL_BITE", "ABL_POISON_FANG"],
+    loot: [],
+    xp: 6,
+    tier: 1,
+    sprite: "chateau_spider",
+)

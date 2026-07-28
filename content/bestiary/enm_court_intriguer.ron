@@ -1,0 +1,14 @@
+(
+    id: "ENM_COURT_INTRIGUER",
+    name_key: "enm.court_intriguer.name",
+    family: CRIMINAL,
+    region_affinity: ["R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 28, atk: 12, def: 6, spd: 15),
+    resist: [],
+    abilities: ["ABL_LANG_PERSUADE"],
+    loot: [],
+    xp: 16,
+    tier: 3,
+    sprite: "court_intriguer",
+)

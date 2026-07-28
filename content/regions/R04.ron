@@ -1,0 +1,9 @@
+(
+    id: "R04_ROME",
+    name_key: "region.r04.name",
+    description_key: "region.r04.description",
+    tier: 2,
+    connections: ["R03_MONTE_CRISTO", "R05_PARIS_FAUBOURG"],
+    locked: false,
+    gate: Always,
+)

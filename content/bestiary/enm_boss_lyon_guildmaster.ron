@@ -1,0 +1,17 @@
+(
+    id: "ENM_LYON_GUILDMASTER",
+    name_key: "enm.lyon_guildmaster.name",
+    family: BOSS,
+    region_affinity: ["R08_LYON"],
+    gate: Always,
+    stats: Stats(hp: 230, atk: 28, def: 18, spd: 12),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_ECON_FUND",
+        "ABL_FENCING_RIPOSTE",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 160,
+    tier: 4,
+    sprite: "lyon_guildmaster",
+)

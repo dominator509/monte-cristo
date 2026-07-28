@@ -1,0 +1,14 @@
+(
+    id: "ENM_SEA_SERPENT",
+    name_key: "enm.sea_serpent.name",
+    family: BEAST,
+    region_affinity: ["R10_MEDITERRANEE"],
+    gate: Always,
+    stats: Stats(hp: 80, atk: 25, def: 12, spd: 15),
+    resist: [TERROR],
+    abilities: ["ABL_BITE"],
+    loot: [],
+    xp: 35,
+    tier: 4,
+    sprite: "sea_serpent",
+)

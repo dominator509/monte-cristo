@@ -1,0 +1,14 @@
+(
+    id: "ENM_MERCHANT_GUARD",
+    name_key: "enm.merchant_guard.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R04_ROME"],
+    gate: Always,
+    stats: Stats(hp: 40, atk: 14, def: 12, spd: 8),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 16,
+    tier: 2,
+    sprite: "merchant_guard",
+)

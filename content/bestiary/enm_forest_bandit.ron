@@ -1,0 +1,14 @@
+(
+    id: "ENM_FOREST_BANDIT",
+    name_key: "enm.forest_bandit.name",
+    family: BANDIT,
+    region_affinity: ["R09_STRASBOURG"],
+    gate: Always,
+    stats: Stats(hp: 38, atk: 16, def: 8, spd: 16),
+    resist: [],
+    abilities: ["ABL_ECON_BRIBE"],
+    loot: [],
+    xp: 16,
+    tier: 2,
+    sprite: "forest_bandit",
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_ORIENTAL_MERCHANT",
+    name_key: "enm.oriental_merchant.name",
+    family: CRIMINAL,
+    region_affinity: ["R11_ORIENT"],
+    gate: Always,
+    stats: Stats(hp: 30, atk: 10, def: 6, spd: 10),
+    resist: [],
+    abilities: ["ABL_ECON_FUND"],
+    loot: [],
+    xp: 14,
+    tier: 2,
+    sprite: "oriental_merchant",
+)

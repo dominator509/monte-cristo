@@ -1,0 +1,11 @@
+SpawnTable(
+    region: "R06",
+    chapter_stage: 1,
+    pool: 2,
+    entries: [
+        (enemy: "ENM_CONSPIRATOR", weight: 27, gate: Always),
+        (enemy: "ENM_DUELIST", weight: 23, gate: Always),
+        (enemy: "ENM_MASKED_STRANGER", weight: 7, gate: Always),
+        (enemy: "ENM_SALON_HOSTESS", weight: 11, gate: Always),
+    ],
+)

@@ -1,0 +1,17 @@
+SpawnTable(
+    region: "R03",
+    chapter_stage: 1,
+    pool: 22,
+    entries: [
+        (enemy: "ENM_CELL_RAT", weight: 26, gate: Always),
+        (enemy: "ENM_JAILER", weight: 20, gate: Always),
+        (enemy: "ENM_DUNGEON_MASTER", weight: 28, gate: Always),
+        (enemy: "ENM_WARDEN", weight: 29, gate: Always),
+        (enemy: "ENM_TURNKEY", weight: 22, gate: Always),
+        (enemy: "ENM_CONVICT", weight: 25, gate: Always),
+        (enemy: "ENM_SOLITARY_INMATE", weight: 20, gate: Always),
+        (enemy: "ENM_CORRIDOR_PATROL", weight: 24, gate: Always),
+        (enemy: "ENM_EXECUTIONER", weight: 7, gate: Always),
+        (enemy: "ENM_ANTOINE_STRANGLER", weight: 27, gate: Always),
+    ],
+)

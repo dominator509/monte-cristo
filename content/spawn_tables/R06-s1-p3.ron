@@ -1,0 +1,10 @@
+SpawnTable(
+    region: "R06",
+    chapter_stage: 1,
+    pool: 3,
+    entries: [
+        (enemy: "ENM_COURT_INTRIGUER", weight: 15, gate: Always),
+        (enemy: "ENM_FINAL_MONTE_CRISTO", weight: 6, gate: Always),
+        (enemy: "ENM_RAT_SWARM", weight: 10, gate: Always),
+    ],
+)

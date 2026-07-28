@@ -1,0 +1,14 @@
+(
+    id: "ENM_RAT_SWARM",
+    name_key: "enm.rat_swarm.name",
+    family: VERMIN,
+    region_affinity: ["R02_CHATEAU_DIF", "R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 8, atk: 4, def: 2, spd: 25),
+    resist: [TERROR],
+    abilities: ["ABL_BITE", "ABL_SWARM"],
+    loot: [],
+    xp: 4,
+    tier: 1,
+    sprite: "rat_swarm",
+)

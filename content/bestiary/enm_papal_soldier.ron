@@ -1,0 +1,14 @@
+(
+    id: "ENM_PAPAL_SOLDIER",
+    name_key: "enm.papal_soldier.name",
+    family: TROOP,
+    region_affinity: ["R04_ROME"],
+    gate: Always,
+    stats: Stats(hp: 50, atk: 18, def: 16, spd: 9),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_FENCING_FEINT"],
+    loot: [],
+    xp: 24,
+    tier: 2,
+    sprite: "papal_soldier",
+)

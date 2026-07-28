@@ -71,3 +71,11 @@
 2026-07-28T21:53:06Z | hermes-ipman | EP-006 | LEASE | node start
 2026-07-28T22:00:04Z | hermes-ipman | EP-006 | MILESTONE_PASS | M1 confinement holds
 2026-07-28T22:00:04Z | hermes-ipman | EP-006 | MILESTONE_PASS | M2 single file access point
+2026-07-28T22:09:18Z | hermes-ipman | EP-006 | MILESTONE_PASS | M3 parsers hardened
+2026-07-28T22:09:18Z | hermes-ipman | EP-006 | MILESTONE_PASS | M4 fuzz targets created
+2026-07-28T22:09:18Z | hermes-ipman | EP-006 | MILESTONE_PASS | M5 zero sockets during replay
+2026-07-28T22:09:18Z | hermes-ipman | EP-006 | MILESTONE_PASS | M6 logs redacted
+2026-07-28T22:09:18Z | hermes-ipman | EP-006 | MILESTONE_PASS | M7 security check: ok
+2026-07-28T22:09:18Z | hermes-ipman | EP-006 | NODE_DONE | EP-006 complete - security baseline
+2026-07-28T22:09:18Z | hermes-ipman | EP-006 | LEASE_RELEASE | EP-006 done
+2026-07-28T22:09:32Z | hermes-ipman | EP-007 | LEASE | node start

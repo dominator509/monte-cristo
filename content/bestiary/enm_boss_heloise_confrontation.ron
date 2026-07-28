@@ -1,0 +1,17 @@
+(
+    id: "ENM_HELOISE_CONFRONT",
+    name_key: "enm.heloise_confrontation.name",
+    family: BOSS,
+    region_affinity: ["R15_VILLEFORT_MANSION"],
+    gate: Always,
+    stats: Stats(hp: 220, atk: 26, def: 12, spd: 16),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_CHEM_FLASH",
+        "ABL_LANG_PERSUADE",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 160,
+    tier: 4,
+    sprite: "heloise_confrontation",
+)

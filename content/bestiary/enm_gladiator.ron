@@ -1,0 +1,14 @@
+(
+    id: "ENM_GLADIATOR",
+    name_key: "enm.gladiator.name",
+    family: TROOP,
+    region_affinity: ["R04_ROME"],
+    gate: Always,
+    stats: Stats(hp: 55, atk: 20, def: 12, spd: 10),
+    resist: [],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [],
+    xp: 22,
+    tier: 2,
+    sprite: "gladiator",
+)

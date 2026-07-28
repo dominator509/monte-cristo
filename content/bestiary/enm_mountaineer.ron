@@ -1,0 +1,14 @@
+(
+    id: "ENM_MOUNTAINEER",
+    name_key: "enm.mountaineer.name",
+    family: BANDIT,
+    region_affinity: ["R13_ALBANIA"],
+    gate: Always,
+    stats: Stats(hp: 38, atk: 16, def: 10, spd: 14),
+    resist: [],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [],
+    xp: 18,
+    tier: 3,
+    sprite: "mountaineer",
+)

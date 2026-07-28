@@ -1,0 +1,14 @@
+(
+    id: "ENM_FORUM_THIEF",
+    name_key: "enm.forum_thief.name",
+    family: CRIMINAL,
+    region_affinity: ["R04_ROME"],
+    gate: Always,
+    stats: Stats(hp: 22, atk: 10, def: 4, spd: 16),
+    resist: [],
+    abilities: ["ABL_LANG_PERSUADE"],
+    loot: [],
+    xp: 8,
+    tier: 1,
+    sprite: "forum_thief",
+)

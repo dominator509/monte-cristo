@@ -1,0 +1,14 @@
+(
+    id: "ENM_FORTIFIED_OUTPOST",
+    name_key: "enm.fortified_outpost.name",
+    family: TROOP,
+    region_affinity: ["R13_ALBANIA"],
+    gate: Always,
+    stats: Stats(hp: 50, atk: 18, def: 16, spd: 8),
+    resist: [],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 24,
+    tier: 3,
+    sprite: "fortified_outpost",
+)

@@ -1,5 +1,5 @@
 (
-    id: "ENM_SOLITARY_CONVICT",
+    id: "ENM_SOLITARY_INMATE",
     name_key: "enm.solitary_convict.name",
     family: PRISONER,
     region_affinity: ["R03_MONTE_CRISTO"],

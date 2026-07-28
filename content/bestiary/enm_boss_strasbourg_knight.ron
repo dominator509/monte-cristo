@@ -1,0 +1,17 @@
+(
+    id: "ENM_STRASBOURG_KNIGHT",
+    name_key: "enm.strasbourg_knight.name",
+    family: BOSS,
+    region_affinity: ["R09_STRASBOURG"],
+    gate: Always,
+    stats: Stats(hp: 260, atk: 32, def: 22, spd: 10),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_FENCING_FEINT",
+        "ABL_HIST_INSPIRE",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 190,
+    tier: 4,
+    sprite: "strasbourg_knight",
+)

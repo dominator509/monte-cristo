@@ -1,0 +1,14 @@
+(
+    id: "ENM_ARISTOCRAT",
+    name_key: "enm.aristocrat.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 30, atk: 10, def: 8, spd: 10),
+    resist: [],
+    abilities: ["ABL_ECON_FUND"],
+    loot: [],
+    xp: 14,
+    tier: 2,
+    sprite: "aristocrat",
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_REVOLUTIONARY",
+    name_key: "enm.revolutionary.name",
+    family: BANDIT,
+    region_affinity: ["R05_PARIS_FAUBOURG"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 14, def: 6, spd: 12),
+    resist: [],
+    abilities: ["ABL_HIST_INSPIRE"],
+    loot: [],
+    xp: 15,
+    tier: 2,
+    sprite: "revolutionary",
+)

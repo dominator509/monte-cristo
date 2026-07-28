@@ -1,0 +1,14 @@
+(
+    id: "ENM_BAZAAR_THIEF",
+    name_key: "enm.bazaar_thief.name",
+    family: CRIMINAL,
+    region_affinity: ["R11_ORIENT"],
+    gate: Always,
+    stats: Stats(hp: 20, atk: 10, def: 3, spd: 18),
+    resist: [],
+    abilities: ["ABL_LANG_DECIPHER"],
+    loot: [],
+    xp: 8,
+    tier: 1,
+    sprite: "bazaar_thief",
+)

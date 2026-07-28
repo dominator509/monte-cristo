@@ -1,0 +1,14 @@
+(
+    id: "ENM_CONSPIRATOR",
+    name_key: "enm.conspirator.name",
+    family: CRIMINAL,
+    region_affinity: ["R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 32, atk: 14, def: 6, spd: 14),
+    resist: [],
+    abilities: ["ABL_LANG_PERSUADE"],
+    loot: [],
+    xp: 18,
+    tier: 3,
+    sprite: "conspirator",
+)

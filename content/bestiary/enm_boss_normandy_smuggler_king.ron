@@ -1,0 +1,17 @@
+(
+    id: "ENM_SMUGGLER_KING",
+    name_key: "enm.normandy_smuggler_king.name",
+    family: BOSS,
+    region_affinity: ["R07_NORMANDY"],
+    gate: Always,
+    stats: Stats(hp: 200, atk: 26, def: 14, spd: 14),
+    resist: [BROKEN_GUARD],
+    abilities: [
+        "ABL_ECON_BRIBE",
+        "ABL_FENCING_LUNGE",
+    ],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 150,
+    tier: 4,
+    sprite: "normandy_smuggler_king",
+)

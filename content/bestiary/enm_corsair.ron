@@ -1,0 +1,14 @@
+(
+    id: "ENM_CORSAIR",
+    name_key: "enm.corsair.name",
+    family: SEA,
+    region_affinity: ["R10_MEDITERRANEE"],
+    gate: Always,
+    stats: Stats(hp: 50, atk: 20, def: 10, spd: 16),
+    resist: [],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [],
+    xp: 24,
+    tier: 3,
+    sprite: "corsair",
+)

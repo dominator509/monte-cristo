@@ -1,0 +1,9 @@
+(
+    id: "R14_MORCERF_ESTATE",
+    name_key: "region.r14.name",
+    description_key: "region.r14.description",
+    tier: 5,
+    connections: ["R06_PARIS_SALON", "R15_VILLEFORT_MANSION"],
+    locked: false,
+    gate: Always,
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_MERCHANT_GALLEY",
+    name_key: "enm.merchant_galley.name",
+    family: SEA,
+    region_affinity: ["R10_MEDITERRANEE"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 12, def: 10, spd: 8),
+    resist: [],
+    abilities: ["ABL_ECON_FUND"],
+    loot: [],
+    xp: 14,
+    tier: 2,
+    sprite: "merchant_galley",
+)

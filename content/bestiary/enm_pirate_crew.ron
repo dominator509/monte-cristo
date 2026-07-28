@@ -1,0 +1,14 @@
+(
+    id: "ENM_PIRATE_CREW",
+    name_key: "enm.pirate_crew.name",
+    family: SEA,
+    region_affinity: ["R10_MEDITERRANEE"],
+    gate: Always,
+    stats: Stats(hp: 40, atk: 16, def: 8, spd: 14),
+    resist: [],
+    abilities: ["ABL_ECON_BRIBE"],
+    loot: [],
+    xp: 18,
+    tier: 3,
+    sprite: "pirate_crew",
+)

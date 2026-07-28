@@ -1,0 +1,14 @@
+(
+    id: "ENM_SLAVE_TRADER",
+    name_key: "enm.slave_trader.name",
+    family: CRIMINAL,
+    region_affinity: ["R10_MEDITERRANEE"],
+    gate: Always,
+    stats: Stats(hp: 45, atk: 18, def: 10, spd: 12),
+    resist: [],
+    abilities: ["ABL_ECON_BRIBE"],
+    loot: [],
+    xp: 22,
+    tier: 3,
+    sprite: "slave_trader",
+)

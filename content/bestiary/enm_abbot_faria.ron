@@ -1,0 +1,14 @@
+(
+    id: "ENM_ABBE_FARIA",
+    name_key: "enm.abbe_faria.name",
+    family: BOSS,
+    region_affinity: ["R02_CHATEAU_DIF"],
+    gate: Always,
+    stats: Stats(hp: 200, atk: 20, def: 15, spd: 10),
+    resist: [BROKEN_GUARD, TERROR],
+    abilities: ["ABL_FENCING_LUNGE", "ABL_HIST_INSPIRE", "ABL_LANG_PERSUADE"],
+    loot: [("ITM_TREASURE_MAP", 1)],
+    xp: 100,
+    tier: 2,
+    sprite: "abbe_faria",
+)

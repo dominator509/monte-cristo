@@ -1,0 +1,14 @@
+(
+    id: "ENM_GREEK_MERC",
+    name_key: "enm.greek_merc.name",
+    family: BANDIT,
+    region_affinity: ["R13_ALBANIA"],
+    gate: Always,
+    stats: Stats(hp: 42, atk: 18, def: 10, spd: 14),
+    resist: [],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [],
+    xp: 20,
+    tier: 3,
+    sprite: "greek_merc",
+)

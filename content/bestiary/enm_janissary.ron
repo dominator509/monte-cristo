@@ -1,0 +1,14 @@
+(
+    id: "ENM_JANISSARY",
+    name_key: "enm.janissary.name",
+    family: TROOP,
+    region_affinity: ["R11_ORIENT"],
+    gate: Always,
+    stats: Stats(hp: 55, atk: 22, def: 16, spd: 12),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [],
+    xp: 28,
+    tier: 3,
+    sprite: "janissary",
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_ORACLE_PRIESTESS",
+    name_key: "enm.oracle_priestess.name",
+    family: CRIMINAL,
+    region_affinity: ["R12_GREECE"],
+    gate: Always,
+    stats: Stats(hp: 30, atk: 12, def: 6, spd: 14),
+    resist: [],
+    abilities: ["ABL_NATPHIL_ANALYZE"],
+    loot: [],
+    xp: 20,
+    tier: 3,
+    sprite: "oracle_priestess",
+)

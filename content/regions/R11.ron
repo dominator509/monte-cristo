@@ -1,0 +1,9 @@
+(
+    id: "R11_ORIENT",
+    name_key: "region.r11.name",
+    description_key: "region.r11.description",
+    tier: 4,
+    connections: ["R10_MEDITERRANEE", "R12_GREECE"],
+    locked: false,
+    gate: Always,
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_ROYAL_GUARD",
+    name_key: "enm.royal_guard.name",
+    family: TROOP,
+    region_affinity: ["R06_PARIS_SALON"],
+    gate: Always,
+    stats: Stats(hp: 55, atk: 20, def: 18, spd: 10),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [],
+    xp: 28,
+    tier: 3,
+    sprite: "royal_guard",
+)

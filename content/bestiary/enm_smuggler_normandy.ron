@@ -1,0 +1,14 @@
+(
+    id: "ENM_SMUGGLER_NORMANDY",
+    name_key: "enm.smuggler_normandy.name",
+    family: CRIMINAL,
+    region_affinity: ["R07_NORMANDY"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 14, def: 7, spd: 14),
+    resist: [],
+    abilities: ["ABL_ECON_BRIBE"],
+    loot: [],
+    xp: 16,
+    tier: 2,
+    sprite: "smuggler_normandy",
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_DANGLARS_AGENT",
+    name_key: "enm.danglars_agent.name",
+    family: BOSS,
+    region_affinity: ["R08_LYON"],
+    gate: Always,
+    stats: Stats(hp: 250, atk: 28, def: 18, spd: 16),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_ECON_BRIBE", "ABL_ECON_FUND", "ABL_HIST_INSPIRE"],
+    loot: [("ITM_PANACEA", 1)],
+    xp: 180,
+    tier: 5,
+    sprite: "danglars_agent",
+)

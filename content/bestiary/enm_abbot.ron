@@ -1,0 +1,14 @@
+(
+    id: "ENM_ABBOT",
+    name_key: "enm.abbot.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R07_NORMANDY"],
+    gate: Always,
+    stats: Stats(hp: 40, atk: 12, def: 10, spd: 8),
+    resist: [],
+    abilities: ["ABL_HIST_INSPIRE"],
+    loot: [],
+    xp: 20,
+    tier: 2,
+    sprite: "abbot",
+)
