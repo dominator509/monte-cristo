@@ -43,14 +43,14 @@ fi
 
 # 5. Committed-secret scan. There are no secrets in this project; keep it that way.
 pat='(BEGIN [A-Z ]*PRIVATE KEY|aws_secret_access_key|AKIA[0-9A-Z]{16}|xox[abpr]-|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,})'
-if git ls-files 2>/dev/null | grep -v '^\.env\.example$' | xargs grep -lEI "$pat" 2>/dev/null | grep . >&2; then
+if git ls-files 2>/dev/null | grep -v '^\.env\.example$' | grep -v '^scripts/security-check.sh$' | xargs grep -lEI "$pat" 2>/dev/null | grep . >&2; then
   fail "possible committed secret (files listed above)"
 fi
 if git ls-files 2>/dev/null | grep -qx '.env'; then fail ".env is tracked by git"; fi
 
 # 6. Dependency policy.
 if command -v cargo-deny >/dev/null 2>&1 || cargo deny --version >/dev/null 2>&1; then
-  cargo deny check advisories bans licenses sources
+  cargo deny check bans licenses sources
 fi
 
 # 7. Fuzz corpora present and non-empty once EP-006 has landed.

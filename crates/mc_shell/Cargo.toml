@@ -5,6 +5,10 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 
+[[bin]]
+name = "monte-cristo"
+path = "src/main.rs"
+
 [dependencies]
 mc_core = { path = "../mc_core", version = "0.1.0" }
 mc_data = { path = "../mc_data", version = "0.1.0" }
