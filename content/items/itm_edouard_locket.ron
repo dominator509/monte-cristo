@@ -1,0 +1,10 @@
+Item(
+    id: "ITM_EDOUARD_LOCKET",
+    name_key: "item.edouard_locket.name",
+    description_key: "item.edouard_locket.desc",
+    item_type: Key,
+    heal_hp: None,
+    effect: None,
+    usable_in: [],
+    value: 0,
+)
