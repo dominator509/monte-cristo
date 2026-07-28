@@ -59,3 +59,4 @@
 2026-07-28T21:31:48Z | hermes-ipman | EP-004 | LEASE_RELEASE | EP-004 done
 2026-07-28T21:32:15Z | hermes-ipman | EP-005 | LEASE | node start
 2026-07-28T21:40:49Z | hermes-ipman | EP-005 | MILESTONE_PASS | M1 shell builds, headless clean
+2026-07-28T21:46:37Z | hermes-ipman | EP-005 | MILESTONE_PASS | M4 battle ui and menus wired

@@ -302,9 +302,9 @@ mod tests {
     fn colour15_conversion() {
         let c = Colour15::from_rgb5(31, 0, 0); // full red
         let color = c.to_color();
-        assert!(color.r > 0);
-        assert_eq!(color.g, 0);
-        assert_eq!(color.b, 0);
+        assert!(color.r > 0.0);
+        assert_eq!(color.g, 0.0);
+        assert_eq!(color.b, 0.0);
     }
 
     #[test]

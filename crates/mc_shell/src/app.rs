@@ -4,10 +4,10 @@
 //! view = state_view(), draw(view, alpha).
 //!
 //! SPEC-004 section 11: MC_HEADLESS=1 suppresses window + audio, same simulation.
-
 use crate::config::ValidatedConfig;
 use crate::render::target::{ShellRenderTarget, INTERNAL_HEIGHT, INTERNAL_WIDTH};
-use crate::render::tilemap::{TileLayer, Tilemap, TILES_X, TILES_Y};
+use crate::render::tilemap::{Tilemap, TILES_X, TILES_Y};
+use crate::ui::{battle::draw_battle_interface, menu::draw_menu_screen};
 use mc_core::command::{Command, StateView};
 use mc_core::world::World;
 use macroquad::prelude::*;
@@ -18,6 +18,17 @@ pub const FIXED_DT: f64 = 1.0 / 60.0;
 
 /// Maximum accumulated time to prevent spiral of death.
 pub const MAX_ACCUM: f64 = 0.25;
+
+/// Which screen overlay is currently active.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ScreenState {
+    /// Field/exploration (default state).
+    Field,
+    /// Active battle.
+    Battle,
+    /// Menu screen open.
+    Menu,
+}
 
 /// The main application state.
 pub struct App {
@@ -37,6 +48,8 @@ pub struct App {
     pub tilemap: Tilemap,
     /// The audio state.
     pub audio: crate::audio::AudioState,
+    /// The current screen overlay state.
+    pub screen_state: ScreenState,
 }
 
 impl App {
@@ -63,6 +76,7 @@ impl App {
             render_target: None,
             tilemap,
             audio: crate::audio::AudioState::new(audio_enabled),
+            screen_state: ScreenState::Field,
         }
     }
 
@@ -217,6 +231,17 @@ impl App {
     }
 
     fn draw_ui(&self, _view: &StateView) {
-        // M4 will fill in UI rendering
+        // Draw screen overlays conditionally based on current screen state
+        match self.screen_state {
+            ScreenState::Field => {
+                // Field overlay: draw minimal HUD
+            }
+            ScreenState::Battle => {
+                draw_battle_interface(self.world.tick);
+            }
+            ScreenState::Menu => {
+                draw_menu_screen(self.world.tick);
+            }
+        }
     }
 }
