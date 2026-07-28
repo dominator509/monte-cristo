@@ -1,0 +1,10 @@
+# Self-hosted CI entry point. ADR-013: this file contains no gate logic.
+# The single source of truth for what "green" means is scripts/verify.sh.
+name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh scripts/verify.sh
