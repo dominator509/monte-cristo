@@ -64,18 +64,19 @@ impl Pack {
     }
 
     /// Canonical binary encoding.
-    pub fn to_bytes(&self) -> Vec<u8> {
-        postcard::to_stdvec(self).expect("Pack serialization should never fail")
+    pub fn to_bytes(&self) -> Result<Vec<u8>, SaveError> {
+        postcard::to_stdvec(self)
+            .map_err(|e| SaveError::Deserialize(format!("serialization failed: {e}")))
     }
 
     /// BLAKE3 digest of the canonical encoding.
-    pub fn digest(&self) -> blake3::Hash {
-        blake3::hash(&self.to_bytes())
+    pub fn digest(&self) -> Result<blake3::Hash, SaveError> {
+        Ok(blake3::hash(&self.to_bytes()?))
     }
 
     /// Save pack and digest to disk.
     pub fn save(&self, output: &Path) -> Result<(), SaveError> {
-        let bytes = self.to_bytes();
+        let bytes = self.to_bytes()?;
         let hash = blake3::hash(&bytes);
 
         fs::write(output, &bytes)?;

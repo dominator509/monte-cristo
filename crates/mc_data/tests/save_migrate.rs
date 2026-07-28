@@ -102,7 +102,7 @@ fn migrate_preserves_world_state() {
     let content_digest = {
         let root = repo_root().join("content");
         let pack = Pack::from_content(&root).expect("pack should build");
-        *blake3::hash(&pack.to_bytes()).as_bytes()
+        *blake3::hash(&pack.to_bytes().unwrap()).as_bytes()
     };
 
     let mut world = World::new(42);

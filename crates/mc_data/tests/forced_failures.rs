@@ -30,14 +30,14 @@ fn tmp_dir(label: &str) -> PathBuf {
 fn build_save() -> Save {
     let root = repo_root().join("content");
     let pack = Pack::from_content(&root).expect("pack should build");
-    let content_digest = *blake3::hash(&pack.to_bytes()).as_bytes();
+    let content_digest = *blake3::hash(&pack.to_bytes().unwrap()).as_bytes();
 
     let mut world = World::new(42);
     for _ in 0..10 {
         world.step();
     }
 
-    Save::new(2, "0.1.0".into(), content_digest, world)
+    Save::new(2, "0.1.0".into(), content_digest, world).expect("save should build")
 }
 
 fn build_pack() -> Pack {
@@ -148,7 +148,7 @@ fn future_schema_version() {
 
     let root = repo_root().join("content");
     let pack = Pack::from_content(&root).expect("pack should build");
-    let content_digest = *blake3::hash(&pack.to_bytes()).as_bytes();
+    let content_digest = *blake3::hash(&pack.to_bytes().unwrap()).as_bytes();
 
     let world = World::new(0);
 

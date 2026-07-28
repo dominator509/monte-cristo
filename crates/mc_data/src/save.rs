@@ -48,7 +48,7 @@ impl Save {
         product: String,
         content_digest: [u8; 32],
         world: World,
-    ) -> Self {
+    ) -> Result<Self, SaveError> {
         assert!(
             version <= MAX_SCHEMA_VERSION,
             "schema_version {version} exceeds max {MAX_SCHEMA_VERSION}",
@@ -65,18 +65,18 @@ impl Save {
             world,
             digest: [0u8; 32],
         };
-        s.digest = s.compute_digest();
-        s
+        s.digest = s.compute_digest()?;
+        Ok(s)
     }
 
     /// Canonical binary encoding.
     ///
     /// Layout: `postcard(schema_version, product_version, content_digest, world)` followed
     /// by the 32-byte Blake3 digest of that segment.
-    pub fn to_bytes(&self) -> Vec<u8> {
-        let mut data = self.encode_body();
+    pub fn to_bytes(&self) -> Result<Vec<u8>, SaveError> {
+        let mut data = self.encode_body()?;
         data.extend_from_slice(&self.digest);
-        data
+        Ok(data)
     }
 
     /// Deserialise a `Save` from bytes with full integrity verification.
@@ -152,7 +152,7 @@ impl Save {
 
     /// Write the canonical encoding to `path`.
     pub fn to_file(&self, path: &Path) -> Result<(), SaveError> {
-        let bytes = self.to_bytes();
+        let bytes = self.to_bytes()?;
         fs::write(path, &bytes)?;
         Ok(())
     }
@@ -166,19 +166,20 @@ impl Save {
     // ── private helpers ──────────────────────────────────────────────────
 
     /// Postcard-encode the four data fields (everything *except* the digest).
-    fn encode_body(&self) -> Vec<u8> {
+    fn encode_body(&self) -> Result<Vec<u8>, SaveError> {
         postcard::to_stdvec(&(
             self.schema_version,
             &self.product_version,
             self.content_digest,
             &self.world,
         ))
-        .expect("Save body serialization should never fail")
+        .map_err(|e| SaveError::Deserialize(format!("serialization failed: {e}")))
     }
 
     /// Compute the Blake3 digest over the body.
-    fn compute_digest(&self) -> [u8; 32] {
-        *blake3::hash(&self.encode_body()).as_bytes()
+    fn compute_digest(&self) -> Result<[u8; 32], SaveError> {
+        let body = self.encode_body()?;
+        Ok(*blake3::hash(&body).as_bytes())
     }
 }
 

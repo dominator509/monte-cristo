@@ -41,9 +41,9 @@ pub fn migrate_save(data: &[u8]) -> Result<Vec<u8>, SaveError> {
         product_version,
         content_digest,
         world,
-    );
+    )?;
 
-    Ok(save.to_bytes())
+    Ok(save.to_bytes()?)
 }
 
 /// Migrate a v1 save file on disk.
@@ -86,7 +86,7 @@ mod tests {
     fn build_v1_bytes() -> Vec<u8> {
         let root = content_root();
         let pack = Pack::from_content(&root).expect("pack should build");
-        let content_digest = *blake3::hash(&pack.to_bytes()).as_bytes();
+        let content_digest = *blake3::hash(&pack.to_bytes().unwrap()).as_bytes();
 
         let world = World::new(42);
 

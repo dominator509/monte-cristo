@@ -39,8 +39,8 @@ fn build_pack() -> Pack {
 fn bake_pack_is_deterministic() {
     let pack_a = build_pack();
     let pack_b = build_pack();
-    assert_eq!(pack_a.to_bytes(), pack_b.to_bytes(), "pack bytes must be identical");
-    assert_eq!(pack_a.digest(), pack_b.digest(), "pack digest must be identical");
+    assert_eq!(pack_a.to_bytes().unwrap(), pack_b.to_bytes().unwrap(), "pack bytes must be identical");
+    assert_eq!(pack_a.digest().unwrap(), pack_b.digest().unwrap(), "pack digest must be identical");
 }
 
 /// Save then load produces an identical pack.
@@ -61,8 +61,16 @@ fn save_load_roundtrip() {
         ).expect("should load saved pack")
     });
 
-    assert_eq!(pack.to_bytes(), loaded.to_bytes(), "round-trip pack must match");
-    assert_eq!(pack.digest(), loaded.digest(), "digest must match after round-trip");
+    assert_eq!(
+        pack.to_bytes().unwrap(),
+        loaded.to_bytes().unwrap(),
+        "round-trip pack must match"
+    );
+    assert_eq!(
+        pack.digest().unwrap(),
+        loaded.digest().unwrap(),
+        "digest must match after round-trip"
+    );
 
     let _ = fs::remove_dir_all(&tmp);
 }
@@ -75,11 +83,11 @@ fn bake_twice_identical_digests() {
     let _ = fs::remove_dir_all(&tmp);
     fs::create_dir_all(&tmp).unwrap();
 
-    let d1 = pack.digest();
+    let d1 = pack.digest().unwrap();
     pack.save(&tmp.join("content.pack")).unwrap();
 
     let loaded = Pack::load_from_dir(&tmp).unwrap();
-    let d2 = loaded.digest();
+    let d2 = loaded.digest().unwrap();
 
     assert_eq!(d1, d2, "bake-twice digests should be identical");
 

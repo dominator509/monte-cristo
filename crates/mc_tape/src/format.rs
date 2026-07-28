@@ -94,7 +94,7 @@ impl Tape {
         }
 
         // Compute content digest.
-        let content_digest = compute_content_digest(&entries, &checkpoints);
+        let content_digest = compute_content_digest(&entries, &checkpoints)?;
 
         let tape = Tape {
             magic: *b"MCTAPE01",
@@ -149,7 +149,7 @@ impl Tape {
         }
 
         // Validate content digest.
-        let expected_digest = compute_content_digest(&tape.entries, &tape.checkpoints);
+        let expected_digest = compute_content_digest(&tape.entries, &tape.checkpoints)?;
         if tape.content_digest != expected_digest {
             return Err(TapeError::ContentDigestMismatch);
         }
@@ -181,11 +181,11 @@ impl Tape {
 fn compute_content_digest(
     entries: &[(u64, Command)],
     checkpoints: &[(u64, [u8; 32])],
-) -> [u8; 32] {
+) -> Result<[u8; 32], TapeError> {
     let encoded = postcard::to_allocvec(&(&entries, &checkpoints))
-        .expect("serialization of entries and checkpoints should never fail");
+        .map_err(|e| TapeError::Io(format!("serialization failed: {e}")))?;
     let hash = blake3::hash(&encoded);
-    *hash.as_bytes()
+    Ok(*hash.as_bytes())
 }
 
 /// Map a postcard deserialization error to a TapeError.

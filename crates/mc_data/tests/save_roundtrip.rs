@@ -26,7 +26,7 @@ fn tmp_dir() -> PathBuf {
 
 fn build_content_digest() -> [u8; 32] {
     let pack = Pack::from_content(&content_root()).expect("pack should build from content");
-    *blake3::hash(&pack.to_bytes()).as_bytes()
+    *blake3::hash(&pack.to_bytes().unwrap()).as_bytes()
 }
 
 /// Build a save, round-trip it through bytes, and assert state_hash matches.
@@ -45,9 +45,10 @@ fn save_roundtrip_preserves_world() {
         "0.1.0".to_string(),
         content_digest,
         world,
-    );
+    )
+    .expect("save should build");
 
-    let bytes = save.to_bytes();
+    let bytes = save.to_bytes().unwrap();
     let loaded = Save::load(&bytes).expect("should deserialise save");
     let roundtrip_hash = loaded.world.state_hash();
 
@@ -78,7 +79,8 @@ fn save_file_roundtrip() {
         "0.1.0".to_string(),
         content_digest,
         world,
-    );
+    )
+    .expect("save should build");
 
     let save_path = tmp_dir().join("test.sav");
     save.to_file(&save_path).expect("save to file");
@@ -100,10 +102,8 @@ fn reject_huge_schema_version() {
     let world = World::new(42);
 
     let huge: u16 = MAX_SCHEMA_VERSION + 1;
-    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        Save::new(huge, "0.1.0".into(), content_digest, world);
-    }));
-    assert!(result.is_err(), "should panic on huge schema version");
+    let result = Save::new(huge, "0.1.0".into(), content_digest, world);
+    assert!(result.is_err(), "should reject huge schema version");
 }
 
 /// Reject product_version longer than limit.
@@ -113,10 +113,8 @@ fn reject_long_product_version() {
     let world = World::new(42);
 
     let long_product = "a".repeat(MAX_PRODUCT_VERSION_LEN + 1);
-    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        Save::new(CURRENT_SCHEMA_VERSION, long_product, content_digest, world);
-    }));
-    assert!(result.is_err(), "should panic on long product version");
+    let result = Save::new(CURRENT_SCHEMA_VERSION, long_product, content_digest, world);
+    assert!(result.is_err(), "should reject long product version");
 }
 
 /// Reject save files with newer schema version.
@@ -134,7 +132,7 @@ fn reject_newer_save_version() {
         world,
         digest: [0u8; 32],
     };
-    let bytes = save.to_bytes();
+    let bytes = save.to_bytes().unwrap();
 
     let result = Save::load(&bytes);
     assert!(
@@ -155,8 +153,9 @@ fn reject_corrupted_digest() {
         "0.1.0".into(),
         content_digest,
         world,
-    );
-    let mut bytes = save.to_bytes();
+    )
+    .expect("save should build");
+    let mut bytes = save.to_bytes().unwrap();
     // Flip one byte in the body
     let flip_pos = bytes.len() / 2;
     bytes[flip_pos] ^= 0x01;
