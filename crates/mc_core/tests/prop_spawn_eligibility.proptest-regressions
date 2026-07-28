@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 6bcec8cadb1f968f3c454f102f0a019f8eb69245a67cc317103937038fdddb43 # shrinks to flags = FlagSet { bits: [64] }, region_idx = 13

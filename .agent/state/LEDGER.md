@@ -26,3 +26,5 @@
 2026-07-28T18:51:28Z | hermes-ipman | EP-002 | MILESTONE_PASS | M2 rng and ids, zero hash maps
 2026-07-28T18:52:41Z | hermes-ipman | EP-002 | MILESTONE_PASS | M3 world and tick order
 2026-07-28T18:53:48Z | hermes-ipman | EP-002 | MILESTONE_PASS | M4 determinism property holds
+2026-07-28T18:59:05Z | hermes-ipman | EP-002 | MILESTONE_PASS | M5 spawn eligibility pure, budget decays
+2026-07-28T18:59:05Z | hermes-ipman | EP-002 | MILESTONE_PASS | M7 curriculum and calendars

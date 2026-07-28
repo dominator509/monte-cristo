@@ -1,11 +1,17 @@
 #![forbid(unsafe_code)]
 //! INV-01: pure, deterministic, no I/O. See ARCHITECTURE.md section 5.
 
+pub mod bestiary;
+pub mod budget;
+pub mod calendar;
+pub mod curriculum;
 pub mod flags;
 pub mod fx;
 pub mod hash;
 pub mod ids;
 pub mod rng;
+pub mod season;
+pub mod spawn;
 pub mod step;
 pub mod world;
 
