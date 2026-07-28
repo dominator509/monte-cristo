@@ -1,0 +1,14 @@
+(
+    id: "ENM_SMUGGLER",
+    name_key: "enm.smuggler.name",
+    family: CRIMINAL,
+    region_affinity: ["R01_MARSEILLE", "R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 42, atk: 15, def: 5, spd: 10),
+    resist: [BLEEDING],
+    abilities: ["ABL_ECON_BRIBE"],
+    loot: [("ITM_POTION", 2), ("ITM_TREASURE_MAP", 1)],
+    xp: 20,
+    tier: 1,
+    sprite: "smuggler",
+)

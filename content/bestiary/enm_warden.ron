@@ -1,0 +1,14 @@
+(
+    id: "ENM_WARDEN",
+    name_key: "enm.warden.name",
+    family: PRISONER,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 65, atk: 18, def: 10, spd: 6),
+    resist: [WINDED, BLEEDING, TERROR],
+    abilities: ["ABL_FENCING_RIPOSTE", "ABL_HIST_TACTICS"],
+    loot: [("ITM_HI_POTION", 2)],
+    xp: 28,
+    tier: 1,
+    sprite: "warden",
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_HARBOUR_THUG",
+    name_key: "enm.harbour_thug.name",
+    family: BANDIT,
+    region_affinity: ["R01_MARSEILLE"],
+    gate: Always,
+    stats: Stats(hp: 40, atk: 14, def: 5, spd: 9),
+    resist: [],
+    abilities: [],
+    loot: [("ITM_POTION", 1)],
+    xp: 14,
+    tier: 1,
+    sprite: "harbour_thug",
+)

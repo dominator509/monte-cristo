@@ -1,0 +1,14 @@
+(
+    id: "ENM_SAILOR",
+    name_key: "enm.sailor.name",
+    family: BANDIT,
+    region_affinity: ["R01_MARSEILLE"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 12, def: 5, spd: 9),
+    resist: [],
+    abilities: [],
+    loot: [("ITM_POTION", 1)],
+    xp: 10,
+    tier: 1,
+    sprite: "sailor",
+)

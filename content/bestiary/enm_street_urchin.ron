@@ -1,0 +1,14 @@
+(
+    id: "ENM_STREET_URCHIN",
+    name_key: "enm.street_urchin.name",
+    family: CRIMINAL,
+    region_affinity: ["R01_MARSEILLE"],
+    gate: Always,
+    stats: Stats(hp: 20, atk: 9, def: 2, spd: 14),
+    resist: [],
+    abilities: [],
+    loot: [],
+    xp: 7,
+    tier: 1,
+    sprite: "street_urchin",
+)

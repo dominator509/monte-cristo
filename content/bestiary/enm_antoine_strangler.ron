@@ -1,0 +1,14 @@
+(
+    id: "ENM_ANTOINE_STRANGLER",
+    name_key: "enm.antoine_strangler.name",
+    family: BOSS,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 120, atk: 28, def: 10, spd: 10),
+    resist: [BLEEDING, WINDED, TERROR],
+    abilities: ["ABL_FENCING_LUNGE", "ABL_FENCING_FEINT"],
+    loot: [("ITM_HI_POTION", 3), ("ITM_PHIAL_BRUCINE", 1)],
+    xp: 80,
+    tier: 2,
+    sprite: "antoine_strangler",
+)

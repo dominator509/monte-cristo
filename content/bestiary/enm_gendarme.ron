@@ -1,0 +1,14 @@
+(
+    id: "ENM_GENDARME",
+    name_key: "enm.gendarme.name",
+    family: TROOP,
+    region_affinity: ["R01_MARSEILLE"],
+    gate: Not("FLG_ARRESTED"),
+    stats: Stats(hp: 45, atk: 14, def: 8, spd: 7),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [("ITM_POTION", 2)],
+    xp: 18,
+    tier: 1,
+    sprite: "gendarme",
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_INTERROGATOR",
+    name_key: "enm.interrogator.name",
+    family: PRISONER,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 45, atk: 14, def: 6, spd: 8),
+    resist: [BLEEDING, FEVER],
+    abilities: ["ABL_LANG_PERSUADE"],
+    loot: [("ITM_POTION", 2)],
+    xp: 18,
+    tier: 1,
+    sprite: "interrogator",
+)

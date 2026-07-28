@@ -1,0 +1,52 @@
+Scene(
+    id: "SCN_ARRIVAL",
+    act: ActIII_TREASURE,
+    participants: ["CHR_EDMOND"],
+    requires: Set(FlagId(3)),
+    nodes: [
+        Node(
+            id: "n0",
+            text_key: "scene.arrival.n0",
+            choices: [
+                Choice(
+                    text_key: "scene.arrival.n0.c1",
+                    to: "n1",
+                ),
+                Choice(
+                    text_key: "scene.arrival.n0.c2",
+                    to: "n2",
+                ),
+            ],
+        ),
+        Node(
+            id: "n1",
+            text_key: "scene.arrival.n1",
+            choices: [
+                Choice(
+                    text_key: "scene.arrival.n1.c1",
+                    to: "n3",
+                ),
+            ],
+        ),
+        Node(
+            id: "n2",
+            text_key: "scene.arrival.n2",
+            choices: [
+                Choice(
+                    text_key: "scene.arrival.n2.c1",
+                    to: "n3",
+                ),
+            ],
+        ),
+        Node(
+            id: "n3",
+            text_key: "scene.arrival.n3",
+            choices: [],
+        ),
+    ],
+    on_exit: Some(Effects(
+        set_flags: ["FLG_COMTE_IDENTITY"],
+        grant: ["ITM_TREASURE_MAP"],
+    )),
+    terminal: true,
+)

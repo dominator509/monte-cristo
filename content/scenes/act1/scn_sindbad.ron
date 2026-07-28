@@ -1,0 +1,58 @@
+Scene(
+    id: "SCN_SINDBAD",
+    act: ActIV_TOUR,
+    participants: ["CHR_EDMOND", "CHR_HAYDEE"],
+    requires: Set(FlagId(3)),
+    nodes: [
+        Node(
+            id: "n0",
+            text_key: "scene.sindbad.n0",
+            choices: [
+                Choice(
+                    text_key: "scene.sindbad.n0.c1",
+                    to: "n1",
+                ),
+                Choice(
+                    text_key: "scene.sindbad.n0.c2",
+                    to: "n2",
+                ),
+            ],
+        ),
+        Node(
+            id: "n1",
+            text_key: "scene.sindbad.n1",
+            choices: [
+                Choice(
+                    text_key: "scene.sindbad.n1.c1",
+                    to: "n3",
+                    trust: Some([
+                        TrustEffect("CHR_HAYDEE", 10),
+                    ]),
+                ),
+                Choice(
+                    text_key: "scene.sindbad.n1.c2",
+                    to: "n3",
+                ),
+            ],
+        ),
+        Node(
+            id: "n2",
+            text_key: "scene.sindbad.n2",
+            choices: [
+                Choice(
+                    text_key: "scene.sindbad.n2.c1",
+                    to: "n3",
+                ),
+            ],
+        ),
+        Node(
+            id: "n3",
+            text_key: "scene.sindbad.n3",
+            choices: [],
+        ),
+    ],
+    on_exit: Some(Effects(
+        set_flags: ["FLG_SINDBAD_VISITED"],
+    )),
+    terminal: false,
+)

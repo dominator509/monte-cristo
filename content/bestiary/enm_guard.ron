@@ -1,0 +1,14 @@
+(
+    id: "ENM_GUARD",
+    name_key: "enm.guard.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 50, atk: 15, def: 9, spd: 7),
+    resist: [BROKEN_GUARD],
+    abilities: ["ABL_FENCING_RIPOSTE"],
+    loot: [("ITM_POTION", 2)],
+    xp: 20,
+    tier: 1,
+    sprite: "guard",
+)

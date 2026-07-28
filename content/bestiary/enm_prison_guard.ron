@@ -1,0 +1,14 @@
+(
+    id: "ENM_PRISON_GUARD",
+    name_key: "enm.prison_guard.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 55, atk: 16, def: 10, spd: 6),
+    resist: [BROKEN_GUARD, BLEEDING],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [("ITM_POTION", 2)],
+    xp: 22,
+    tier: 1,
+    sprite: "prison_guard",
+)

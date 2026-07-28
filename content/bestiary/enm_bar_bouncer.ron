@@ -1,0 +1,14 @@
+(
+    id: "ENM_BAR_BOUNCER",
+    name_key: "enm.bar_bouncer.name",
+    family: BANDIT,
+    region_affinity: ["R01_MARSEILLE"],
+    gate: Always,
+    stats: Stats(hp: 50, atk: 16, def: 7, spd: 6),
+    resist: [WINDED],
+    abilities: [],
+    loot: [],
+    xp: 16,
+    tier: 1,
+    sprite: "bar_bouncer",
+)

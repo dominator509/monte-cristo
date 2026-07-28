@@ -1,0 +1,70 @@
+Scene(
+    id: "SCN_ESCAPE",
+    act: ActIII_TREASURE,
+    participants: ["CHR_EDMOND"],
+    requires: Set(FlagId(2)),
+    nodes: [
+        Node(
+            id: "n0",
+            text_key: "scene.escape.n0",
+            choices: [
+                Choice(
+                    text_key: "scene.escape.n0.c1",
+                    to: "n1",
+                ),
+                Choice(
+                    text_key: "scene.escape.n0.c2",
+                    to: "n2",
+                ),
+            ],
+        ),
+        Node(
+            id: "n1",
+            text_key: "scene.escape.n1",
+            choices: [
+                Choice(
+                    text_key: "scene.escape.n1.c1",
+                    to: "n3",
+                ),
+                Choice(
+                    text_key: "scene.escape.n1.c2",
+                    to: "n4",
+                ),
+            ],
+        ),
+        Node(
+            id: "n2",
+            text_key: "scene.escape.n2",
+            choices: [
+                Choice(
+                    text_key: "scene.escape.n2.c1",
+                    to: "n3",
+                    requires: Some(Set(FlagId(3))),
+                ),
+                Choice(
+                    text_key: "scene.escape.n2.c2",
+                    to: "n5",
+                ),
+            ],
+        ),
+        Node(
+            id: "n3",
+            text_key: "scene.escape.n3",
+            choices: [],
+        ),
+        Node(
+            id: "n4",
+            text_key: "scene.escape.n4",
+            choices: [],
+        ),
+        Node(
+            id: "n5",
+            text_key: "scene.escape.n5",
+            choices: [],
+        ),
+    ],
+    on_exit: Some(Effects(
+        set_flags: ["FLG_ESCAPED"],
+    )),
+    terminal: false,
+)

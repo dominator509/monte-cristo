@@ -1,0 +1,14 @@
+(
+    id: "ENM_GUARD_DOG",
+    name_key: "enm.guard_dog.name",
+    family: BEAST,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 18, def: 4, spd: 14),
+    resist: [TERROR],
+    abilities: [],
+    loot: [],
+    xp: 16,
+    tier: 1,
+    sprite: "guard_dog",
+)

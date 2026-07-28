@@ -1,0 +1,14 @@
+(
+    id: "ENM_STREET_THUG",
+    name_key: "enm.street_thug.name",
+    family: CRIMINAL,
+    region_affinity: ["R01_MARSEILLE"],
+    gate: Always,
+    stats: Stats(hp: 35, atk: 12, def: 4, spd: 8),
+    resist: [],
+    abilities: [],
+    loot: [("ITM_POTION", 1)],
+    xp: 12,
+    tier: 1,
+    sprite: "street_thug",
+)

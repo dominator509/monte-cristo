@@ -1,0 +1,14 @@
+(
+    id: "ENM_TURNKEY",
+    name_key: "enm.turnkey.name",
+    family: PRISONER,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 38, atk: 12, def: 6, spd: 8),
+    resist: [],
+    abilities: [],
+    loot: [("ITM_POTION", 1)],
+    xp: 12,
+    tier: 1,
+    sprite: "turnkey",
+)

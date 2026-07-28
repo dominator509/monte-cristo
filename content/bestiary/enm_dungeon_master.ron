@@ -1,0 +1,14 @@
+(
+    id: "ENM_DUNGEON_MASTER",
+    name_key: "enm.dungeon_master.name",
+    family: PRISONER,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 58, atk: 17, def: 9, spd: 7),
+    resist: [BLEEDING, WINDED, FEVER],
+    abilities: ["ABL_FENCING_LUNGE", "ABL_LANG_PERSUADE"],
+    loot: [("ITM_HI_POTION", 1)],
+    xp: 25,
+    tier: 1,
+    sprite: "dungeon_master",
+)

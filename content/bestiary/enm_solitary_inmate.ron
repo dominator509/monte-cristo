@@ -1,0 +1,14 @@
+(
+    id: "ENM_SOLITARY_CONVICT",
+    name_key: "enm.solitary_convict.name",
+    family: PRISONER,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 55, atk: 18, def: 6, spd: 5),
+    resist: [FEVER, TERROR],
+    abilities: [],
+    loot: [],
+    xp: 22,
+    tier: 1,
+    sprite: "solitary_convict",
+)

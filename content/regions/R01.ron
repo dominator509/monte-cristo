@@ -1,0 +1,9 @@
+(
+    id: "R01_MARSEILLE",
+    name_key: "region.r01.name",
+    description_key: "region.r01.description",
+    tier: 1,
+    connections: ["R02"],
+    locked: false,
+    gate: Always,
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_JAILER",
+    name_key: "enm.jailer.name",
+    family: PRISONER,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 48, atk: 16, def: 7, spd: 6),
+    resist: [WINDED],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [("ITM_POTION", 2)],
+    xp: 18,
+    tier: 1,
+    sprite: "jailer",
+)

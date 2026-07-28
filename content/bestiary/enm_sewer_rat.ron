@@ -1,0 +1,14 @@
+(
+    id: "ENM_HARBOR_RAT",
+    name_key: "enm.harbor_rat.name",
+    family: VERMIN,
+    region_affinity: ["R01_MARSEILLE"],
+    gate: Always,
+    stats: Stats(hp: 18, atk: 6, def: 2, spd: 12),
+    resist: [],
+    abilities: [],
+    loot: [],
+    xp: 5,
+    tier: 1,
+    sprite: "harbor_rat",
+)

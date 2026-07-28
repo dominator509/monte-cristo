@@ -1,0 +1,9 @@
+(
+    id: "R03_MONTE_CRISTO",
+    name_key: "region.r03.name",
+    description_key: "region.r03.description",
+    tier: 1,
+    connections: ["R02"],
+    locked: true,
+    gate: All([Set(FlagId(3))]),
+)

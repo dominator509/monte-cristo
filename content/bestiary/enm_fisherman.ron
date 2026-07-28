@@ -1,0 +1,14 @@
+(
+    id: "ENM_FISHERMAN",
+    name_key: "enm.fisherman.name",
+    family: BANDIT,
+    region_affinity: ["R01_MARSEILLE"],
+    gate: Always,
+    stats: Stats(hp: 30, atk: 10, def: 4, spd: 8),
+    resist: [],
+    abilities: [],
+    loot: [],
+    xp: 9,
+    tier: 1,
+    sprite: "fisherman",
+)

@@ -1,0 +1,14 @@
+(
+    id: "ENM_CORRIDOR_PATROL",
+    name_key: "enm.corridor_patrol.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 44, atk: 14, def: 7, spd: 10),
+    resist: [],
+    abilities: [],
+    loot: [("ITM_POTION", 1)],
+    xp: 16,
+    tier: 1,
+    sprite: "corridor_patrol",
+)

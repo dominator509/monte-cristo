@@ -1,0 +1,14 @@
+(
+    id: "ENM_LE_RONGEUR",
+    name_key: "enm.le_rongeur.name",
+    family: BOSS,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 100, atk: 32, def: 6, spd: 16),
+    resist: [BLEEDING, POISONED, TERROR, FEVER],
+    abilities: [],
+    loot: [("ITM_PANACEA", 1), ("ITM_TREASURE_MAP", 1)],
+    xp: 90,
+    tier: 2,
+    sprite: "le_rongeur",
+)

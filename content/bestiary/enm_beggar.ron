@@ -1,0 +1,14 @@
+(
+    id: "ENM_BEGGAR",
+    name_key: "enm.beggar.name",
+    family: CRIMINAL,
+    region_affinity: ["R01_MARSEILLE"],
+    gate: Always,
+    stats: Stats(hp: 22, atk: 8, def: 3, spd: 6),
+    resist: [],
+    abilities: [],
+    loot: [],
+    xp: 6,
+    tier: 1,
+    sprite: "beggar",
+)

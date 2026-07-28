@@ -1,0 +1,60 @@
+Scene(
+    id: "SCN_ARREST",
+    act: ActI_ARREST,
+    participants: ["CHR_EDMOND", "CHR_MERCEDES", "CHR_FERNAND", "CHR_DANGLARS", "CHR_VILLEFORT"],
+    nodes: [
+        Node(
+            id: "n0",
+            text_key: "scene.arrest.n0",
+            choices: [
+                Choice(
+                    text_key: "scene.arrest.n0.c1",
+                    to: "n1",
+                    trust: Some([
+                        TrustEffect("CHR_MERCEDES", 5),
+                    ]),
+                ),
+                Choice(
+                    text_key: "scene.arrest.n0.c2",
+                    to: "n2",
+                    trust: Some([
+                        TrustEffect("CHR_MERCEDES", -3),
+                    ]),
+                ),
+            ],
+        ),
+        Node(
+            id: "n1",
+            text_key: "scene.arrest.n1",
+            choices: [
+                Choice(
+                    text_key: "scene.arrest.n1.c1",
+                    to: "n3",
+                ),
+                Choice(
+                    text_key: "scene.arrest.n1.c2",
+                    to: "n3",
+                ),
+            ],
+        ),
+        Node(
+            id: "n2",
+            text_key: "scene.arrest.n2",
+            choices: [
+                Choice(
+                    text_key: "scene.arrest.n2.c1",
+                    to: "n3",
+                ),
+            ],
+        ),
+        Node(
+            id: "n3",
+            text_key: "scene.arrest.n3",
+            choices: [],
+        ),
+    ],
+    on_exit: Some(Effects(
+        set_flags: ["FLG_ARRESTED"],
+    )),
+    terminal: false,
+)

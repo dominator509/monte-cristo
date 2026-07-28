@@ -1,0 +1,14 @@
+(
+    id: "ENM_CELL_SPIDER",
+    name_key: "enm.cell_spider.name",
+    family: HAZARD,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 25, atk: 11, def: 3, spd: 11),
+    resist: [BLEEDING, TERROR, POISONED],
+    abilities: [],
+    loot: [],
+    xp: 10,
+    tier: 1,
+    sprite: "cell_spider",
+)

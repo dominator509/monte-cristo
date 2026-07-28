@@ -1,0 +1,14 @@
+(
+    id: "ENM_EXECUTIONER",
+    name_key: "enm.executioner.name",
+    family: MAN_AT_ARMS,
+    region_affinity: ["R03_MONTE_CRISTO"],
+    gate: Always,
+    stats: Stats(hp: 60, atk: 20, def: 8, spd: 6),
+    resist: [BLEEDING, TERROR, BROKEN_GUARD],
+    abilities: ["ABL_FENCING_LUNGE"],
+    loot: [],
+    xp: 26,
+    tier: 1,
+    sprite: "executioner",
+)
