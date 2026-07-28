@@ -329,3 +329,9 @@ half-written -- reset and redo.
 ## 14. Outcomes and Retrospective
 
 <empty>
+
+## 13. Decision Log
+
+| Date | Event | Detail |
+|------|-------|--------|
+| 2026-07-28 | DRIFT_FIX | `crates/mc_core/tests/prop_fixed_point.rs` was missing despite being in M1's CHANGE list. Created in reconciliation pass with 10 property tests covering all operations (no-panic, saturation bounds, round-trip). Also tolerates: `.agent/state/LEDGER.md` (L6 state), `Cargo.lock` (dependency management), and `*.proptest-regressions` (auto-generated) as natural extra files outside Expected Changed Files. |

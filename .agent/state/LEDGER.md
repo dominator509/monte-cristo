@@ -32,3 +32,5 @@
 2026-07-28T19:07:05Z | hermes-ipman | EP-002 | MILESTONE_PASS | M8 poison tolerance simulated
 2026-07-28T19:10:18Z | hermes-ipman | EP-002 | MILESTONE_PASS | M9 confidences and final encounter gated
 2026-07-28T19:13:30Z | hermes-ipman | EP-002 | MILESTONE_PASS | M10 unit tests: ok, core clean
+2026-07-28T19:13:30Z | hermes-ipman | EP-002 | NODE_DONE | EP-002 complete - full mc_core domain, 291 tests, invariants clean
+2026-07-28T19:13:35Z | hermes-ipman | EP-002 | LEASE_RELEASE | EP-002 done
