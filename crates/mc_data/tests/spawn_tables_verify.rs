@@ -20,10 +20,26 @@ mod test_spawn_tables {
         assert_eq!(table.chapter_stage, 1);
         assert_eq!(table.pool, 26);
         assert_eq!(table.entries.len(), 26);
-        let cell_rat = table.entries.iter().find(|e| e.enemy == "ENM_CELL_RAT").expect("CELL_RAT should exist");
+        let cell_rat = table
+            .entries
+            .iter()
+            .find(|e| e.enemy == "ENM_CELL_RAT")
+            .expect("CELL_RAT should exist");
         assert_eq!(cell_rat.weight, 15);
-        let guard_count = table.entries.iter().filter(|e| e.enemy.contains("GUARD") || e.enemy.contains("SENTRY") || e.enemy.contains("PATROL")).count();
-        assert!(guard_count >= 6, "R03 should have at least 6 guard/sentry/patrol entries, got {}", guard_count);
+        let guard_count = table
+            .entries
+            .iter()
+            .filter(|e| {
+                e.enemy.contains("GUARD")
+                    || e.enemy.contains("SENTRY")
+                    || e.enemy.contains("PATROL")
+            })
+            .count();
+        assert!(
+            guard_count >= 6,
+            "R03 should have at least 6 guard/sentry/patrol entries, got {}",
+            guard_count
+        );
     }
 }
 
@@ -37,6 +53,7 @@ fn test_flag_expr_not() {
 #[test]
 fn test_flag_expr_all() {
     use mc_data::schema::enemy::FlagExpr;
-    let expr: FlagExpr = ron::from_str(r#"All(["FLG_ARRESTED"])"#).expect("All variant should parse");
+    let expr: FlagExpr =
+        ron::from_str(r#"All(["FLG_ARRESTED"])"#).expect("All variant should parse");
     assert!(matches!(expr, FlagExpr::All(_)));
 }

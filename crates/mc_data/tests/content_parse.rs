@@ -3,8 +3,10 @@
 #[test]
 fn parse_all_content_files() {
     let base = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent().unwrap()
-        .parent().unwrap()
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
         .join("content");
 
     // Parse bestiary files
