@@ -379,10 +379,10 @@ pub struct PoisonId(u16);
 impl PoisonId {
     pub const COUNT: usize = 5;
     pub const PSN_BRUCINE: Self = Self(0);
-    pub const PSN_STRYCHNINE: Self = Self(1);
-    pub const PSN_ARSENIC: Self = Self(2);
-    pub const PSN_OPIUM: Self = Self(3);
-    pub const PSN_HEMLOCK: Self = Self(4);
+    pub const PSN_ACONITE: Self = Self(1);
+    pub const PSN_BELLADONNA: Self = Self(2);
+    pub const PSN_ARSENIC: Self = Self(3);
+    pub const PSN_HYDROCYANIC: Self = Self(4);
 
     pub const fn from_raw(v: u16) -> Self {
         Self(v)
@@ -394,10 +394,10 @@ impl PoisonId {
     pub fn name(self) -> &'static str {
         match self.0 {
             0 => "Brucine",
-            1 => "Strychnine",
-            2 => "Arsenic",
-            3 => "Opium",
-            4 => "Hemlock",
+            1 => "Aconite",
+            2 => "Belladonna",
+            3 => "Arsenic",
+            4 => "Hydrocyanic Acid",
             _ => "UNKNOWN",
         }
     }

@@ -28,3 +28,5 @@
 2026-07-28T18:53:48Z | hermes-ipman | EP-002 | MILESTONE_PASS | M4 determinism property holds
 2026-07-28T18:59:05Z | hermes-ipman | EP-002 | MILESTONE_PASS | M5 spawn eligibility pure, budget decays
 2026-07-28T18:59:05Z | hermes-ipman | EP-002 | MILESTONE_PASS | M7 curriculum and calendars
+2026-07-28T19:07:05Z | hermes-ipman | EP-002 | MILESTONE_PASS | M6 battle, statuses, wait mode
+2026-07-28T19:07:05Z | hermes-ipman | EP-002 | MILESTONE_PASS | M8 poison tolerance simulated
