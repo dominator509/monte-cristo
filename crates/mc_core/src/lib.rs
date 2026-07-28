@@ -3,6 +3,7 @@
 
 pub mod flags;
 pub mod fx;
+pub mod hash;
 pub mod ids;
 pub mod rng;
 pub mod step;

@@ -6,7 +6,7 @@
 use crate::ids::FlagId;
 use serde::{Deserialize, Serialize};
 
-const FLAG_COUNT: usize = FlagId::COUNT; // 22
+const _FLAG_COUNT: usize = FlagId::COUNT; // 22
 
 /// A bitset over the locked flag vocabulary.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
