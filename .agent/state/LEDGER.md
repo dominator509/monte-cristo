@@ -18,3 +18,4 @@
 2026-07-28T18:37:20Z | hermes-ipman | EP-001 | MILESTONE_PASS | M6 unit tests: ok
 2026-07-28T18:47:02Z | hermes-ipman | EP-001 | MILESTONE_PASS | M7 four gates ok
 2026-07-28T18:47:15Z | hermes-ipman | EP-001 | MILESTONE_PASS | M8 ci contains no gate logic
+2026-07-28T18:48:47Z | hermes-ipman | EP-001 | MILESTONE_PASS | M9 verify: ok
