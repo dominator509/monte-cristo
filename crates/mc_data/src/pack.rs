@@ -112,6 +112,11 @@ impl Pack {
         Pack::load(&pack_path, &digest_path)
     }
 
+    /// Load from raw bytes (fuzz target). No digest verification.
+    pub fn load_from_bytes(data: &[u8]) -> Result<Pack, SaveError> {
+        postcard::from_bytes(data).map_err(|e| SaveError::Deserialize(e.to_string()))
+    }
+
     /// Get the number of entries in each collection.
     pub fn counts(&self) -> PackCounts {
         PackCounts {

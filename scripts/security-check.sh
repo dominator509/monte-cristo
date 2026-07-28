@@ -21,8 +21,11 @@ done
 
 # 2. mc_core purity (INV-01, INV-02, INV-03). Absence beats prohibition.
 if [ -d crates/mc_core/src ]; then
-  if grep -rnE '\bf32\b|\bf64\b|HashMap|HashSet|SystemTime|std::thread|thread_rng' crates/mc_core/src >/dev/null 2>&1; then
-    grep -rnE '\bf32\b|\bf64\b|HashMap|HashSet|SystemTime|std::thread|thread_rng' crates/mc_core/src >&2
+  # Search only non-comment lines — doc comments legitimately name these types
+  matches=$(grep -rnE '\bf32\b|\bf64\b|HashMap|HashSet|SystemTime|std::thread|thread_rng' crates/mc_core/src --include='*.rs' 2>/dev/null \
+    | grep -v '^\s*//' | grep -v '^[^:]*:[0-9]*:\s*//' || true)
+  if [ -n "$matches" ]; then
+    printf '%s\n' "$matches" >&2
     fail "mc_core contains a determinism-breaking construct (listed above)"
   fi
 fi

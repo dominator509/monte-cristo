@@ -1,0 +1,26 @@
+[package]
+name = "monte-cristo-fuzz"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.83.0"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+mc_data = { path = "../crates/mc_data" }
+mc_tape = { path = "../crates/mc_tape" }
+mc_core = { path = "../crates/mc_core" }
+
+[[bin]]
+name = "fuzz_save"
+path = "fuzz_targets/fuzz_save.rs"
+
+[[bin]]
+name = "fuzz_content"
+path = "fuzz_targets/fuzz_content.rs"
+
+[[bin]]
+name = "fuzz_tape"
+path = "fuzz_targets/fuzz_tape.rs"
