@@ -3,18 +3,11 @@
 //! SPEC-004 sections 1, 10, 11. MC_HEADLESS=1 suppresses window + audio.
 //! The binary is named "monte-cristo".
 
-mod a11y;
-mod app;
-mod audio;
-mod config;
-mod input;
-mod render;
-mod ui;
-
 use std::path::PathBuf;
 
-use app::App;
-use config::ValidatedConfig;
+use mc_shell::app::App;
+use mc_shell::config::ValidatedConfig;
+use mc_shell::render::target::ShellRenderTarget;
 
 /// Get the data directory for settings and saves.
 fn data_dir() -> PathBuf {
@@ -78,7 +71,7 @@ fn run_windowed(seed: u128, config: ValidatedConfig) {
         async move {
             tracing::info!("starting windowed mode: 256x224 internal resolution");
             let mut app = App::new(seed, config, false);
-            let render_target = render::target::ShellRenderTarget::new();
+            let render_target = mc_shell::render::target::ShellRenderTarget::new();
             app.render_target = Some(render_target);
 
             loop {

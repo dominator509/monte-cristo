@@ -133,7 +133,7 @@ fn irregular_frame_deltas_carry_remainder() {
     // ticks (1 tick = Fx::ONE), and steps the world floor(delta) times.
     let mut world = World::new(42);
     let mut accumulator = Fx::ZERO;
-    let tick_duration = Fx::ONE; // 1 tick = 1.0 in Q16.16
+    let _tick_duration = Fx::ONE; // 1 tick = 1.0 in Q16.16
 
     // Pre-computed irregular frame deltas (in ticks): 10,000 values between
     // 0.5 and 3.0 ticks. Generated on the fly.

@@ -78,6 +78,7 @@ impl Fx {
 
     /// Negation.
     #[inline]
+    #[allow(clippy::should_implement_trait)]
     pub fn neg(self) -> Self {
         Fx(self.0.saturating_neg())
     }

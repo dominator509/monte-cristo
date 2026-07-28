@@ -108,7 +108,7 @@ mod tests {
     fn migrate_rejects_bad_version() {
         let v1_bytes = build_v1_bytes();
         // Patch schema version to 3
-        let current_version = v1_bytes[0] as u16 | (v1_bytes[1] as u16) << 8;
+        let _current_version = v1_bytes[0] as u16 | (v1_bytes[1] as u16) << 8;
         let mut bad = v1_bytes.clone();
         let patched: u16 = 99; // wrong version
         bad[0] = patched as u8;

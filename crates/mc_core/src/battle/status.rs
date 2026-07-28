@@ -124,6 +124,12 @@ pub struct StatusList {
     statuses: Vec<StatusEffect>,
 }
 
+impl Default for StatusList {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StatusList {
     /// Create an empty status list.
     pub fn new() -> Self {

@@ -118,7 +118,7 @@ impl Tape {
     /// 4. Content digest matches a hash of the serialised entries/checkpoints.
     pub fn from_bytes(data: &[u8]) -> Result<Self, TapeError> {
         let tape: Tape =
-            postcard::from_bytes(data).map_err(|e| map_postcard_err(e))?;
+            postcard::from_bytes(data).map_err(map_postcard_err)?;
 
         // Validate magic.
         if &tape.magic != b"MCTAPE01" {

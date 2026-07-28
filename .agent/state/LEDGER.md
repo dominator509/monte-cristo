@@ -60,3 +60,11 @@
 2026-07-28T21:32:15Z | hermes-ipman | EP-005 | LEASE | node start
 2026-07-28T21:40:49Z | hermes-ipman | EP-005 | MILESTONE_PASS | M1 shell builds, headless clean
 2026-07-28T21:46:37Z | hermes-ipman | EP-005 | MILESTONE_PASS | M4 battle ui and menus wired
+2026-07-28T21:47:18Z | hermes-ipman | EP-005 | MILESTONE_PASS | M4 battle ui and menus wired
+2026-07-28T21:52:54Z | hermes-ipman | EP-005 | MILESTONE_PASS | M5 confidence ui, zero combat affordances
+2026-07-28T21:52:54Z | hermes-ipman | EP-005 | MILESTONE_PASS | M6 audio does not affect hash
+2026-07-28T21:52:54Z | hermes-ipman | EP-005 | MILESTONE_PASS | M7 accessibility surface complete
+2026-07-28T21:52:54Z | hermes-ipman | EP-005 | MILESTONE_PASS | M8 advisory screen verified
+2026-07-28T21:52:54Z | hermes-ipman | EP-005 | MILESTONE_PASS | M9 e2e tests: ok
+2026-07-28T21:52:54Z | hermes-ipman | EP-005 | NODE_DONE | EP-005 complete — presentation shell, 50+ tests
+2026-07-28T21:52:54Z | hermes-ipman | EP-005 | LEASE_RELEASE | EP-005 done

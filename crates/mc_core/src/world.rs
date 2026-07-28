@@ -56,6 +56,7 @@ pub struct Inventory {
 }
 
 impl Inventory {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Inventory { items: Vec::new() }
     }

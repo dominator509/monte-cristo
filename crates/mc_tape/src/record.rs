@@ -214,7 +214,7 @@ mod tests {
         let tape = recorder.finalize().unwrap();
         // Should have at least the checkpoint at tick 1024 (or near it)
         assert!(
-            tape.checkpoints.len() >= 1,
+            !tape.checkpoints.is_empty(),
             "expected at least 1 checkpoint, got {}",
             tape.checkpoints.len()
         );

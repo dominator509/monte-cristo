@@ -72,14 +72,12 @@ pub fn replay(tape: &Tape) -> Result<ReplayResult, TapeError> {
                 if !verified_ticks.contains(&world.tick) {
                     verified_ticks.insert(world.tick);
                     let actual_hash = world.state_hash();
-                    if actual_hash.as_bytes() != &expected_hash {
-                        if first_divergence.is_none() {
-                            first_divergence = Some((
-                                world.tick,
-                                expected_hash,
-                                *actual_hash.as_bytes(),
-                            ));
-                        }
+                    if actual_hash.as_bytes() != &expected_hash && first_divergence.is_none() {
+                        first_divergence = Some((
+                            world.tick,
+                            expected_hash,
+                            *actual_hash.as_bytes(),
+                        ));
                     }
                 }
             }
@@ -96,14 +94,12 @@ pub fn replay(tape: &Tape) -> Result<ReplayResult, TapeError> {
             if !verified_ticks.contains(&world.tick) {
                 verified_ticks.insert(world.tick);
                 let actual_hash = world.state_hash();
-                if actual_hash.as_bytes() != &expected_hash {
-                    if first_divergence.is_none() {
-                        first_divergence = Some((
-                            world.tick,
-                            expected_hash,
-                            *actual_hash.as_bytes(),
-                        ));
-                    }
+                if actual_hash.as_bytes() != &expected_hash && first_divergence.is_none() {
+                    first_divergence = Some((
+                        world.tick,
+                        expected_hash,
+                        *actual_hash.as_bytes(),
+                    ));
                 }
             }
         }
@@ -120,14 +116,12 @@ pub fn replay(tape: &Tape) -> Result<ReplayResult, TapeError> {
             }
             verified_ticks.insert(cp_tick);
             let actual_hash = world.state_hash();
-            if actual_hash.as_bytes() != &expected_hash {
-                if first_divergence.is_none() {
-                    first_divergence = Some((
-                        cp_tick,
-                        expected_hash,
-                        *actual_hash.as_bytes(),
-                    ));
-                }
+            if actual_hash.as_bytes() != &expected_hash && first_divergence.is_none() {
+                first_divergence = Some((
+                    cp_tick,
+                    expected_hash,
+                    *actual_hash.as_bytes(),
+                ));
             }
         }
     }
@@ -145,7 +139,7 @@ pub fn replay(tape: &Tape) -> Result<ReplayResult, TapeError> {
 mod tests {
     use super::*;
     use crate::format::Tape;
-    use mc_core::command::{Command, Dir};
+    use mc_core::command::Command;
 
     #[test]
     fn replay_empty_tape() {

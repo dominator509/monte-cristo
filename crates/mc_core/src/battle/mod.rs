@@ -173,9 +173,7 @@ impl Battle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::battle::status::StatusEffect;
-    use crate::ids::CharId;
-
+    use crate::battle::atb::AtbGauge;
     fn make_test_party() -> Vec<Combatant> {
         vec![Combatant {
             kind: CombatantKind::PartyMember(CharId::CHR_EDMOND),

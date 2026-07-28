@@ -89,10 +89,10 @@ impl Pack {
     /// Load pack from disk, verifying digest.
     pub fn load(pack_path: &Path, digest_path: &Path) -> Result<Pack, SaveError> {
         let expected_hex = fs::read_to_string(digest_path)
-            .map_err(|e| SaveError::Io(e))?;
+            .map_err(SaveError::Io)?;
         let expected_hex = expected_hex.trim().to_string();
 
-        let bytes = fs::read(pack_path).map_err(|e| SaveError::Io(e))?;
+        let bytes = fs::read(pack_path).map_err(SaveError::Io)?;
 
         let actual_hash = blake3::hash(&bytes);
         let actual_hex = actual_hash.to_hex().to_string();

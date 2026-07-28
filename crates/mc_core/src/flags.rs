@@ -58,9 +58,10 @@ impl FlagSet {
 }
 
 /// A boolean expression over flags.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum FlagExpr {
     /// Always true.
+    #[default]
     Always,
     /// Always false.
     Never,
@@ -74,12 +75,6 @@ pub enum FlagExpr {
     Any(Vec<FlagExpr>),
     /// The sub-expression must be false.
     Not(Box<FlagExpr>),
-}
-
-impl Default for FlagExpr {
-    fn default() -> Self {
-        FlagExpr::Always
-    }
 }
 
 #[cfg(test)]
