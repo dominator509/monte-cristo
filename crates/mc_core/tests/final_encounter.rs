@@ -49,8 +49,7 @@ fn encounter_missing_flag(absent: FlagId) -> (World, FinalEncounter) {
 
 #[test]
 fn name_yourself_rejected_without_yanina_dossier() {
-    let (world, mut encounter) =
-        encounter_missing_flag(FlagId::FLG_MORCERF_YANINA_DOSSIER);
+    let (world, mut encounter) = encounter_missing_flag(FlagId::FLG_MORCERF_YANINA_DOSSIER);
 
     let result = encounter.command_name_yourself(&world);
     assert!(
@@ -60,7 +59,8 @@ fn name_yourself_rejected_without_yanina_dossier() {
 
     let err = result.unwrap_err();
     assert!(
-        err.missing_flags.contains(&FlagId::FLG_MORCERF_YANINA_DOSSIER),
+        err.missing_flags
+            .contains(&FlagId::FLG_MORCERF_YANINA_DOSSIER),
         "Error must list FLG_MORCERF_YANINA_DOSSIER as missing, got: {:?}",
         err.missing_flags
     );
@@ -70,8 +70,7 @@ fn name_yourself_rejected_without_yanina_dossier() {
 
 #[test]
 fn name_yourself_rejected_without_albert_withdrawn() {
-    let (world, mut encounter) =
-        encounter_missing_flag(FlagId::FLG_MORCERF_ALBERT_WITHDRAWN);
+    let (world, mut encounter) = encounter_missing_flag(FlagId::FLG_MORCERF_ALBERT_WITHDRAWN);
 
     let result = encounter.command_name_yourself(&world);
     assert!(
@@ -81,7 +80,8 @@ fn name_yourself_rejected_without_albert_withdrawn() {
 
     let err = result.unwrap_err();
     assert!(
-        err.missing_flags.contains(&FlagId::FLG_MORCERF_ALBERT_WITHDRAWN),
+        err.missing_flags
+            .contains(&FlagId::FLG_MORCERF_ALBERT_WITHDRAWN),
         "Error must list FLG_MORCERF_ALBERT_WITHDRAWN as missing, got: {:?}",
         err.missing_flags
     );
@@ -91,8 +91,7 @@ fn name_yourself_rejected_without_albert_withdrawn() {
 
 #[test]
 fn name_yourself_rejected_without_mercedes_recognition() {
-    let (world, mut encounter) =
-        encounter_missing_flag(FlagId::FLG_MERCEDES_RECOGNITION);
+    let (world, mut encounter) = encounter_missing_flag(FlagId::FLG_MERCEDES_RECOGNITION);
 
     let result = encounter.command_name_yourself(&world);
     assert!(
@@ -102,7 +101,8 @@ fn name_yourself_rejected_without_mercedes_recognition() {
 
     let err = result.unwrap_err();
     assert!(
-        err.missing_flags.contains(&FlagId::FLG_MERCEDES_RECOGNITION),
+        err.missing_flags
+            .contains(&FlagId::FLG_MERCEDES_RECOGNITION),
         "Error must list FLG_MERCEDES_RECOGNITION as missing, got: {:?}",
         err.missing_flags
     );

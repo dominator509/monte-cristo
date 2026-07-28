@@ -27,10 +27,7 @@ pub enum StatusEffect {
     /// 0.8x accuracy/damage.
     Blinded { duration: u16 },
     /// Per-tick poison damage (type-dependent).
-    Poisoned {
-        poison_id: PoisonId,
-        duration: u16,
-    },
+    Poisoned { poison_id: PoisonId, duration: u16 },
     /// 1.5x damage received.
     BrokenGuard { duration: u16 },
     /// 0.5x attack power. Does not apply to BEAST or VERMIN families.
@@ -262,12 +259,12 @@ impl StatusList {
 /// Per-tick damage for each poison type (fraction of max HP).
 pub fn poison_tick_damage(poison_id: PoisonId, max_hp: Fx) -> Fx {
     match poison_id {
-        PoisonId::PSN_BRUCINE => max_hp.saturating_div(Fx::from_int(12)),    // strong
-        PoisonId::PSN_ACONITE => max_hp.saturating_div(Fx::from_int(16)),      // moderate
-        PoisonId::PSN_BELLADONNA => max_hp.saturating_div(Fx::from_int(20)),  // slow
-        PoisonId::PSN_ARSENIC => max_hp.saturating_div(Fx::from_int(32)),      // mild
-        PoisonId::PSN_HYDROCYANIC => max_hp.saturating_div(Fx::from_int(8)),   // deadly
-        _ => max_hp.saturating_div(Fx::from_int(16)),                        // default
+        PoisonId::PSN_BRUCINE => max_hp.saturating_div(Fx::from_int(12)), // strong
+        PoisonId::PSN_ACONITE => max_hp.saturating_div(Fx::from_int(16)), // moderate
+        PoisonId::PSN_BELLADONNA => max_hp.saturating_div(Fx::from_int(20)), // slow
+        PoisonId::PSN_ARSENIC => max_hp.saturating_div(Fx::from_int(32)), // mild
+        PoisonId::PSN_HYDROCYANIC => max_hp.saturating_div(Fx::from_int(8)), // deadly
+        _ => max_hp.saturating_div(Fx::from_int(16)),                     // default
     }
 }
 
@@ -304,10 +301,7 @@ mod tests {
         let added = list.add(StatusEffect::Bleeding { duration: 3 });
         assert!(!added); // Not replaced (shorter duration)
         assert_eq!(list.len(), 1);
-        assert_eq!(
-            list.get(StatusKind::Bleeding).unwrap().duration(),
-            5
-        );
+        assert_eq!(list.get(StatusKind::Bleeding).unwrap().duration(), 5);
     }
 
     #[test]
@@ -317,10 +311,7 @@ mod tests {
         let added = list.add(StatusEffect::Bleeding { duration: 5 });
         assert!(added); // Replaced (longer duration)
         assert_eq!(list.len(), 1);
-        assert_eq!(
-            list.get(StatusKind::Bleeding).unwrap().duration(),
-            5
-        );
+        assert_eq!(list.get(StatusKind::Bleeding).unwrap().duration(), 5);
     }
 
     #[test]
@@ -346,10 +337,7 @@ mod tests {
         list.add(StatusEffect::Bleeding { duration: 3 });
         let expired = list.tick();
         assert!(expired.is_empty());
-        assert_eq!(
-            list.get(StatusKind::Bleeding).unwrap().duration(),
-            2
-        );
+        assert_eq!(list.get(StatusKind::Bleeding).unwrap().duration(), 2);
     }
 
     #[test]

@@ -148,8 +148,8 @@ mod tests {
             }
         }
         // Should be roughly even; within 30% tolerance
-        let ratio = (x_count as f64) / (y_count as f64);
-        assert!(ratio > 0.7 && ratio < 1.3, "ratio too skewed: {ratio}");
+        let ratio = (x_count as i64 * 100) / (y_count as i64);
+        assert!(ratio > 70 && ratio < 130, "ratio too skewed: {ratio}");
     }
 
     #[test]

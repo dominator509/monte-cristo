@@ -56,17 +56,9 @@ impl Combatant {
 /// An action a combatant can take.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum BattleAction {
-    Attack {
-        target: usize,
-    },
-    Tech {
-        tech_id: TechId,
-        target: usize,
-    },
-    Item {
-        item_id: ItemId,
-        target: usize,
-    },
+    Attack { target: usize },
+    Tech { tech_id: TechId, target: usize },
+    Item { item_id: ItemId, target: usize },
     Guard,
     Flee,
 }
@@ -275,9 +267,6 @@ mod tests {
         let enemies = make_test_enemy();
         let battle = Battle::new(party, enemies);
         let target = battle.find_auto_target(0).unwrap();
-        assert_eq!(
-            battle.combatants[target].affiliation,
-            Affiliation::Enemy
-        );
+        assert_eq!(battle.combatants[target].affiliation, Affiliation::Enemy);
     }
 }

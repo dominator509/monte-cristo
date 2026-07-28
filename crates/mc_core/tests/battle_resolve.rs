@@ -5,9 +5,7 @@
 use mc_core::battle::atb::AtbGauge;
 use mc_core::battle::damage::{apply_damage, compute_damage};
 use mc_core::battle::status::{StatusEffect, StatusList};
-use mc_core::battle::{
-    Affiliation, Battle, BattleState, Combatant, CombatantKind,
-};
+use mc_core::battle::{Affiliation, Battle, BattleState, Combatant, CombatantKind};
 use mc_core::fx::Fx;
 use mc_core::ids::CharId;
 use mc_core::ids::EnemyId;

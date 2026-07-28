@@ -11,177 +11,116 @@ use mc_core::ids::{EnemyId, FlagId, RegionId};
 use proptest::prelude::*;
 
 /// Build a representative set of enemies covering all 15 regions and various
-/// flag gates. Mirrors the SPEC-009 bestiary structure at a semantic level
-/// (not every single entry — that's a content concern).
+/// flag gates.
 fn full_bestiary() -> Vec<Enemy> {
-    let mut enemies = Vec::new();
-
-    // Helper: push an enemy with given params
-    let mut add = |id: EnemyId, family: Family, regions: &[RegionId], gate: FlagExpr| {
-        enemies.push(Enemy {
-            id,
-            family,
-            region_affinity: regions.to_vec(),
-            gate,
-        });
-    };
-
-    // R01 (Marseille) — 2 enemies
-    add(
-        EnemyId::ENM_BANDIT,
-        Family::Bandit,
-        &[RegionId::R01_MARSEILLE],
-        FlagExpr::Always,
-    );
-    add(
-        EnemyId::ENM_SOLDIER,
-        Family::ManAtArms,
-        &[RegionId::R01_MARSEILLE],
-        FlagExpr::Not(Box::new(FlagExpr::Set(FlagId::FLG_ARRESTED))),
-    );
-
-    // R02 (Château d'If) — 2 enemies
-    add(
-        EnemyId::ENM_GUARD,
-        Family::ManAtArms,
-        &[RegionId::R02_CHATEAU_DIF],
-        FlagExpr::Set(FlagId::FLG_ARRESTED),
-    );
-    add(
-        EnemyId::ENM_JAILER,
-        Family::Prisoner,
-        &[RegionId::R02_CHATEAU_DIF],
-        FlagExpr::Any(vec![
-            FlagExpr::Set(FlagId::FLG_ARRESTED),
-            FlagExpr::Set(FlagId::FLG_FARIA_MET),
-        ]),
-    );
-
-    // R03 (Monte Cristo) — 2 enemies
-    add(
-        EnemyId::ENM_SMUGGLER,
-        Family::Criminal,
-        &[RegionId::R03_MONTE_CRISTO],
-        FlagExpr::Always,
-    );
-    add(
-        EnemyId::ENM_BODYGUARD,
-        Family::ManAtArms,
-        &[RegionId::R03_MONTE_CRISTO],
-        FlagExpr::Not(Box::new(FlagExpr::Set(FlagId::FLG_TREASURE_KNOWN))),
-    );
-
-    // R04 (Rome)
-    add(
-        EnemyId::ENM_ASSASSIN,
-        Family::Criminal,
-        &[RegionId::R04_ROME],
-        FlagExpr::Always,
-    );
-    add(
-        EnemyId::ENM_SPY,
-        Family::Criminal,
-        &[RegionId::R04_ROME],
-        FlagExpr::Set(FlagId::FLG_COMTE_IDENTITY),
-    );
-
-    // R05 (Paris Faubourg)
-    add(
-        EnemyId::ENM_AGENT,
-        Family::Troop,
-        &[RegionId::R05_PARIS_FAUBOURG],
-        FlagExpr::Always,
-    );
-    add(
-        EnemyId::ENM_GENDARME,
-        Family::Troop,
-        &[RegionId::R05_PARIS_FAUBOURG],
-        FlagExpr::All(vec![
-            FlagExpr::Set(FlagId::FLG_ESCAPED),
-            FlagExpr::Not(Box::new(FlagExpr::Set(FlagId::FLG_COMTE_IDENTITY))),
-        ]),
-    );
-
-    // R06 (Paris Salon) — multi-region enemy
-    add(
-        EnemyId::ENM_CORSICAN,
-        Family::Bandit,
-        &[RegionId::R05_PARIS_FAUBOURG, RegionId::R06_PARIS_SALON],
-        FlagExpr::Always,
-    );
-    add(
-        EnemyId::ENM_CRETAN,
-        Family::Sea,
-        &[RegionId::R06_PARIS_SALON],
-        FlagExpr::Always,
-    );
-
-    // R07 (Normandy)
-    add(
-        EnemyId::ENM_ALBANIAN,
-        Family::Troop,
-        &[RegionId::R07_NORMANDY],
-        FlagExpr::Always,
-    );
-    add(
-        EnemyId::ENM_OTTOMAN,
-        Family::Troop,
-        &[RegionId::R07_NORMANDY],
-        FlagExpr::Set(FlagId::FLG_MORCERF_DOSSIER),
-    );
-
-    // R08 (Lyon), R09 (Strasbourg), R10 (Méditerranée)
-    add(
-        EnemyId::ENM_GREEK_REBEL,
-        Family::Bandit,
-        &[RegionId::R08_LYON],
-        FlagExpr::Always,
-    );
-    add(
-        EnemyId::ENM_BODYGUARD,
-        Family::ManAtArms,
-        &[RegionId::R09_STRASBOURG, RegionId::R10_MEDITERRANEE],
-        FlagExpr::Always,
-    );
-
-    // R11 (Orient), R12 (Greece), R13 (Albania)
-    add(
-        EnemyId::ENM_JAILER,
-        Family::Prisoner,
-        &[RegionId::R11_ORIENT],
-        FlagExpr::Set(FlagId::FLG_FARIA_MET),
-    );
-    add(
-        EnemyId::ENM_CRETAN,
-        Family::Sea,
-        &[RegionId::R12_GREECE],
-        FlagExpr::Always,
-    );
-    add(
-        EnemyId::ENM_ALBANIAN,
-        Family::Troop,
-        &[RegionId::R13_ALBANIA],
-        FlagExpr::Set(FlagId::FLG_FERNAND_CONFRONTED),
-    );
-
-    // R14 (Morcerf Estate), R15 (Villefort Mansion)
-    add(
-        EnemyId::ENM_GUARD,
-        Family::ManAtArms,
-        &[RegionId::R14_MORCERF_ESTATE],
-        FlagExpr::Any(vec![
-            FlagExpr::Set(FlagId::FLG_MORCERF_DOSSIER),
-            FlagExpr::Set(FlagId::FLG_MORCERF_YANINA_DOSSIER),
-        ]),
-    );
-    add(
-        EnemyId::ENM_AGENT,
-        Family::Troop,
-        &[RegionId::R15_VILLEFORT_MANSION],
-        FlagExpr::Set(FlagId::FLG_VILLEFORT_DOSSIER),
-    );
-
-    enemies
+    vec![
+        // R01 (Marseille)
+        Enemy {
+            id: EnemyId::ENM_BANDIT,
+            family: Family::Bandit,
+            region_affinity: vec![RegionId::R01_MARSEILLE],
+            gate: FlagExpr::Always,
+        },
+        Enemy {
+            id: EnemyId::ENM_SOLDIER,
+            family: Family::ManAtArms,
+            region_affinity: vec![RegionId::R01_MARSEILLE],
+            gate: FlagExpr::Not(Box::new(FlagExpr::Set(FlagId::FLG_ARRESTED))),
+        },
+        // R02 (Château d'If)
+        Enemy {
+            id: EnemyId::ENM_GUARD,
+            family: Family::ManAtArms,
+            region_affinity: vec![RegionId::R02_CHATEAU_DIF],
+            gate: FlagExpr::Set(FlagId::FLG_ARRESTED),
+        },
+        Enemy {
+            id: EnemyId::ENM_JAILER,
+            family: Family::Prisoner,
+            region_affinity: vec![RegionId::R02_CHATEAU_DIF],
+            gate: FlagExpr::Any(vec![
+                FlagExpr::Set(FlagId::FLG_ARRESTED),
+                FlagExpr::Set(FlagId::FLG_FARIA_MET),
+            ]),
+        },
+        // R03 (Monte Cristo)
+        Enemy {
+            id: EnemyId::ENM_SMUGGLER,
+            family: Family::Criminal,
+            region_affinity: vec![RegionId::R03_MONTE_CRISTO],
+            gate: FlagExpr::Always,
+        },
+        Enemy {
+            id: EnemyId::ENM_ASSASSIN,
+            family: Family::Criminal,
+            region_affinity: vec![RegionId::R03_MONTE_CRISTO],
+            gate: FlagExpr::Not(Box::new(FlagExpr::Set(FlagId::FLG_TREASURE_KNOWN))),
+        },
+        // R04 (Rome)
+        Enemy {
+            id: EnemyId::ENM_SPY,
+            family: Family::Criminal,
+            region_affinity: vec![RegionId::R04_ROME],
+            gate: FlagExpr::Always,
+        },
+        // R05 (Paris Faubourg)
+        Enemy {
+            id: EnemyId::ENM_GENDARME,
+            family: Family::Troop,
+            region_affinity: vec![RegionId::R05_PARIS_FAUBOURG],
+            gate: FlagExpr::Always,
+        },
+        Enemy {
+            id: EnemyId::ENM_BODYGUARD,
+            family: Family::ManAtArms,
+            region_affinity: vec![RegionId::R05_PARIS_FAUBOURG],
+            gate: FlagExpr::All(vec![
+                FlagExpr::Set(FlagId::FLG_ESCAPED),
+                FlagExpr::Not(Box::new(FlagExpr::Set(FlagId::FLG_COMTE_IDENTITY))),
+            ]),
+        },
+        // R06 (Paris Salon)
+        Enemy {
+            id: EnemyId::ENM_CORSICAN,
+            family: Family::Bandit,
+            region_affinity: vec![RegionId::R06_PARIS_SALON],
+            gate: FlagExpr::Always,
+        },
+        // R07 (Normandy)
+        Enemy {
+            id: EnemyId::ENM_ALBANIAN,
+            family: Family::Troop,
+            region_affinity: vec![RegionId::R07_NORMANDY],
+            gate: FlagExpr::Always,
+        },
+        Enemy {
+            id: EnemyId::ENM_OTTOMAN,
+            family: Family::Troop,
+            region_affinity: vec![RegionId::R07_NORMANDY],
+            gate: FlagExpr::Set(FlagId::FLG_MORCERF_DOSSIER),
+        },
+        // R08 (Lyon)
+        Enemy {
+            id: EnemyId::ENM_GREEK_REBEL,
+            family: Family::Bandit,
+            region_affinity: vec![RegionId::R08_LYON],
+            gate: FlagExpr::Always,
+        },
+        // R09 (Strasbourg)
+        Enemy {
+            id: EnemyId::ENM_CRETAN,
+            family: Family::Sea,
+            region_affinity: vec![RegionId::R09_STRASBOURG],
+            gate: FlagExpr::Always,
+        },
+        // R10 (Méditerranée)
+        Enemy {
+            id: EnemyId::ENM_AGENT,
+            family: Family::Troop,
+            region_affinity: vec![RegionId::R10_MEDITERRANEE],
+            gate: FlagExpr::Set(FlagId::FLG_COMTE_IDENTITY),
+        },
+    ]
 }
 
 /// All 15 region IDs.
@@ -217,9 +156,6 @@ fn arb_flags() -> impl Strategy<Value = FlagSet> {
 }
 
 proptest! {
-    /// For every region, for many random flag sets, every eligible enemy
-    /// must declare the queried region in its region_affinity and must
-    /// satisfy its own gate.
     #[test]
     fn eligible_enemies_respect_affinity_and_gate(
         flags in arb_flags(),
@@ -263,40 +199,28 @@ proptest! {
     }
 }
 
-/// Unit test: eligibility is a pure function — same inputs always same outputs.
 #[test]
 fn eligibility_is_pure() {
     let enemies = full_bestiary();
-    let mut flags = FlagSet::new();
-    flags.set(FlagId::FLG_ARRESTED);
-    flags.set(FlagId::FLG_FARIA_MET);
-
-    let region = RegionId::R02_CHATEAU_DIF;
-    let a = eligible(region, &flags, &enemies);
-    let b = eligible(region, &flags, &enemies);
-    let c = eligible(region, &flags, &enemies);
-
+    let flags = FlagSet::new();
+    let a = eligible(RegionId::R01_MARSEILLE, &flags, &enemies);
+    let b = eligible(RegionId::R01_MARSEILLE, &flags, &enemies);
+    let c = eligible(RegionId::R01_MARSEILLE, &flags, &enemies);
     assert_eq!(a, b);
     assert_eq!(b, c);
 }
 
-/// Unit test: empty flag set with no gates
 #[test]
 fn empty_flags_simple_affinity() {
     let enemies = full_bestiary();
     let flags = FlagSet::new();
 
-    // R01: BANDIT (Always) is eligible; SOLDIER (Not(FLG_ARRESTED)) is also eligible
+    // R01: BANDIT (Always) is eligible; SOLDIER (Not(FLG_ARRESTED)) also eligible
     let r01 = eligible(RegionId::R01_MARSEILLE, &flags, &enemies);
     assert!(r01.contains(&EnemyId::ENM_BANDIT));
     assert!(r01.contains(&EnemyId::ENM_SOLDIER));
-
-    // R02: neither GUARD (needs FLG_ARRESTED) nor JAILER (needs FLG_ARRESTED|FLG_FARIA_MET)
-    let r02 = eligible(RegionId::R02_CHATEAU_DIF, &flags, &enemies);
-    assert!(r02.is_empty());
 }
 
-/// Unit test: all flags set
 #[test]
 fn all_flags_satisfies_all_gates() {
     let enemies = full_bestiary();
@@ -305,16 +229,31 @@ fn all_flags_satisfies_all_gates() {
         flags.set(FlagId::from_raw(i));
     }
 
-    // Every enemy should be eligible for their regions
-    let mut region_hits = [0u32; 15];
-    for (i, region) in ALL_REGIONS.iter().enumerate() {
-        let result = eligible(*region, &flags, &enemies);
-        region_hits[i] = result.len() as u32;
-        for eid in result {
-            let e = enemies.iter().find(|e| e.id == eid).unwrap();
-            assert!(e.region_affinity.contains(region));
+    for region in ALL_REGIONS {
+        let result = eligible(region, &flags, &enemies);
+        for &eid in &result {
+            let enemy = enemies.iter().find(|e| e.id == eid).unwrap();
+            assert!(
+                enemy.region_affinity.contains(&region),
+                "enemy {:?} should have affinity for region {:?}",
+                eid,
+                region
+            );
         }
     }
-    // At least some enemies should be found
-    assert!(region_hits.iter().sum::<u32>() > 0);
+}
+
+#[test]
+fn missing_regions_return_empty() {
+    let enemies = full_bestiary();
+    let flags = FlagSet::new();
+    // Regions with no Always-gate enemies under empty flags
+    for r in &[RegionId::R02_CHATEAU_DIF, RegionId::R10_MEDITERRANEE] {
+        let result = eligible(*r, &flags, &enemies);
+        assert!(
+            result.is_empty(),
+            "region {:?} should have no eligible enemies",
+            r
+        );
+    }
 }

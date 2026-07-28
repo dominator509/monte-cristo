@@ -26,10 +26,9 @@ fn phase2_damage_immune_after_ten_thousand_ticks() {
         // with maximum possible narrative pressure, Phase2 is immune.
         world.mask = i16::MAX;
         // Set trust to max for all characters
-        world.trust.insert(
-            mc_core::ids::CharId::CHR_EDMOND,
-            i16::MAX,
-        );
+        world
+            .trust
+            .insert(mc_core::ids::CharId::CHR_EDMOND, i16::MAX);
 
         let changed = encounter.apply_damage(&mut world);
         assert!(

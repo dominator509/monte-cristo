@@ -153,7 +153,7 @@ impl PoisonState {
         PoisonState {
             tolerance: BTreeMap::new(),
             active: Vec::new(),
-            decay_rate: Fx::from_raw(66),   // ≈ 0.001 in Q16.16
+            decay_rate: Fx::from_raw(66), // ≈ 0.001 in Q16.16
             decay_interval: 1,
         }
     }

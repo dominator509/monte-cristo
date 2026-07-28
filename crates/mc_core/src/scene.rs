@@ -250,9 +250,17 @@ mod tests {
         let mut world = World::new(0);
         let potion = ItemId::ITM_POTION;
         SceneEffect::GrantItem(potion, 3).apply(&mut world);
-        assert!(world.inventory.items().iter().any(|(id, c)| *id == potion && *c == 3));
+        assert!(world
+            .inventory
+            .items()
+            .iter()
+            .any(|(id, c)| *id == potion && *c == 3));
         SceneEffect::ConsumeItem(potion, 1).apply(&mut world);
-        assert!(world.inventory.items().iter().any(|(id, c)| *id == potion && *c == 2));
+        assert!(world
+            .inventory
+            .items()
+            .iter()
+            .any(|(id, c)| *id == potion && *c == 2));
     }
 
     #[test]

@@ -164,7 +164,7 @@ fn active_mode_vs_wait_mode_difference() {
 fn tick_party_menu_closed_advances_normally() {
     let mut gauge = AtbGauge::new(Fx::from_int(30));
     assert!(!gauge.tick_party(false)); // 0.5
-    assert!(gauge.tick_party(false));  // 1.0
+    assert!(gauge.tick_party(false)); // 1.0
     assert!(gauge.is_full());
 }
 
