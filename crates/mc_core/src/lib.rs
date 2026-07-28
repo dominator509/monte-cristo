@@ -5,6 +5,7 @@ pub mod battle;
 pub mod bestiary;
 pub mod budget;
 pub mod calendar;
+pub mod command;
 pub mod curriculum;
 pub mod final_encounter;
 pub mod flags;

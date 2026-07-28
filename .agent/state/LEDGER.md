@@ -38,3 +38,13 @@
 2026-07-28T20:07:20Z | hermes-ipman | EP-002 | NODE_DONE | EP-002 reconciled and verified - 305 tests, invariants clean
 2026-07-28T20:07:20Z | hermes-ipman | EP-002 | LEASE_RELEASE | reconciliation complete
 2026-07-28T20:07:24Z | hermes-ipman | EP-003 | LEASE | node start
+2026-07-28T20:56:01Z | hermes-ipman | EP-003 | MILESTONE_PASS | M4 content pack deterministic, integrity tests pass
+2026-07-28T20:56:01Z | hermes-ipman | EP-003 | MILESTONE_PASS | M5 content invariants enforced
+2026-07-28T20:56:01Z | hermes-ipman | EP-003 | MILESTONE_PASS | M6 save round-trip identical
+2026-07-28T20:56:01Z | hermes-ipman | EP-003 | MILESTONE_PASS | M7 migration and backup verified
+2026-07-28T20:56:01Z | hermes-ipman | EP-003 | MILESTONE_PASS | M8 forced failures handled
+2026-07-28T20:56:01Z | hermes-ipman | EP-003 | MILESTONE_PASS | M9 integration tests: ok
+2026-07-28T20:56:01Z | hermes-ipman | EP-003 | NODE_DONE | EP-003 complete - data/persistence, 54 tests
+2026-07-28T20:56:01Z | hermes-ipman | EP-003 | LEASE_RELEASE | EP-003 done
+2026-07-28T21:14:40Z | hermes-ipman | EP-004 | LEASE | node start
+2026-07-28T21:16:35Z | hermes-ipman | EP-004 | MILESTONE_PASS | M1 command bus rejects cleanly
