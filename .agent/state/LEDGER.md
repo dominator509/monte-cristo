@@ -51,3 +51,6 @@
 2026-07-28T21:17:46Z | hermes-ipman | EP-004 | MILESTONE_PASS | M2 tick contract holds
 2026-07-28T21:26:12Z | hermes-ipman | EP-004 | MILESTONE_PASS | M3 tape format round-trips and rejects
 2026-07-28T21:26:12Z | hermes-ipman | EP-004 | MILESTONE_PASS | M4 replay and divergence report
+2026-07-28T21:30:29Z | hermes-ipman | EP-004 | MILESTONE_PASS | M5 replay CLI available
+2026-07-28T21:30:29Z | hermes-ipman | EP-004 | MILESTONE_PASS | M6 hash: match for act1.tape
+2026-07-28T21:30:29Z | hermes-ipman | EP-004 | MILESTONE_PASS | M7 cross-run and cross-profile hashes match

@@ -3,6 +3,9 @@
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
+mod cmd_record;
+mod cmd_replay;
+
 #[derive(Parser)]
 #[command(name = "mc_tools", about = "Monte Cristo developer and CI tools")]
 struct Cli {
@@ -27,6 +30,10 @@ enum Command {
         #[arg(long, default_value = "content.pack")]
         output: PathBuf,
     },
+    /// Replay a tape and verify its hash
+    Replay(cmd_replay::ReplayArgs),
+    /// Record a tape from commands
+    Record(cmd_record::RecordArgs),
 }
 
 fn main() {
@@ -58,6 +65,18 @@ fn main() {
                 std::process::exit(1);
             }
             println!("bake: ok");
+        }
+        Command::Replay(args) => {
+            if let Err(e) = cmd_replay::execute(&args) {
+                eprintln!("error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Command::Record(args) => {
+            if let Err(e) = cmd_record::execute(&args) {
+                eprintln!("error: {}", e);
+                std::process::exit(1);
+            }
         }
     }
 }
