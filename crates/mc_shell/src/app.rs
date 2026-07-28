@@ -7,6 +7,7 @@
 
 use crate::config::ValidatedConfig;
 use crate::render::target::{ShellRenderTarget, INTERNAL_HEIGHT, INTERNAL_WIDTH};
+use crate::render::tilemap::{TileLayer, Tilemap, TILES_X, TILES_Y};
 use mc_core::command::{Command, StateView};
 use mc_core::world::World;
 use macroquad::prelude::*;
@@ -32,12 +33,27 @@ pub struct App {
     pub alpha: f32,
     /// The render target for the 256x224 internal buffer.
     pub render_target: Option<ShellRenderTarget>,
+    /// The tilemap for current location.
+    pub tilemap: Tilemap,
+    /// The audio state.
+    pub audio: crate::audio::AudioState,
 }
 
 impl App {
     /// Create a new application from a seed and configuration.
     pub fn new(seed: u128, config: ValidatedConfig, headless: bool) -> Self {
         let world = World::new(seed);
+        let audio_enabled = !headless;
+        // Build an initial tilemap with a simple test pattern
+        let mut tilemap = Tilemap::new();
+        // Fill layer0 with a checkerboard pattern
+        for y in 0..TILES_Y {
+            for x in 0..TILES_X {
+                let is_checker = ((x + y) % 2) as u16;
+                tilemap.layer0.set_tile(x, y, is_checker);
+                tilemap.layer1.set_tile(x, y, if is_checker == 0 { 2 } else { 3 });
+            }
+        }
         App {
             world,
             config,
@@ -45,6 +61,8 @@ impl App {
             accum: 0.0,
             alpha: 0.0,
             render_target: None,
+            tilemap,
+            audio: crate::audio::AudioState::new(audio_enabled),
         }
     }
 
@@ -52,7 +70,6 @@ impl App {
     /// Called from headless mode.
     pub fn headless_update(&mut self) {
         let mut commands = Vec::new();
-        // Headless mode reads no real input; just let the simulation tick
         self.accum += 1.0 / 60.0;
         if self.accum > MAX_ACCUM {
             self.accum = MAX_ACCUM;
@@ -87,6 +104,9 @@ impl App {
         // Process input and advance simulation
         self.process_input_and_step();
 
+        // Update audio with current state
+        self.audio.update(self.world.tick, self.world.act);
+
         // Take the render target out to avoid borrow conflicts
         let mut rt = self.render_target.take().expect("render target not initialised");
         rt.handle_resize();
@@ -97,7 +117,7 @@ impl App {
         rt.set_camera();
         clear_background(BLACK);
 
-        // Draw tilemap pattern
+        // Draw tilemap layers
         self.draw_tilemap(&view);
         self.draw_sprites(&view);
         self.draw_ui(&view);
@@ -122,64 +142,78 @@ impl App {
 
     /// Poll input and translate to commands.
     fn poll_input(&self) -> Vec<Command> {
-        let mut commands = Vec::new();
-
-        if is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::X) {
-            commands.push(Command::CancelSelection);
-        }
-        if is_key_pressed(KeyCode::Enter)
-            || is_key_pressed(KeyCode::Z)
-            || is_key_pressed(KeyCode::Space)
-        {
-            commands.push(Command::Interact);
-        }
-        if is_key_pressed(KeyCode::C) {
-            commands.push(Command::OpenMenu);
-        }
-
-        if is_key_down(KeyCode::Up) || is_key_down(KeyCode::W) {
-            commands.push(Command::Move(mc_core::command::Dir::North));
-        }
-        if is_key_down(KeyCode::Down) || is_key_down(KeyCode::S) {
-            commands.push(Command::Move(mc_core::command::Dir::South));
-        }
-        if is_key_down(KeyCode::Left) || is_key_down(KeyCode::A) {
-            commands.push(Command::Move(mc_core::command::Dir::West));
-        }
-        if is_key_down(KeyCode::Right) || is_key_down(KeyCode::D) {
-            commands.push(Command::Move(mc_core::command::Dir::East));
-        }
-
-        commands
+        // Use the remappable input system when available
+        crate::input::poll_commands(&self.config.input_map)
     }
 
+    /// Draw the tilemap layers (layer0, layer1, overlay).
     fn draw_tilemap(&self, _view: &StateView) {
         let tiles_x = INTERNAL_WIDTH / 16;
         let tiles_y = INTERNAL_HEIGHT / 16;
+
+        // Draw layer 0 (background)
         for ty in 0..tiles_y {
             for tx in 0..tiles_x {
+                let tile_id = self.tilemap.layer0.get_tile(tx, ty);
                 let x = tx as f32 * 16.0;
                 let y = ty as f32 * 16.0;
-                let gray = ((tx + ty) % 2) as f32 * 0.1 + 0.15;
-                draw_rectangle(
-                    x,
-                    y,
-                    16.0,
-                    16.0,
-                    Color::from_rgba(
-                        (gray * 255.0) as u8,
-                        (gray * 255.0) as u8,
-                        (gray * 255.0) as u8,
-                        255,
-                    ),
-                );
-                draw_rectangle_lines(x, y, 16.0, 16.0, 0.5, Color::from_rgba(40, 40, 50, 255));
+
+                // Map tile_id to a colour tint
+                let (r, g, b) = match tile_id {
+                    0 => (0.15, 0.15, 0.2),    // even checker
+                    1 => (0.2, 0.25, 0.3),     // odd checker
+                    2 => (0.25, 0.2, 0.15),    // alt
+                    3 => (0.3, 0.25, 0.2),
+                    _ => (0.1, 0.1, 0.1),
+                };
+                draw_rectangle(x, y, 16.0, 16.0, Color::from_rgba(
+                    (r * 255.0) as u8,
+                    (g * 255.0) as u8,
+                    (b * 255.0) as u8,
+                    255,
+                ));
             }
+        }
+
+        // Draw layer 1 (midground) with scroll offset
+        let scroll_x = self.tilemap.layer1.scroll_x;
+        let scroll_y = self.tilemap.layer1.scroll_y;
+        for ty in 0..tiles_y {
+            for tx in 0..tiles_x {
+                let tile_id = self.tilemap.layer1.get_tile(tx, ty);
+                if tile_id == 0 {
+                    continue;
+                }
+                let x = tx as f32 * 16.0 + scroll_x;
+                let y = ty as f32 * 16.0 + scroll_y;
+                let (r, g, b) = match tile_id {
+                    2 => (0.35, 0.3, 0.25),
+                    3 => (0.4, 0.35, 0.3),
+                    _ => (0.2, 0.2, 0.25),
+                };
+                draw_rectangle(x, y, 16.0, 16.0, Color::from_rgba(
+                    (r * 255.0) as u8,
+                    (g * 255.0) as u8,
+                    (b * 255.0) as u8,
+                    255,
+                ));
+            }
+        }
+
+        // Grid overlay lines
+        for ty in 0..=tiles_y {
+            let y = ty as f32 * 16.0;
+            draw_line(0.0, y, INTERNAL_WIDTH as f32, y, 0.5, Color::from_rgba(40, 40, 50, 255));
+        }
+        for tx in 0..=tiles_x {
+            let x = tx as f32 * 16.0;
+            draw_line(x, 0.0, x, INTERNAL_HEIGHT as f32, 0.5, Color::from_rgba(40, 40, 50, 255));
         }
     }
 
     fn draw_sprites(&self, _view: &StateView) {
-        // M2 will fill in sprite rendering
+        // M2: sprite rendering placeholder - uses Sprite struct from render::sprite
+        // Full implementation in later milestones.
     }
 
     fn draw_ui(&self, _view: &StateView) {
