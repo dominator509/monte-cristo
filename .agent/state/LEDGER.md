@@ -68,3 +68,4 @@
 2026-07-28T21:52:54Z | hermes-ipman | EP-005 | MILESTONE_PASS | M9 e2e tests: ok
 2026-07-28T21:52:54Z | hermes-ipman | EP-005 | NODE_DONE | EP-005 complete — presentation shell, 50+ tests
 2026-07-28T21:52:54Z | hermes-ipman | EP-005 | LEASE_RELEASE | EP-005 done
+2026-07-28T21:53:06Z | hermes-ipman | EP-006 | LEASE | node start

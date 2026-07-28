@@ -481,6 +481,7 @@ dependencies = [
  "mc_tape",
  "ron",
  "serde",
+ "tempfile",
  "thiserror",
  "tracing",
  "tracing-subscriber",

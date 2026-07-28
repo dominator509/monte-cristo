@@ -24,3 +24,6 @@ thiserror = { workspace = true }
 serde = { workspace = true }
 blake3 = { workspace = true }
 ron = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"

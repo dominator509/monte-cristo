@@ -7,6 +7,7 @@ pub mod a11y;
 pub mod app;
 pub mod audio;
 pub mod config;
+pub mod fsroot;
 pub mod input;
 pub mod render;
 pub mod ui;
