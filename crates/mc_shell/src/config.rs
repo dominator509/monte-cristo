@@ -4,7 +4,9 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+use crate::fsroot::{self, Root};
 
 /// The four text speed settings (SPEC-004 section 8).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -129,7 +131,7 @@ impl ValidatedConfig {
     pub fn load_or_default(data_dir: PathBuf) -> Self {
         let settings_path = data_dir.join("settings.ron");
         let cfg = if settings_path.exists() {
-            std::fs::read_to_string(&settings_path)
+            fsroot::read_to_string(Root::Data, Path::new("settings.ron"))
                 .ok()
                 .and_then(|s| ron::from_str::<ShellConfig>(&s).ok())
                 .unwrap_or_default()
@@ -154,7 +156,7 @@ impl ValidatedConfig {
             input_map: self.input_map.clone(),
         };
         if let Ok(s) = ron::to_string(&cfg) {
-            let _ = std::fs::write(&self.settings_path, s);
+            let _ = fsroot::write(Root::Data, Path::new("settings.ron"), s.as_bytes());
         }
     }
 }

@@ -3,10 +3,11 @@
 //! SPEC-004 sections 1, 10, 11. MC_HEADLESS=1 suppresses window + audio.
 //! The binary is named "monte-cristo".
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use mc_shell::app::App;
 use mc_shell::config::ValidatedConfig;
+use mc_shell::fsroot::{self, Root};
 use mc_shell::render::target::ShellRenderTarget;
 
 /// Get the data directory for settings and saves.
@@ -17,7 +18,9 @@ fn data_dir() -> PathBuf {
             let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".into());
             PathBuf::from(home).join(".local/share/monte-cristo")
         });
-    let _ = std::fs::create_dir_all(&base);
+    // Use fsroot for confined directory creation — set MC_DATA_DIR for it.
+    std::env::set_var(Root::Data.env_var(), &base);
+    let _ = fsroot::create_dir_all(Root::Data, Path::new(""));
     base
 }
 
