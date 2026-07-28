@@ -6,3 +6,4 @@
 2026-07-28T18:27:04Z | hermes-ipman | EP-000 | MILESTONE_PASS | M4 three roots ok
 2026-07-28T18:27:04Z | hermes-ipman | EP-000 | MILESTONE_PASS | M5 probe registry_mode: ok
 2026-07-28T18:27:04Z | hermes-ipman | EP-000 | MILESTONE_PASS | M6 probe graphics_stack: ok
+2026-07-28T18:27:14Z | hermes-ipman | EP-000 | MILESTONE_PASS | M7 preflight: ok
