@@ -24,3 +24,4 @@
 2026-07-28T18:49:19Z | hermes-ipman | EP-002 | LEASE | node start
 2026-07-28T18:51:28Z | hermes-ipman | EP-002 | MILESTONE_PASS | M1 fx property tests pass, zero floats
 2026-07-28T18:51:28Z | hermes-ipman | EP-002 | MILESTONE_PASS | M2 rng and ids, zero hash maps
+2026-07-28T18:52:41Z | hermes-ipman | EP-002 | MILESTONE_PASS | M3 world and tick order
