@@ -13,3 +13,4 @@
 2026-07-28T18:28:48Z | hermes-ipman | EP-001 | MILESTONE_PASS | M1 workspace resolves
 2026-07-28T18:29:43Z | hermes-ipman | EP-001 | MILESTONE_PASS | M2 five crates build, layer clean
 2026-07-28T18:29:48Z | hermes-ipman | EP-001 | MILESTONE_PASS | M3 lockfile committed
+2026-07-28T18:36:59Z | hermes-ipman | EP-001 | MILESTONE_PASS | M4 format check: ok / lint: ok

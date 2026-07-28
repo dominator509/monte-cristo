@@ -6,9 +6,9 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
-mc_core = { path = "../mc_core" }
-mc_data = { path = "../mc_data" }
-mc_tape = { path = "../mc_tape" }
+mc_core = { path = "../mc_core", version = "0.1.0" }
+mc_data = { path = "../mc_data", version = "0.1.0" }
+mc_tape = { path = "../mc_tape", version = "0.1.0" }
 clap = { workspace = true }
 ron = { workspace = true }
 tracing = { workspace = true }

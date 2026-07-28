@@ -10,7 +10,7 @@ noted.
 | rustc / cargo | 1.83.0 exactly | pinned by rust-toolchain.toml; determinism requires a fixed compiler | scripts/probes/rust_toolchain.sh |
 | rustfmt | shipped with 1.83.0 | format gate | scripts/format-check.sh |
 | clippy | shipped with 1.83.0 | lint gate at deny level | scripts/lint.sh |
-| cargo-deny | 0.16.2 | advisory, licence, ban, source gates | scripts/probes/cargo_tools.sh |
+| cargo-deny | 0.17.0 | advisory, licence, ban, source gates | scripts/probes/cargo_tools.sh |
 | cargo-fuzz | 0.12.0 | fuzzing the two untrusted parsers | scripts/probes/cargo_tools.sh |
 | cargo-llvm-cov | 0.6.15 | coverage floors | scripts/probes/cargo_tools.sh |
 | nightly toolchain | nightly-2025-01-15 | required by cargo-fuzz only; never used for production builds | EP-006 M1 |

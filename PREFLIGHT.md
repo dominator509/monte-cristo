@@ -34,8 +34,8 @@ every verify run and fails on any committed-secret hit, so the property stays tr
 ### 1.2 Cargo auxiliary tooling -- REQUIRED
 - Purpose: dependency audit and licence policy (cargo-deny), fuzzing of the save and content
   parsers (cargo-fuzz, EP-006), coverage measurement (cargo-llvm-cov, EP-007).
-- Versions: cargo-deny 0.16.2, cargo-fuzz 0.12.0, cargo-llvm-cov 0.6.15.
-- Obtain: `cargo install --locked cargo-deny@0.16.2 cargo-fuzz@0.12.0 cargo-llvm-cov@0.6.15`
+|- Versions: cargo-deny 0.17.0, cargo-fuzz 0.12.0, cargo-llvm-cov 0.6.15.
+|- Obtain: `cargo install --locked cargo-deny@0.17.0 cargo-fuzz@0.12.0 cargo-llvm-cov@0.6.15`
 - Probe: scripts/probes/cargo_tools.sh
 - Cost: free.
 - Note: cargo-fuzz requires a nightly toolchain for the fuzz targets only. EP-006 installs
