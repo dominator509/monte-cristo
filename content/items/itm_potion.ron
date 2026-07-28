@@ -1,0 +1,10 @@
+Item(
+    id: "ITM_POTION",
+    name_key: "item.potion.name",
+    description_key: "item.potion.desc",
+    item_type: Consumable,
+    heal_hp: Some(25),
+    effect: None,
+    usable_in: [],
+    value: 10,
+)

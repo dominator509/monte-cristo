@@ -1,0 +1,10 @@
+Item(
+    id: "ITM_PHIAL_BRUCINE",
+    name_key: "item.phial_brucine.name",
+    description_key: "item.phial_brucine.desc",
+    item_type: Key,
+    heal_hp: None,
+    effect: Some("poison_brucine"),
+    usable_in: [],
+    value: 25,
+)

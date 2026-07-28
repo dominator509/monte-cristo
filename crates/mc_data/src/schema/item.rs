@@ -29,15 +29,15 @@ pub struct Item {
     pub description_key: String,
     /// The category this item belongs to.
     pub item_type: ItemType,
-    /// Amount of HP restored when using this item, if applicable.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Amount of HP restored when consumed (if applicable).
+    #[serde(default)]
     pub heal_hp: Option<u32>,
-    /// Arbitrary effect string (e.g. "cure_poison", "reveal_secret"), if any.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Name of a special effect triggered on use (if applicable).
+    #[serde(default)]
     pub effect: Option<String>,
-    /// Scene / context IDs where this item can be used.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    /// List of contexts (scene/fight IDs) where this item can be used.
+    /// Empty means usable anywhere.
+    #[serde(default)]
     pub usable_in: Vec<String>,
-    /// Monetary value of this item (in the game's currency).
     pub value: u32,
 }

@@ -60,3 +60,49 @@ impl std::fmt::Display for ContentError {
         Ok(())
     }
 }
+
+/// An error that can occur during pack save/load operations.
+#[derive(Debug)]
+pub enum SaveError {
+    /// I/O error (reading or writing files).
+    Io(std::io::Error),
+    /// The digest file could not be read or parsed.
+    Digest(String),
+    /// The pack data failed to deserialize.
+    Deserialize(String),
+    /// The computed digest does not match the stored digest.
+    DigestMismatch {
+        /// Expected (stored) hex digest.
+        expected: String,
+        /// Actual (computed) hex digest.
+        actual: String,
+    },
+}
+
+impl std::fmt::Display for SaveError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SaveError::Io(e) => write!(f, "I/O error: {e}"),
+            SaveError::Digest(msg) => write!(f, "digest error: {msg}"),
+            SaveError::Deserialize(msg) => write!(f, "deserialize error: {msg}"),
+            SaveError::DigestMismatch { expected, actual } => {
+                write!(f, "digest mismatch: expected {expected}, computed {actual}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for SaveError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            SaveError::Io(e) => Some(e),
+            _ => None,
+        }
+    }
+}
+
+impl From<std::io::Error> for SaveError {
+    fn from(e: std::io::Error) -> Self {
+        SaveError::Io(e)
+    }
+}

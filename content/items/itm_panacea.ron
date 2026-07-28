@@ -1,0 +1,10 @@
+Item(
+    id: "ITM_PANACEA",
+    name_key: "item.panacea.name",
+    description_key: "item.panacea.desc",
+    item_type: Consumable,
+    heal_hp: Some(200),
+    effect: None,
+    usable_in: [],
+    value: 100,
+)

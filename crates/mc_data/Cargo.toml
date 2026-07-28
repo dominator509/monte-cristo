@@ -8,7 +8,7 @@ license.workspace = true
 [dependencies]
 mc_core = { path = "../mc_core", version = "0.1.0" }
 serde = { workspace = true }
-postcard = { workspace = true }
+postcard = { workspace = true, features = ["use-std"] }
 ron = { workspace = true }
 blake3 = { workspace = true }
 thiserror = { workspace = true }

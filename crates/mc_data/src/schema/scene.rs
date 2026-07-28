@@ -35,22 +35,22 @@ pub struct TrustEffect(pub String, pub i32);
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Effects {
     /// Flags to set when this effect is applied.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub set_flags: Vec<String>,
     /// Flags to clear when this effect is applied.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub clear_flags: Vec<String>,
     /// Items to consume (remove from inventory).
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub consume: Vec<String>,
     /// Items to grant (add to inventory).
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub grant: Vec<String>,
     /// Trust adjustments for characters.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub trust: Option<Vec<TrustEffect>>,
     /// Mask meter adjustment.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub mask: Option<i32>,
 }
 
@@ -62,10 +62,10 @@ pub struct Choice {
     /// ID of the destination node.
     pub to: String,
     /// Optional trust effects triggered by this choice.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub trust: Option<Vec<TrustEffect>>,
     /// Optional flag condition required for this choice to appear.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub requires: Option<FlagExpr>,
 }
 
@@ -77,7 +77,7 @@ pub struct Node {
     /// Localisation key for the node's narrative text.
     pub text_key: String,
     /// Available player choices from this node.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub choices: Vec<Choice>,
 }
 
@@ -89,16 +89,16 @@ pub struct Scene {
     /// Which act of the story this scene belongs to.
     pub act: Act,
     /// Characters participating in this scene.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub participants: Vec<String>,
     /// Flag condition that must be satisfied for this scene to be available.
     #[serde(default)]
     pub requires: FlagExpr,
     /// The nodes that make up this scene's branching tree.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub nodes: Vec<Node>,
     /// Effects applied when leaving this scene.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub on_exit: Option<Effects>,
     /// Whether this scene is a terminal (ending) node.
     #[serde(default)]

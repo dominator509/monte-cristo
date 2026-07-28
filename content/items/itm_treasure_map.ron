@@ -1,0 +1,10 @@
+Item(
+    id: "ITM_TREASURE_MAP",
+    name_key: "item.treasure_map.name",
+    description_key: "item.treasure_map.desc",
+    item_type: Key,
+    heal_hp: None,
+    effect: None,
+    usable_in: [],
+    value: 0,
+)
