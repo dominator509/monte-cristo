@@ -63,6 +63,37 @@ impl Inventory {
     pub fn items(&self) -> &[(crate::ids::ItemId, u32)] {
         &self.items
     }
+
+    pub fn items_mut(&mut self) -> &mut Vec<(crate::ids::ItemId, u32)> {
+        &mut self.items
+    }
+
+    /// Add `count` copies of an item. Returns the new total count.
+    pub fn add_item(&mut self, id: crate::ids::ItemId, count: u32) -> u32 {
+        if let Some((_, c)) = self.items.iter_mut().find(|(i, _)| *i == id) {
+            *c = c.saturating_add(count);
+            *c
+        } else {
+            self.items.push((id, count));
+            count
+        }
+    }
+
+    /// Remove `count` copies of an item. Returns `false` if the item is not
+    /// present or the requested count exceeds the held amount.
+    pub fn remove_item(&mut self, id: crate::ids::ItemId, count: u32) -> bool {
+        if let Some(idx) = self.items.iter().position(|(i, _)| *i == id) {
+            let (_, c) = self.items[idx];
+            if c <= count {
+                self.items.swap_remove(idx);
+            } else {
+                self.items[idx].1 = c - count;
+            }
+            true
+        } else {
+            false
+        }
+    }
 }
 
 /// An encounter budget for a region/chapter pair.

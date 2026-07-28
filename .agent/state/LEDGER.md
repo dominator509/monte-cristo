@@ -30,3 +30,4 @@
 2026-07-28T18:59:05Z | hermes-ipman | EP-002 | MILESTONE_PASS | M7 curriculum and calendars
 2026-07-28T19:07:05Z | hermes-ipman | EP-002 | MILESTONE_PASS | M6 battle, statuses, wait mode
 2026-07-28T19:07:05Z | hermes-ipman | EP-002 | MILESTONE_PASS | M8 poison tolerance simulated
+2026-07-28T19:10:18Z | hermes-ipman | EP-002 | MILESTONE_PASS | M9 confidences and final encounter gated
