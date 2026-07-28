@@ -76,6 +76,12 @@ pub enum FlagExpr {
     Not(Box<FlagExpr>),
 }
 
+impl Default for FlagExpr {
+    fn default() -> Self {
+        FlagExpr::Always
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

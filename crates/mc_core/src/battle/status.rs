@@ -90,6 +90,7 @@ impl StatusEffect {
 
 /// Kind of status (for stacking — you can't have two of the same kind).
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StatusKind {
     Bleeding,
     Fever,

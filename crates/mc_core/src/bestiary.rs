@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// Exactly these ten. Adding a variant requires changing SPEC-009 and an ADR.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Family {
     Vermin,
     Beast,

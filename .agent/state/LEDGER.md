@@ -34,3 +34,7 @@
 2026-07-28T19:13:30Z | hermes-ipman | EP-002 | MILESTONE_PASS | M10 unit tests: ok, core clean
 2026-07-28T19:13:30Z | hermes-ipman | EP-002 | NODE_DONE | EP-002 complete - full mc_core domain, 291 tests, invariants clean
 2026-07-28T19:13:35Z | hermes-ipman | EP-002 | LEASE_RELEASE | EP-002 done
+2026-07-28T20:07:17Z | hermes-ipman | EP-002 | MILESTONE_PASS | M1-FIX prop_fixed_point.rs created with 10 property tests, reconciliation complete
+2026-07-28T20:07:20Z | hermes-ipman | EP-002 | NODE_DONE | EP-002 reconciled and verified - 305 tests, invariants clean
+2026-07-28T20:07:20Z | hermes-ipman | EP-002 | LEASE_RELEASE | reconciliation complete
+2026-07-28T20:07:24Z | hermes-ipman | EP-003 | LEASE | node start
