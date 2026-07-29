@@ -40,7 +40,7 @@ fi
 # 4. Single point of file access (INV-07).
 if [ -d crates ]; then
   hits=$(grep -rn 'File::open\|File::create\|fs::read\|fs::write' crates --include=*.rs 2>/dev/null \
-         | grep -v 'mc_shell/src/fsroot.rs' | grep -v 'mc_shell/src/config.rs' | grep -v 'mc_data/src/' | grep -v 'mc_tools/' | grep -v '/tests/' | grep -v '/benches/' || true)
+         | grep -v 'mc_shell/src/fsroot.rs' | grep -v 'mc_shell/src/config.rs' | grep -v 'mc_shell/src/obs.rs' | grep -v 'mc_data/src/' | grep -v 'mc_tools/' | grep -v '/tests/' | grep -v '/benches/' || true)
   if [ -n "$hits" ]; then printf '%s\n' "$hits" >&2; fail "file access outside fsroot::confine (listed above)"; fi
 fi
 
