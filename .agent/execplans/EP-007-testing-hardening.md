@@ -224,13 +224,15 @@ not match `tapes/HASHES.txt`, do not re-record it.** Enter the ladder with signa
 - [x] M2 property tests over combat and poison
 - [x] M3 record the golden tape
 - [x] M4 the twelve live-fire proofs
-- [ ] M5 frame budget and memory ceiling
+- [x] M5 frame budget and memory ceiling
 - [ ] M6 coverage and flaky-test purge
 - [ ] M7 node verification
 
 ## 12. Surprises and Discoveries
 
-<empty>
+- 2026-07-29, M5: The existing `memory_ceiling` suite passed in 0.06 seconds because it
+  asserted only replay/hash correctness. It never sampled resident memory, enforced the
+  512 MB ceiling, or checked growth, so its green result was not evidence for the milestone.
 
 ## 13. Decision Log
 

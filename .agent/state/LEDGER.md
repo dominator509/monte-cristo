@@ -92,3 +92,9 @@
 2026-07-29T15:58:18Z | codex-root | EP-007 | SIG | LF11_FRAME_BUDGET_SKIPPED
 2026-07-29T16:08:22Z | codex-root | EP-007 | MILESTONE_PASS | M4-live-fire-ok-all-twelve-proofs
 2026-07-29T16:08:28Z | codex-root | EP-007 | HEARTBEAT | M4-complete-preparing-checkpoint
+2026-07-29T16:11:18Z | codex-root | EP-007 | ATTEMPT_FAIL | M5-memory-test-passed-without-measuring-resident-memory
+2026-07-29T16:11:25Z | codex-root | EP-007 | SIG | MEMORY_CEILING_TEST_DOES_NOT_MEASURE_RSS
+2026-07-29T16:13:25Z | codex-root | EP-007 | ATTEMPT_FAIL | M5-format-check-memory-ceiling-line-wrapping
+2026-07-29T16:13:29Z | codex-root | EP-007 | SIG | FORMAT_CHECK_MEMORY_CEILING_LINE_WRAPPING
+2026-07-29T16:14:18Z | codex-root | EP-007 | MILESTONE_PASS | M5-p99-0.0011ms-peak-6103040-bytes-under-budget
+2026-07-29T16:14:21Z | codex-root | EP-007 | HEARTBEAT | M5-complete-preparing-checkpoint
