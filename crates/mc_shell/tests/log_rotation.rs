@@ -53,8 +53,8 @@ fn rotation_retains_only_max_generations() {
     // Set max_bytes to 10 bytes so every write triggers rotation
     let mut writer = mc_shell::obs::RotatingFileWriter::with_retention(
         base.clone(),
-        10,        // rotate after 10 bytes
-        MAX_GEN,   // keep 4 generations
+        10,      // rotate after 10 bytes
+        MAX_GEN, // keep 4 generations
     );
 
     // Write data that triggers enough rotations to exceed the retention limit.
@@ -94,8 +94,7 @@ fn log_rotation_seven_file_retention() {
     // These are named monte-cristo-test.jsonl.1 through .8
     for i in 1..=8 {
         let rotated = dir.join(format!("{}.jsonl.{}", base_name, i));
-        std::fs::write(&rotated, format!("log data day {}", i))
-            .expect("write rotated file");
+        std::fs::write(&rotated, format!("log data day {}", i)).expect("write rotated file");
     }
 
     // Create the current log file.
@@ -114,8 +113,8 @@ fn log_rotation_seven_file_retention() {
     // So trigger a rotation by writing enough data.
     let mut writer = mc_shell::obs::RotatingFileWriter::with_retention(
         current.clone(),
-        10,     // rotate on 10 bytes
-        7,      // keep 7 generations
+        10, // rotate on 10 bytes
+        7,  // keep 7 generations
     );
 
     // Write 15 lines to trigger at least 8 more rotations
@@ -147,8 +146,8 @@ fn rotation_triggers_on_size_exceeded() {
     let path = dir.join("rotate.jsonl");
     let mut writer = mc_shell::obs::RotatingFileWriter::with_retention(
         path.clone(),
-        10,     // rotate at 10 bytes
-        3,      // keep 3 generations
+        10, // rotate at 10 bytes
+        3,  // keep 3 generations
     );
 
     // Write a line that exceeds the max_bytes threshold.
