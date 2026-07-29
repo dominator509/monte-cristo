@@ -1,0 +1,11 @@
+Encounter(
+    id: "RR14-s1-e0042",
+    region: "RR14",
+    chapter_stage: 1,
+    pool: 1,
+    enemies: ["ENM_ALBERT_FRIEND", "ENM_ESTATE_STEWARD", "ENM_MORCERF_OFFICER", "ENM_BUTLER"],
+    min_count: 1,
+    max_count: 4,
+    weight: 18,
+    gate: Always,
+)

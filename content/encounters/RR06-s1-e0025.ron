@@ -1,0 +1,11 @@
+Encounter(
+    id: "RR06-s1-e0025",
+    region: "RR06",
+    chapter_stage: 1,
+    pool: 1,
+    enemies: ["ENM_ARISTOCRAT", "ENM_DANCING_MASTER", "ENM_GIANT_RAT", "ENM_ROYAL_GUARD"],
+    min_count: 1,
+    max_count: 4,
+    weight: 15,
+    gate: Always,
+)

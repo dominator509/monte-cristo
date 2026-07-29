@@ -1,0 +1,11 @@
+Encounter(
+    id: "RR03-s1-e0020",
+    region: "RR03",
+    chapter_stage: 1,
+    pool: 2,
+    enemies: ["ENM_JAILER", "ENM_EXECUTIONER", "ENM_LE_RONGEUR", "ENM_TOWER_SENTRY"],
+    min_count: 1,
+    max_count: 4,
+    weight: 8,
+    gate: Always,
+)

@@ -1,0 +1,11 @@
+Encounter(
+    id: "RR13-s1-e0040",
+    region: "RR13",
+    chapter_stage: 1,
+    pool: 1,
+    enemies: ["ENM_ALBANIAN_MERCENARY", "ENM_GREEK_MERC", "ENM_MOUNTAINEER", "ENM_CLAN_CHIEFTAIN"],
+    min_count: 1,
+    max_count: 4,
+    weight: 17,
+    gate: Always,
+)

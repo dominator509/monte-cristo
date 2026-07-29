@@ -1,0 +1,11 @@
+Encounter(
+    id: "R01-s1-e0155",
+    region: "R01",
+    chapter_stage: 1,
+    pool: 1,
+    enemies: ["ENM_HARBOR_RAT", "ENM_HARBOUR_THUG"],
+    min_count: 1,
+    max_count: 3,
+    weight: 100,
+    gate: Always,
+)

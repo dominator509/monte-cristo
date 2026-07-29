@@ -1,3 +1,4 @@
+pub mod encounter;
 pub mod enemy;
 pub mod item;
 pub mod region;

@@ -1,0 +1,11 @@
+Encounter(
+    id: "RR11-s1-e0037",
+    region: "RR11",
+    chapter_stage: 1,
+    pool: 1,
+    enemies: ["ENM_JANISSARY", "ENM_DESERT_SCORPION", "ENM_ORIENTAL_MERCHANT"],
+    min_count: 1,
+    max_count: 3,
+    weight: 11,
+    gate: Always,
+)

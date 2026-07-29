@@ -8,6 +8,7 @@ use std::fs;
 use std::path::Path;
 
 use crate::error::{ContentError, SaveError};
+use crate::schema::encounter::Encounter;
 use crate::schema::enemy::Enemy;
 use crate::schema::item::Item;
 use crate::schema::region::Region;
@@ -19,6 +20,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Pack {
     pub enemies: Vec<Enemy>,
+    pub encounters: Vec<Encounter>,
     pub regions: Vec<Region>,
     pub scenes: Vec<Scene>,
     pub spawn_tables: Vec<SpawnTable>,
@@ -36,6 +38,7 @@ impl Pack {
         let scenes_dir = root.join("scenes").join("act1");
         let spawn_dir = root.join("spawn_tables");
         let items_dir = root.join("items");
+        let encounter_dir = root.join("encounters");
         let flags_file = root.join("flags.ron");
         let strings_dir = root.join("strings").join("en");
 
@@ -44,6 +47,11 @@ impl Pack {
         let scenes = load_ron_dir::<Scene>(&scenes_dir)?;
         let spawn_tables = load_ron_dir::<SpawnTable>(&spawn_dir)?;
         let items = load_ron_dir::<Item>(&items_dir)?;
+        let encounters = if encounter_dir.exists() {
+            load_ron_dir::<Encounter>(&encounter_dir)?
+        } else {
+            Vec::new()
+        };
 
         let flags = if flags_file.exists() {
             let data = fs::read_to_string(&flags_file)
@@ -62,6 +70,7 @@ impl Pack {
 
         Ok(Pack {
             enemies,
+            encounters,
             regions,
             scenes,
             spawn_tables,

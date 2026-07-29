@@ -1,0 +1,11 @@
+Encounter(
+    id: "RR13-s1-e0041",
+    region: "RR13",
+    chapter_stage: 1,
+    pool: 1,
+    enemies: ["ENM_HIGHLAND_SHAMAN", "ENM_FORTIFIED_OUTPOST", "ENM_MOUNTAIN_PASS_BANDIT"],
+    min_count: 1,
+    max_count: 3,
+    weight: 23,
+    gate: Always,
+)

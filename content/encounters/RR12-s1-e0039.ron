@@ -1,0 +1,11 @@
+Encounter(
+    id: "RR12-s1-e0039",
+    region: "RR12",
+    chapter_stage: 1,
+    pool: 1,
+    enemies: ["ENM_OLYMPIAN_SENTINEL", "ENM_GREEK_REBEL", "ENM_ORACLE_PRIESTESS"],
+    min_count: 1,
+    max_count: 3,
+    weight: 12,
+    gate: Always,
+)

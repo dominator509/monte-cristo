@@ -1,0 +1,11 @@
+Encounter(
+    id: "RR09-s1-e0033",
+    region: "RR09",
+    chapter_stage: 1,
+    pool: 1,
+    enemies: ["ENM_MERCENARY", "ENM_FOREST_BANDIT", "ENM_MONASTERY_GUARD"],
+    min_count: 1,
+    max_count: 3,
+    weight: 16,
+    gate: Always,
+)
