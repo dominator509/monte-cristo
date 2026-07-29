@@ -42,12 +42,12 @@ fn metrics_write_creates_file() {
     assert!(result.is_ok(), "write_metrics should succeed: {:?}", result);
 
     // Check that a metrics file was created
-    let entries = std::fs::read_dir(&dir.join("logs")).expect("read logs dir");
+    let entries = std::fs::read_dir(dir.join("logs")).expect("read logs dir");
     let has_metrics = entries
         .filter_map(|e| e.ok())
         .any(|e| e.file_name().to_string_lossy().contains("metrics-"));
     assert!(has_metrics, "metrics file should exist in logs dir");
 
-    let _ = std::fs::remove_dir_all(&dir);
-    let _ = std::env::remove_var("MC_DATA_DIR");
+    std::fs::remove_dir_all(&dir).unwrap_or(());
+    std::env::remove_var("MC_DATA_DIR");
 }

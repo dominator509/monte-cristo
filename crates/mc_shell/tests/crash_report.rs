@@ -72,6 +72,6 @@ fn crash_report_writes_to_disk() {
         "file content should match"
     );
 
-    let _ = std::fs::remove_dir_all(&dir);
-    let _ = std::env::remove_var("MC_DATA_DIR");
+    std::fs::remove_dir_all(&dir).unwrap_or(());
+    std::env::remove_var("MC_DATA_DIR");
 }

@@ -108,7 +108,7 @@ fn fmt_timestamp(now: SystemTime) -> String {
 
 fn logs_dir() -> PathBuf {
     // Resolve $MC_DATA_DIR via fsroot::confine
-    match fsroot::confine(Root::Data, &std::path::Path::new("logs")) {
+    match fsroot::confine(Root::Data, std::path::Path::new("logs")) {
         Ok(p) => p,
         Err(_) => {
             let mut p = std::env::current_dir().unwrap_or_default();
@@ -120,7 +120,7 @@ fn logs_dir() -> PathBuf {
 }
 
 fn crash_dir() -> PathBuf {
-    match fsroot::confine(Root::Data, &std::path::Path::new("crash")) {
+    match fsroot::confine(Root::Data, std::path::Path::new("crash")) {
         Ok(p) => p,
         Err(_) => {
             let mut p = std::env::current_dir().unwrap_or_default();
@@ -262,6 +262,12 @@ impl SessionMetrics {
             battles_fought: 0,
             encounters_resolved: 0,
         }
+    }
+}
+
+impl Default for SessionMetrics {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
