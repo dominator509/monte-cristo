@@ -15,6 +15,22 @@ set -a
 . ./.env
 set +a
 sh scripts/preflight.sh
+
+canonical_dir() {
+  (
+    cd "$1"
+    if pwd -W >/dev/null 2>&1; then
+      pwd -W
+    else
+      pwd -P
+    fi
+  )
+}
+MC_CONTENT_DIR=$(canonical_dir "$MC_CONTENT_DIR")
+MC_ARTIFACT_DIR=$(canonical_dir "$MC_ARTIFACT_DIR")
+MC_DATA_DIR=$(canonical_dir "$MC_DATA_DIR")
+export MC_CONTENT_DIR MC_ARTIFACT_DIR MC_DATA_DIR
+
 sh scripts/install.sh
 sh scripts/lint.sh
 sh scripts/format-check.sh

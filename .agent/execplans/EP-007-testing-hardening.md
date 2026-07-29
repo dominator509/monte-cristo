@@ -378,6 +378,12 @@ explicit user decision and passing evidence.
   `MC_DATA_DIR` was absent in the parent process. Request a uniquely missing relative file
   without mutating process-global environment and assert the correct error for either
   supported invocation context: unresolved configured root or confined file resolution.
+- 2026-07-29, M7: Canonicalize the three preflight-validated root directories in
+  `scripts/verify.sh` before launching Cargo children. Rung-2 isolation showed the repeated
+  fsroot signature returned `InvalidRoot(Data)`: the documented relative `.env` value was
+  valid from the repository but unit-test processes run from a crate directory. Resolve
+  each root once after preflight, using Git-for-Windows `pwd -W` when available and POSIX
+  `pwd -P` elsewhere, so confinement receives stable absolute roots in every child process.
 
 ## 14. Outcomes and Retrospective
 

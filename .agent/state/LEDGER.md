@@ -135,3 +135,6 @@
 2026-07-29T19:16:39Z | codex-root | EP-007 | ATTEMPT_FAIL | M7_verify_fsroot_test_assumed_unset_env
 2026-07-29T19:16:39Z | codex-root | EP-007 | SIG | FSROOT_READ_TEST_DEPENDS_ON_PARENT_ENV
 2026-07-29T19:17:27Z | codex-root | EP-007 | HEARTBEAT | M7_fsroot_env_isolation_fixed_precommit
+2026-07-29T19:18:26Z | codex-root | EP-007 | ATTEMPT_FAIL | M7_verify_fsroot_test_variant_still_environment_racy
+2026-07-29T19:18:27Z | codex-root | EP-007 | SIG | FSROOT_READ_TEST_DEPENDS_ON_PARENT_ENV
+2026-07-29T19:19:42Z | codex-root | EP-007 | HEARTBEAT | M7_absolute_root_propagation_confirmed_precommit
