@@ -138,3 +138,5 @@
 2026-07-29T19:18:26Z | codex-root | EP-007 | ATTEMPT_FAIL | M7_verify_fsroot_test_variant_still_environment_racy
 2026-07-29T19:18:27Z | codex-root | EP-007 | SIG | FSROOT_READ_TEST_DEPENDS_ON_PARENT_ENV
 2026-07-29T19:19:42Z | codex-root | EP-007 | HEARTBEAT | M7_absolute_root_propagation_confirmed_precommit
+2026-07-29T19:23:40Z | codex-root | EP-007 | MILESTONE_PASS | M7_verify_ok_with_live_fire
+2026-07-29T19:23:40Z | codex-root | EP-007 | HEARTBEAT | M7_complete_precommit_scope_audit

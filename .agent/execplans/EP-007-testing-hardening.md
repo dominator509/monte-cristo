@@ -226,7 +226,7 @@ not match `tapes/HASHES.txt`, do not re-record it.** Enter the ladder with signa
 - [x] M4 the twelve live-fire proofs
 - [x] M5 frame budget and memory ceiling
 - [x] M6 coverage and flaky-test purge
-- [ ] M7 node verification
+- [x] M7 node verification
 
 ### NODE_BLOCKED report — EP-007 M6
 
@@ -387,4 +387,11 @@ explicit user decision and passing evidence.
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+- M6 cleared the workspace coverage floor at 85.09% with zero ignored tests under the
+  user's one-attempt, no-rollback override.
+- M7's sixth normal attempt ran `sh scripts/verify.sh` from a clean worktree and observed
+  every sentinel through `live-fire: ok` and `verify: ok`.
+- Verification hardening made the golden hash reader CRLF-safe, selected only matching
+  cross linkers, implemented the documented real content-health command, removed
+  compilation from startup timing, enforced the 2500 ms budget, propagated the validated
+  `.env`, and canonicalized its three confinement roots for child processes.
