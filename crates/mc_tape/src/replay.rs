@@ -12,7 +12,7 @@ use mc_core::command::apply_commands;
 use mc_core::world::World;
 
 /// The result of replaying a tape.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct ReplayResult {
     /// The final state hash after all entries have been replayed.
     pub final_hash: [u8; 32],
@@ -21,6 +21,9 @@ pub struct ReplayResult {
     ///
     /// `(checkpoint_tick, expected_hash, actual_hash)`
     pub first_divergence: Option<(u64, [u8; 32], [u8; 32])>,
+
+    /// The final World state after replay completes. Used for flag assertions.
+    pub final_world: World,
 }
 
 /// Replay a tape against a freshly created world with the tape's seed.
@@ -53,8 +56,7 @@ pub fn replay(tape: &Tape) -> Result<ReplayResult, TapeError> {
     let mut first_divergence: Option<(u64, [u8; 32], [u8; 32])> = None;
 
     // Track which checkpoint ticks we've verified so we can detect missing ones.
-    let mut verified_ticks: std::collections::BTreeSet<u64> =
-        std::collections::BTreeSet::new();
+    let mut verified_ticks: std::collections::BTreeSet<u64> = std::collections::BTreeSet::new();
 
     // Process each entry.
     for (tick, command) in &tape.entries {
@@ -73,11 +75,8 @@ pub fn replay(tape: &Tape) -> Result<ReplayResult, TapeError> {
                     verified_ticks.insert(world.tick);
                     let actual_hash = world.state_hash();
                     if actual_hash.as_bytes() != &expected_hash && first_divergence.is_none() {
-                        first_divergence = Some((
-                            world.tick,
-                            expected_hash,
-                            *actual_hash.as_bytes(),
-                        ));
+                        first_divergence =
+                            Some((world.tick, expected_hash, *actual_hash.as_bytes()));
                     }
                 }
             }
@@ -95,11 +94,7 @@ pub fn replay(tape: &Tape) -> Result<ReplayResult, TapeError> {
                 verified_ticks.insert(world.tick);
                 let actual_hash = world.state_hash();
                 if actual_hash.as_bytes() != &expected_hash && first_divergence.is_none() {
-                    first_divergence = Some((
-                        world.tick,
-                        expected_hash,
-                        *actual_hash.as_bytes(),
-                    ));
+                    first_divergence = Some((world.tick, expected_hash, *actual_hash.as_bytes()));
                 }
             }
         }
@@ -117,11 +112,7 @@ pub fn replay(tape: &Tape) -> Result<ReplayResult, TapeError> {
             verified_ticks.insert(cp_tick);
             let actual_hash = world.state_hash();
             if actual_hash.as_bytes() != &expected_hash && first_divergence.is_none() {
-                first_divergence = Some((
-                    cp_tick,
-                    expected_hash,
-                    *actual_hash.as_bytes(),
-                ));
+                first_divergence = Some((cp_tick, expected_hash, *actual_hash.as_bytes()));
             }
         }
     }
@@ -132,6 +123,7 @@ pub fn replay(tape: &Tape) -> Result<ReplayResult, TapeError> {
     Ok(ReplayResult {
         final_hash: final_hash_bytes,
         first_divergence,
+        final_world: world,
     })
 }
 
@@ -143,7 +135,14 @@ mod tests {
 
     #[test]
     fn replay_empty_tape() {
-        let tape = Tape::new(42, crate::format::TapeStart::NewGame, vec![], vec![], [0u8; 32]).unwrap();
+        let tape = Tape::new(
+            42,
+            crate::format::TapeStart::NewGame,
+            vec![],
+            vec![],
+            [0u8; 32],
+        )
+        .unwrap();
         let result = replay(&tape).unwrap();
         // Final hash should match a fresh world's state hash.
         let fresh_world = World::new(42);

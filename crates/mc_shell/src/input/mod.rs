@@ -7,8 +7,8 @@
 pub mod remap;
 
 use crate::config::{InputAction, InputMap};
-use mc_core::command::{Command, Dir};
 use macroquad::prelude::*;
+use mc_core::command::{Command, Dir};
 
 /// Poll input and translate to commands using the given input map.
 pub fn poll_commands(input_map: &InputMap) -> Vec<Command> {

@@ -9,8 +9,7 @@ pub fn compute_motion_params(shake_intensity: u8, flash_intensity: u8, tick: u64
     let shake = if shake_intensity == 0 {
         0.0
     } else {
-        let raw = (tick as f32 * 3.0).sin() * shake_intensity as f32 / 100.0;
-        raw
+        (tick as f32 * 3.0).sin() * shake_intensity as f32 / 100.0
     };
 
     let flash = if flash_intensity == 0 {

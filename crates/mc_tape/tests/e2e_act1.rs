@@ -73,21 +73,21 @@ fn e2e_act1_tape() {
     // ── Phase 4: Serialize to bytes and write to file ────────────────
     let bytes = tape.to_bytes().expect("serialization should succeed");
     let tape_path = format!("{}/act1.tape", TAPES_DIR);
-    std::fs::write(&tape_path, &bytes)
-        .expect("should write act1.tape to disk");
+    std::fs::write(&tape_path, &bytes).expect("should write act1.tape to disk");
 
     // ── Phase 5: Read back from file and deserialize ─────────────────
-    let read_bytes = std::fs::read(&tape_path)
-        .expect("should read act1.tape from disk");
-    let deserialized = Tape::from_bytes(&read_bytes)
-        .expect("deserialization of written tape should succeed");
+    let read_bytes = std::fs::read(&tape_path).expect("should read act1.tape from disk");
+    let deserialized =
+        Tape::from_bytes(&read_bytes).expect("deserialization of written tape should succeed");
 
     // Verify roundtrip identity
-    assert_eq!(tape, deserialized, "tape roundtrip should preserve all data");
+    assert_eq!(
+        tape, deserialized,
+        "tape roundtrip should preserve all data"
+    );
 
     // ── Phase 6: Replay and verify hash matches tape's final_hash ────
-    let result = replay::replay(&deserialized)
-        .expect("replay should succeed");
+    let result = replay::replay(&deserialized).expect("replay should succeed");
 
     assert_eq!(
         result.final_hash, tape.final_hash,
@@ -101,12 +101,15 @@ fn e2e_act1_tape() {
         result.first_divergence
     );
 
-    // ── Phase 7: Record the hash in HASHES.txt ───────────────────────
+    // ── Phase 7: Record the hash in HASHES.txt (append) ────────────
     let hash_hex = hex_fmt(&tape.final_hash);
     let hash_line = format!("act1.tape {}\n", hash_hex);
     let hashes_path = format!("{}/HASHES.txt", TAPES_DIR);
-    std::fs::write(&hashes_path, &hash_line)
-        .expect("should write HASHES.txt");
+    let existing = std::fs::read_to_string(&hashes_path).unwrap_or_default();
+    if !existing.contains("act1.tape") {
+        std::fs::write(&hashes_path, format!("{}{}", existing, hash_line))
+            .expect("should append to HASHES.txt");
+    }
 
     eprintln!("act1.tape {}", hash_hex);
     eprintln!("e2e_act1: PASS");

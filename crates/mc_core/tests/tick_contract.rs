@@ -100,7 +100,12 @@ fn batched_commands_apply_same_tick() {
     }
     // Now step — tick advances by exactly 1
     world.step();
-    assert_eq!(world.tick, t0 + 1, "after step tick = {expected}", expected = t0 + 1);
+    assert_eq!(
+        world.tick,
+        t0 + 1,
+        "after step tick = {expected}",
+        expected = t0 + 1
+    );
 }
 
 /// State hash changes after a step but not after commands alone.
@@ -142,12 +147,12 @@ fn irregular_frame_deltas_carry_remainder() {
     for i in 0..10_000u64 {
         // Create an irregular delta: oscillate between 0.5, 1.0, 1.5, 2.0, 2.5, 3.0
         let delta_raw = match i % 6 {
-            0 => Fx::HALF,          // 0.5 ticks
-            1 => Fx::ONE,           // 1.0 ticks
+            0 => Fx::HALF,                            // 0.5 ticks
+            1 => Fx::ONE,                             // 1.0 ticks
             2 => Fx::from_raw(3 * Fx::ONE.raw() / 2), // 1.5 ticks
-            3 => Fx::from_int(2),   // 2.0 ticks
+            3 => Fx::from_int(2),                     // 2.0 ticks
             4 => Fx::from_raw(5 * Fx::ONE.raw() / 2), // 2.5 ticks
-            _ => Fx::from_int(3),   // 3.0 ticks
+            _ => Fx::from_int(3),                     // 3.0 ticks
         };
 
         accumulator = accumulator + delta_raw;
@@ -177,7 +182,8 @@ fn irregular_frame_deltas_carry_remainder() {
     }
 
     assert_eq!(
-        world.tick, expected_ticks,
+        world.tick,
+        expected_ticks,
         "total ticks after {fcount} irregular frames should equal sum of floor'd deltas: \
          expected {expected_ticks}, got {actual}",
         fcount = 10_000,

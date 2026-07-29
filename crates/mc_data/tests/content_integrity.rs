@@ -7,26 +7,31 @@
 //! - All cross-file references resolve
 //! - Corrupted digests are detected
 
-use std::path::PathBuf;
-use std::fs;
 use mc_data::pack::Pack;
+use std::fs;
+use std::path::PathBuf;
 
 fn content_root() -> PathBuf {
     let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    p.pop(); p.pop(); // repo root
+    p.pop();
+    p.pop(); // repo root
     p.join("content")
 }
 
 fn tmp_dir() -> PathBuf {
     let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    p.pop(); p.pop();
+    p.pop();
+    p.pop();
     p.join("target").join("tmp-test-pack")
 }
 
 fn require_clean_bake() {
     let root = content_root();
     let errors = mc_data::bake::bake(&root);
-    assert!(errors.is_ok(), "content validation must pass before pack test");
+    assert!(
+        errors.is_ok(),
+        "content validation must pass before pack test"
+    );
 }
 
 fn build_pack() -> Pack {
@@ -39,8 +44,16 @@ fn build_pack() -> Pack {
 fn bake_pack_is_deterministic() {
     let pack_a = build_pack();
     let pack_b = build_pack();
-    assert_eq!(pack_a.to_bytes().unwrap(), pack_b.to_bytes().unwrap(), "pack bytes must be identical");
-    assert_eq!(pack_a.digest().unwrap(), pack_b.digest().unwrap(), "pack digest must be identical");
+    assert_eq!(
+        pack_a.to_bytes().unwrap(),
+        pack_b.to_bytes().unwrap(),
+        "pack bytes must be identical"
+    );
+    assert_eq!(
+        pack_a.digest().unwrap(),
+        pack_b.digest().unwrap(),
+        "pack digest must be identical"
+    );
 }
 
 /// Save then load produces an identical pack.
@@ -55,10 +68,8 @@ fn save_load_roundtrip() {
 
     let loaded = Pack::load_from_dir(&tmp).unwrap_or_else(|_| {
         // Hack: if load_from_dir fails, try finding blake3 as content.pack.blake3
-        Pack::load(
-            &tmp.join("content.pack"),
-            &tmp.join("content.pack.blake3"),
-        ).expect("should load saved pack")
+        Pack::load(&tmp.join("content.pack"), &tmp.join("content.pack.blake3"))
+            .expect("should load saved pack")
     });
 
     assert_eq!(
@@ -118,7 +129,8 @@ fn bestiary_has_no_missing_enemy_ids() {
             assert!(
                 enemy_ids.contains(&entry.enemy.as_str()),
                 "spawn table {} references enemy {} not in bestiary",
-                table.region, entry.enemy
+                table.region,
+                entry.enemy
             );
         }
     }

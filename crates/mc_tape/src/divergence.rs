@@ -27,10 +27,8 @@ pub fn compare_tapes(a: &Tape, b: &Tape) -> DivergenceReport {
     let mut first_divergent_tick = None;
 
     // Build a map from tick -> hash for each tape.
-    let a_map: std::collections::BTreeMap<u64, [u8; 32]> =
-        a.checkpoints.iter().cloned().collect();
-    let b_map: std::collections::BTreeMap<u64, [u8; 32]> =
-        b.checkpoints.iter().cloned().collect();
+    let a_map: std::collections::BTreeMap<u64, [u8; 32]> = a.checkpoints.iter().cloned().collect();
+    let b_map: std::collections::BTreeMap<u64, [u8; 32]> = b.checkpoints.iter().cloned().collect();
 
     // Compare at all ticks present in both tapes.
     let mut total_checked = 0;
@@ -203,7 +201,14 @@ mod tests {
 
     #[test]
     fn compare_identical_tapes() {
-        let tape = Tape::new(42, TapeStart::NewGame, vec![(0, Command::Interact)], vec![], [0u8; 32]).unwrap();
+        let tape = Tape::new(
+            42,
+            TapeStart::NewGame,
+            vec![(0, Command::Interact)],
+            vec![],
+            [0u8; 32],
+        )
+        .unwrap();
         let report = compare_tapes(&tape, &tape);
         assert!(report.divergences.is_empty());
         assert!(report.first_divergent_tick.is_none());

@@ -1,5 +1,5 @@
 //! Monte Cristo presentation shell library.
-//! 
+//!
 //! All presentation logic lives in this crate's library so integration tests
 //! can access it. The binary (main.rs) is a thin entry point.
 

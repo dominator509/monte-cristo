@@ -14,9 +14,9 @@
 //! | `Data`         | `MC_DATA_DIR`      |
 //! | `Artifact`     | `MC_ARTIFACT_DIR`  |
 
-use std::path::{Path, PathBuf};
 use std::env;
 use std::fs;
+use std::path::{Path, PathBuf};
 
 /// A named root directory, resolved from an environment variable at call time.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -61,7 +61,11 @@ impl std::fmt::Display for FsError {
             FsError::InvalidRoot(r, msg) => {
                 write!(f, "root {r:?} is invalid: {msg}")
             }
-            FsError::TraversalDetected { root, requested, resolved } => {
+            FsError::TraversalDetected {
+                root,
+                requested,
+                resolved,
+            } => {
                 write!(
                     f,
                     "traversal detected: {requested:?} resolved to {resolved:?} which is outside root {root:?}"
@@ -110,9 +114,7 @@ impl Root {
 /// 1. Resolves the root path from the corresponding environment variable.
 /// 2. Delegates to [`confine_to_path`].
 pub fn confine(root: Root, requested: &Path) -> Result<PathBuf, FsError> {
-    let root_path = root
-        .resolve_env()
-        .ok_or(FsError::UnresolvedRoot(root))?;
+    let root_path = root.resolve_env().ok_or(FsError::UnresolvedRoot(root))?;
     confine_to_path(&root_path, root, requested)
 }
 
@@ -127,7 +129,11 @@ pub fn confine(root: Root, requested: &Path) -> Result<PathBuf, FsError> {
 /// 3. Verifies the resolved path is within the root (no traversal, symlink escape).
 ///
 /// Returns the confined absolute path on success.
-pub fn confine_to_path(root_path: &Path, _root: Root, requested: &Path) -> Result<PathBuf, FsError> {
+pub fn confine_to_path(
+    root_path: &Path,
+    _root: Root,
+    requested: &Path,
+) -> Result<PathBuf, FsError> {
     // 1. Canonicalise the root (requires it to exist on disk).
     let canonical_root = root_path
         .canonicalize()
@@ -157,12 +163,11 @@ pub fn confine_to_path(root_path: &Path, _root: Root, requested: &Path) -> Resul
                         break result;
                     }
                     Err(_) => {
-                        let name = resolved
-                            .file_name()
-                            .map(|n| n.to_os_string())
-                            .ok_or(FsError::ResolveError(format!(
+                        let name = resolved.file_name().map(|n| n.to_os_string()).ok_or(
+                            FsError::ResolveError(format!(
                                 "cannot resolve any ancestor of {candidate:?}"
-                            )))?;
+                            )),
+                        )?;
                         non_existent.push(name);
                         match resolved.parent() {
                             Some(p) => resolved = p.to_path_buf(),
@@ -242,8 +247,7 @@ pub fn read_to_string(root: Root, relative: &Path) -> Result<String, FsError> {
 /// Confine and write bytes to a file.
 pub fn write(root: Root, relative: &Path, data: &[u8]) -> Result<(), FsError> {
     let path = confine(root, relative)?;
-    fs::write(&path, data)
-        .map_err(|e| FsError::ResolveError(format!("cannot write {path:?}: {e}")))
+    fs::write(&path, data).map_err(|e| FsError::ResolveError(format!("cannot write {path:?}: {e}")))
 }
 
 /// Confine and create a directory (and all parents).
@@ -258,7 +262,6 @@ pub fn create_dir_all(root: Root, relative: &Path) -> Result<PathBuf, FsError> {
 mod tests {
     use super::*;
     use std::fs;
-    use std::io::Write;
 
     #[test]
     fn test_unset_env_returns_error() {
@@ -308,7 +311,8 @@ mod tests {
         fs::create_dir(&sub).unwrap();
         let file = sub.join("nested.txt");
         fs::write(&file, b"data").unwrap();
-        let result = confine_to_path(&root_path, Root::Artifact, Path::new("sub/nested.txt")).unwrap();
+        let result =
+            confine_to_path(&root_path, Root::Artifact, Path::new("sub/nested.txt")).unwrap();
         assert_eq!(result, file.canonicalize().unwrap());
     }
 
@@ -344,8 +348,7 @@ mod tests {
     fn test_write_new_file_allowed() {
         let dir = tempfile::tempdir().unwrap();
         let root_path = dir.path().canonicalize().unwrap();
-        let result =
-            confine_to_path(&root_path, Root::Data, Path::new("new_file.txt")).unwrap();
+        let result = confine_to_path(&root_path, Root::Data, Path::new("new_file.txt")).unwrap();
         // The path should be within the root
         assert!(result.starts_with(&root_path));
     }
@@ -366,8 +369,7 @@ mod tests {
     fn test_write_traversal_rejected() {
         let dir = tempfile::tempdir().unwrap();
         let root_path = dir.path().canonicalize().unwrap();
-        let err =
-            confine_to_path(&root_path, Root::Data, Path::new("../escape.txt")).unwrap_err();
+        let err = confine_to_path(&root_path, Root::Data, Path::new("../escape.txt")).unwrap_err();
         match &err {
             FsError::TraversalDetected { .. } => {}
             FsError::ResolveError(_) => {}

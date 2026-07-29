@@ -8,8 +8,7 @@
 fn no_absolute_home_paths_in_logs() {
     // Check the fsroot module logs relative paths
     let fsroot_src = std::fs::read_to_string(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("src/fsroot.rs"),
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/fsroot.rs"),
     )
     .expect("fsroot.rs must exist");
 
@@ -23,11 +22,7 @@ fn no_absolute_home_paths_in_logs() {
     for (i, line) in fsroot_src.lines().enumerate() {
         let low = line.to_lowercase();
         if low.contains("/home/") || low.contains("/users/") || low.contains("c:\\users") {
-            panic!(
-                "fsroot.rs:{} contains absolute home path: {}",
-                i + 1,
-                line
-            );
+            panic!("fsroot.rs:{} contains absolute home path: {}", i + 1, line);
         }
     }
 }
@@ -36,8 +31,7 @@ fn no_absolute_home_paths_in_logs() {
 #[test]
 fn config_paths_redacted() {
     let config_src = std::fs::read_to_string(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("src/config.rs"),
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/config.rs"),
     )
     .expect("config.rs must exist");
 
@@ -46,11 +40,7 @@ fn config_paths_redacted() {
         if (low.contains("/home/") || low.contains("/users/") || low.contains("c:\\users"))
             && !line.trim_start().starts_with("//")
         {
-            panic!(
-                "config.rs:{} contains absolute home path: {}",
-                i + 1,
-                line
-            );
+            panic!("config.rs:{} contains absolute home path: {}", i + 1, line);
         }
     }
 }
@@ -59,8 +49,7 @@ fn config_paths_redacted() {
 #[test]
 fn main_no_raw_path_logging() {
     let main_src = std::fs::read_to_string(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("src/main.rs"),
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/main.rs"),
     )
     .expect("main.rs must exist");
 
@@ -69,11 +58,7 @@ fn main_no_raw_path_logging() {
         if (low.contains("/home/") || low.contains("/users/") || low.contains("c:\\users"))
             && !line.trim_start().starts_with("//")
         {
-            panic!(
-                "main.rs:{} contains absolute home path: {}",
-                i + 1,
-                line
-            );
+            panic!("main.rs:{} contains absolute home path: {}", i + 1, line);
         }
     }
 }

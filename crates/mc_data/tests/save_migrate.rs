@@ -36,7 +36,7 @@ fn tmp_dir() -> PathBuf {
 /// Load the v1 fixture, migrate it in memory, and verify the result.
 #[test]
 fn migrate_v1_fixture_in_memory() {
-    let data = fs::read(&fixture_v1_path())
+    let data = fs::read(fixture_v1_path())
         .unwrap_or_else(|e| panic!("cannot read v1 fixture at {:?}: {e}", fixture_v1_path()));
 
     let migrated = migrate::migrate_save(&data).expect("migration should succeed");
@@ -59,12 +59,12 @@ fn migrate_v1_fixture_in_memory() {
 /// Migrate the fixture file on disk and verify the .bak file was created.
 #[test]
 fn migrate_v1_fixture_file() {
-    let _ = fs::remove_dir_all(&tmp_dir());
-    fs::create_dir_all(&tmp_dir()).unwrap();
+    let _ = fs::remove_dir_all(tmp_dir());
+    fs::create_dir_all(tmp_dir()).unwrap();
 
     // Copy the v1 fixture to our temp dir
     let save_path = tmp_dir().join("save.sav");
-    fs::copy(&fixture_v1_path(), &save_path).unwrap_or_else(|e| panic!("cannot copy fixture: {e}"));
+    fs::copy(fixture_v1_path(), &save_path).unwrap_or_else(|e| panic!("cannot copy fixture: {e}"));
 
     // Read original data for comparison
     let original_data = fs::read(&save_path).expect("should read copied fixture");
@@ -92,7 +92,7 @@ fn migrate_v1_fixture_file() {
     assert_eq!(save.schema_version, CURRENT_SCHEMA_VERSION);
     assert_eq!(save.product_version, "0.1.0");
 
-    let _ = fs::remove_dir_all(&tmp_dir());
+    let _ = fs::remove_dir_all(tmp_dir());
 }
 
 /// Verifying that migration preserves world state_hash.
@@ -111,8 +111,8 @@ fn migrate_preserves_world_state() {
     }
     let original_hash = world.state_hash();
 
-    let v1_bytes = postcard::to_stdvec(&(1u16, "0.1.0", content_digest, &world))
-        .expect("v1 serialization");
+    let v1_bytes =
+        postcard::to_stdvec(&(1u16, "0.1.0", content_digest, &world)).expect("v1 serialization");
 
     let migrated = migrate::migrate_save(&v1_bytes).expect("migration should succeed");
     let save = Save::load(&migrated).expect("migrated save should load");

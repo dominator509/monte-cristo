@@ -9,5 +9,5 @@ use mc_shell::ui::text::TextSpeed;
 fn font_metrics_defined() {
     // At minimum verify the type system works and text speed functions exist
     let _ = TextSpeed::Normal;
-    assert!(true, "text module loads correctly");
+    // text module loads correctly — test compiles when font infrastructure exists
 }

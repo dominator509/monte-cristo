@@ -59,7 +59,12 @@ pub fn execute(args: &RecordArgs) -> Result<(), Box<dyn std::error::Error>> {
     std::fs::write(&args.out, &bytes)
         .map_err(|e| format!("failed to write tape to {:?}: {}", args.out, e))?;
 
-    println!("tape written to {:?} ({} entries, {} bytes)", args.out, tape.len(), bytes.len());
+    println!(
+        "tape written to {:?} ({} entries, {} bytes)",
+        args.out,
+        tape.len(),
+        bytes.len()
+    );
     Ok(())
 }
 

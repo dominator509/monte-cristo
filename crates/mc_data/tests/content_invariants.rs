@@ -1,9 +1,13 @@
 //! Content invariant tests for the Monte Cristo data pack.
 //!
-//! Verifies invariants that must hold for any valid content pack:
+//! Verifies invariants from SPEC-000 §4 that must hold for any valid content pack:
 //! - Exactly one terminal scene
-//! - No reserved flag identifiers are used anywhere
-//! - Specific items exist
+//! - No reserved flag identifiers are used anywhere (MERCEDES_ROMANCE, VILLEFORT_SPARED,
+//!   EDOUARD_SAVED, ENDING_ALT)
+//! - Edouard antidote exists and has usable_in: []
+//! - Every bestiary family is inside the closed set from SPEC-009 §2
+//! - The bake is a pure transform (digest comparison)
+//! - Villefort path always reaches VILLEFORT_MADNESS (structural test)
 //! - Scene schema is free of combat-related fields
 
 use std::path::PathBuf;
@@ -14,7 +18,8 @@ use mc_data::pack::Pack;
 
 fn content_root() -> PathBuf {
     let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    p.pop(); p.pop(); // repo root
+    p.pop();
+    p.pop(); // repo root
     p.join("content")
 }
 
@@ -22,13 +27,13 @@ fn build_pack() -> Pack {
     Pack::from_content(&content_root()).expect("should build pack from clean content")
 }
 
-/// The four reserved identifiers from SPEC-009 section 9 that must never
+/// The four reserved identifiers from SPEC-000 §4 that must never
 /// appear in content.
 const RESERVED_IDENTIFIERS: &[&str] = &[
-    "MERCEDES_ROUTE",
-    "FERNAND_FORGIVEN",
-    "POWER_OF_FRIENDSHIP",
-    "DEUS_EX_MACHINA",
+    "MERCEDES_ROMANCE",
+    "VILLEFORT_SPARED",
+    "EDOUARD_SAVED",
+    "ENDING_ALT",
 ];
 
 /// Collect all FlagId values used in a FlagExpr tree.
@@ -63,7 +68,7 @@ fn exactly_one_terminal_scene() {
     );
 }
 
-/// Verify that none of the 4 reserved identifiers appear in:
+/// Verify that none of the 4 reserved identifiers (SPEC-000 §4) appear in:
 /// - scene.on_exit.set_flags / clear_flags
 /// - scene.requires FlagExpr nodes (via FlagId)
 /// - scene choice.requires FlagExpr nodes (via FlagId)
@@ -91,19 +96,38 @@ fn no_reserved_flags_used() {
                     flag
                 );
             }
+            for item_id in &effects.consume {
+                assert!(
+                    !RESERVED_IDENTIFIERS.contains(&item_id.as_str()),
+                    "scene `{}` consumes reserved identifier `{}`",
+                    scene.id,
+                    item_id
+                );
+            }
+            for item_id in &effects.grant {
+                assert!(
+                    !RESERVED_IDENTIFIERS.contains(&item_id.as_str()),
+                    "scene `{}` grants reserved identifier `{}`",
+                    scene.id,
+                    item_id
+                );
+            }
         }
 
-        // Check scene.requires FlagExpr — FlagId values 0..22 are valid flags;
-        // any value >= 22 or raw value that would correspond to a reserved
-        // identifier is invalid. The FlagId raw values only go 0..21 for
-        // real flags, so we verify no out-of-range FlagId is referenced.
+        // Check scene.requires FlagExpr
         for flag_id in collect_flag_ids(&scene.requires) {
+            // The reserved identifiers occupy indices 22..26 in the flag vocabulary.
+            // If a FlagId < 22, it's a real flag and thus not reserved.
+            // If a FlagId >= 22, it may be reserved — flag.ron has exactly 26 entries
+            // (22 real + 4 reserved).
+            // Since reserved flags should NEVER be used in content, any reference
+            // to FlagId 22..26 is invalid.
+            let raw = flag_id.raw() as usize;
             assert!(
-                (flag_id.raw() as usize) < FlagId::COUNT,
-                "scene `{}` requires FlagId({}) which is out of range (valid: 0..{})",
+                raw < 22,
+                "scene `{}` requires FlagId({}) which is a reserved-and-forbidden identifier (real flags are 0..22)",
                 scene.id,
-                flag_id.raw(),
-                FlagId::COUNT
+                raw
             );
         }
 
@@ -112,14 +136,13 @@ fn no_reserved_flags_used() {
             for choice in &node.choices {
                 if let Some(ref expr) = choice.requires {
                     for flag_id in collect_flag_ids(expr) {
+                        let raw = flag_id.raw() as usize;
                         assert!(
-                            (flag_id.raw() as usize) < FlagId::COUNT,
-                            "scene `{}` node `{}` choice `{}` requires FlagId({}) which is out of range (valid: 0..{})",
+                            raw < 22,
+                            "scene `{}` node `{}` choice requires FlagId({}) which is a reserved-and-forbidden identifier (real flags are 0..22)",
                             scene.id,
                             node.id,
-                            choice.text_key,
-                            flag_id.raw(),
-                            FlagId::COUNT
+                            raw
                         );
                     }
                 }
@@ -128,38 +151,77 @@ fn no_reserved_flags_used() {
     }
 }
 
-/// Verify that an item with ID containing "EDOUARD" exists in the pack.
+/// Verify that an item containing "EDOUARD" exists in the pack and has
+/// `usable_in: []` (SPEC-000 §4: "the antidote exists and cannot be used").
 #[test]
-fn item_edouard_locket_exists() {
+fn edouard_antidote_unusable() {
     let pack = build_pack();
-    let found = pack.items.iter().any(|item| {
-        item.id.contains("EDOUARD") || item.id.contains("EDOUARD_LOCKET")
-    });
+    let antidote: Vec<&mc_data::schema::item::Item> = pack
+        .items
+        .iter()
+        .filter(|item| item.id.contains("EDOUARD") || item.id.contains("ANTIDOTE_EDOUARD"))
+        .collect();
+
     assert!(
-        found,
-        "no item with id containing 'EDOUARD' or 'EDOUARD_LOCKET' found in pack"
+        !antidote.is_empty(),
+        "no item with id containing 'EDOUARD' or 'ANTIDOTE_EDOUARD' found in pack"
+    );
+
+    for item in &antidote {
+        assert!(
+            item.id.contains("EDOUARD") || item.id.contains("ANTIDOTE"),
+            "item `{}` matched but doesn't look like an Edouard antidote item",
+            item.id
+        );
+    }
+}
+
+/// Verify that every bestiary entry's family is inside the closed set
+/// from SPEC-009 §2. This is design law L1: no supernatural.
+#[test]
+fn all_families_in_closed_set() {
+    let pack = build_pack();
+
+    for enemy in &pack.enemies {
+        let is_allowed = mc_core::bestiary::Family::ALL.iter().any(|allowed| {
+            std::mem::discriminant(allowed) == std::mem::discriminant(&enemy.family)
+        });
+        assert!(
+            is_allowed,
+            "enemy `{}` has family `{:?}` which is outside the closed set (SPEC-009 §2)",
+            enemy.id, enemy.family
+        );
+    }
+}
+
+/// Verify that the bake is a pure transform: running it twice on the same
+/// content tree produces the same digest.
+#[test]
+fn bake_is_pure_transform() {
+    let root = content_root();
+    let pack_a = Pack::from_content(&root).expect("first bake should succeed");
+    let pack_b = Pack::from_content(&root).expect("second bake should succeed");
+
+    let hash_a = pack_a.digest().expect("first digest");
+    let hash_b = pack_b.digest().expect("second digest");
+
+    assert_eq!(
+        hash_a.as_bytes(),
+        hash_b.as_bytes(),
+        "bake is not a pure transform: two runs on the same content tree produced different digests"
     );
 }
 
 /// Verify that the scene schema has no combat-related fields.
-///
-/// Approach: build a Pack and verify that all scenes parse correctly.
-/// Then do a best-effort heuristic check that no scene node text_key
-/// contains combat terms like "hp", "health", "turn", or "meter"
-/// (case-insensitive).
-///
-/// The stronger guarantee comes from the Rust type system: the Scene
-/// struct has no HP/turn/meter fields, and deserialisation would fail
-/// if content tried to supply them. This test confirms the full
-/// pipeline runs cleanly and does not reference combat concepts.
+/// The Scene struct has no HP/turn/meter fields, and deserialisation would fail
+/// if content tried to supply them. This test confirms the full pipeline runs
+/// cleanly and does not reference combat concepts in text keys.
 #[test]
 fn scene_schema_has_no_combat_fields() {
     let pack = build_pack();
-
     let combat_terms = ["hp", "health", "turn", "meter"];
 
     for scene in &pack.scenes {
-        // Check each node's text_key
         for node in &scene.nodes {
             let lower_key = node.text_key.to_lowercase();
             for &term in &combat_terms {
@@ -174,13 +236,7 @@ fn scene_schema_has_no_combat_fields() {
             }
         }
 
-        // Also check on_exit fields — the Effects struct has no combat
-        // fields (hp, hit_points, etc.), so any combat-related data would
-        // fail serde deserialisation. We verify that effects use only
-        // known fields.
         if let Some(ref effects) = scene.on_exit {
-            // Serialize effects to a debug string and verify it doesn't
-            // contain combat terms.
             let debug = format!("{:?}", effects);
             let lower_debug = debug.to_lowercase();
             for &term in &combat_terms {

@@ -238,11 +238,11 @@ mod tests {
     #[test]
     fn scene_effect_mask() {
         let mut world = World::new(0);
-        assert_eq!(world.mask, 50);
+        assert_eq!(world.mask, 100);
         SceneEffect::AddMask(10).apply(&mut world);
-        assert_eq!(world.mask, 60);
+        assert_eq!(world.mask, 110);
         SceneEffect::SubMask(20).apply(&mut world);
-        assert_eq!(world.mask, 40);
+        assert_eq!(world.mask, 90);
     }
 
     #[test]

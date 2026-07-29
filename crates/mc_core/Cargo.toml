@@ -7,6 +7,11 @@ license.workspace = true
 
 [dev-dependencies]
 proptest = { workspace = true }
+criterion = { workspace = true }
+
+[[bench]]
+name = "battle_step"
+harness = false
 
 [dependencies]
 serde = { workspace = true }

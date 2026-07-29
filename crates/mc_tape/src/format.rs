@@ -84,10 +84,7 @@ impl Tape {
             let mut prev = *prev_tick;
             for (_, (tick, _)) in entries.iter().enumerate().skip(1) {
                 if *tick <= prev {
-                    return Err(TapeError::NonMonotonicTicks {
-                        tick: *tick,
-                        prev,
-                    });
+                    return Err(TapeError::NonMonotonicTicks { tick: *tick, prev });
                 }
                 prev = *tick;
             }
@@ -117,8 +114,7 @@ impl Tape {
     /// 3. Entry count does not exceed `MAX_TAPE_ENTRIES`.
     /// 4. Content digest matches a hash of the serialised entries/checkpoints.
     pub fn from_bytes(data: &[u8]) -> Result<Self, TapeError> {
-        let tape: Tape =
-            postcard::from_bytes(data).map_err(map_postcard_err)?;
+        let tape: Tape = postcard::from_bytes(data).map_err(map_postcard_err)?;
 
         // Validate magic.
         if &tape.magic != b"MCTAPE01" {
@@ -139,10 +135,7 @@ impl Tape {
             let mut prev = *prev_tick;
             for (tick, _) in tape.entries.iter().skip(1) {
                 if *tick <= prev {
-                    return Err(TapeError::NonMonotonicTicks {
-                        tick: *tick,
-                        prev,
-                    });
+                    return Err(TapeError::NonMonotonicTicks { tick: *tick, prev });
                 }
                 prev = *tick;
             }
@@ -159,9 +152,8 @@ impl Tape {
 
     /// Serialise the tape to postcard-encoded bytes.
     pub fn to_bytes(&self) -> Result<Vec<u8>, TapeError> {
-        postcard::to_allocvec(self).map_err(|e| {
-            TapeError::Io(format!("serialization failed: {}", e))
-        })
+        postcard::to_allocvec(self)
+            .map_err(|e| TapeError::Io(format!("serialization failed: {}", e)))
     }
 
     /// Return the number of entries in the tape.
@@ -201,8 +193,12 @@ fn map_postcard_err(e: postcard::Error) -> TapeError {
         postcard::Error::DeserializeBadCrc => TapeError::Deserialize(e.to_string()),
         postcard::Error::DeserializeBadEncoding => TapeError::Deserialize(e.to_string()),
         postcard::Error::SerializeBufferFull => TapeError::Deserialize(e.to_string()),
-        postcard::Error::SerdeSerCustom => TapeError::Deserialize("serde serialization error".into()),
-        postcard::Error::SerdeDeCustom => TapeError::Deserialize("serde deserialization error".into()),
+        postcard::Error::SerdeSerCustom => {
+            TapeError::Deserialize("serde serialization error".into())
+        }
+        postcard::Error::SerdeDeCustom => {
+            TapeError::Deserialize("serde deserialization error".into())
+        }
         _ => TapeError::Deserialize(e.to_string()),
     }
 }

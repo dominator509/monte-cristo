@@ -43,7 +43,7 @@ pub fn migrate_save(data: &[u8]) -> Result<Vec<u8>, SaveError> {
         world,
     )?;
 
-    Ok(save.to_bytes()?)
+    save.to_bytes()
 }
 
 /// Migrate a v1 save file on disk.

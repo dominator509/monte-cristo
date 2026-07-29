@@ -3,7 +3,7 @@
 //! SPEC-004 section 7. The remap is stored in settings and survives restart.
 //! No action requires more than two simultaneous inputs.
 
-use crate::config::{InputAction, InputMap};
+use crate::config::InputMap;
 
 /// Validate an input map: no action may have more than 2 bindings.
 pub fn validate_map(map: &InputMap) -> bool {

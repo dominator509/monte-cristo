@@ -41,7 +41,10 @@ fn no_combat_affordances_in_confidence() {
         let low = line.to_lowercase();
         for keyword in &["hp", "gauge", "atb", "turn_order"] {
             // Skip comments and strings that just mention the prohibition
-            if low.contains(keyword) && !line.trim_start().starts_with("//") && !line.contains("no ") {
+            if low.contains(keyword)
+                && !line.trim_start().starts_with("//")
+                && !line.contains("no ")
+            {
                 panic!(
                     "confidence.rs:{} contains forbidden combat affordance '{}': {}",
                     i + 1,

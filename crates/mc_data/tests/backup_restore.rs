@@ -39,8 +39,8 @@ fn build_save() -> Save {
 
 #[test]
 fn corrupt_file_rejected_with_digest_mismatch() {
-    let _ = fs::remove_dir_all(&tmp_dir("corrupt"));
-    fs::create_dir_all(&tmp_dir("corrupt")).unwrap();
+    let _ = fs::remove_dir_all(tmp_dir("corrupt"));
+    fs::create_dir_all(tmp_dir("corrupt")).unwrap();
 
     let save = build_save();
     let save_path = tmp_dir("corrupt").join("save.sav");
@@ -81,13 +81,13 @@ fn corrupt_file_rejected_with_digest_mismatch() {
         "intact save must preserve world state"
     );
 
-    let _ = fs::remove_dir_all(&tmp_dir("corrupt"));
+    let _ = fs::remove_dir_all(tmp_dir("corrupt"));
 }
 
 #[test]
 fn intact_file_loads_after_copy() {
-    let _ = fs::remove_dir_all(&tmp_dir("intact"));
-    fs::create_dir_all(&tmp_dir("intact")).unwrap();
+    let _ = fs::remove_dir_all(tmp_dir("intact"));
+    fs::create_dir_all(tmp_dir("intact")).unwrap();
 
     let save = build_save();
     let save_path = tmp_dir("intact").join("save.sav");
@@ -105,5 +105,5 @@ fn intact_file_loads_after_copy() {
         "copied save must preserve world state"
     );
 
-    let _ = fs::remove_dir_all(&tmp_dir("intact"));
+    let _ = fs::remove_dir_all(tmp_dir("intact"));
 }

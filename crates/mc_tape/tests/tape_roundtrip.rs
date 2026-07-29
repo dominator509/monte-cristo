@@ -4,9 +4,9 @@
 //! serialize -> deserialize -> compare round trip.
 
 use mc_core::command::{Command, Dir};
+use mc_core::world::World;
 use mc_tape::format::{Tape, TapeStart};
 use mc_tape::record::RecordTape;
-use mc_core::world::World;
 
 /// Build a tape with a small set of commands, serialize it,
 /// deserialize it, and assert they are identical.
@@ -50,15 +50,8 @@ fn roundtrip_multiple_entries() {
 
 #[test]
 fn roundtrip_with_checkpoints() {
-    let checkpoints = vec![
-        (1024, [1u8; 32]),
-        (2048, [2u8; 32]),
-        (3072, [3u8; 32]),
-    ];
-    let entries = vec![
-        (0, Command::Interact),
-        (1, Command::Move(Dir::West)),
-    ];
+    let checkpoints = vec![(1024, [1u8; 32]), (2048, [2u8; 32]), (3072, [3u8; 32])];
+    let entries = vec![(0, Command::Interact), (1, Command::Move(Dir::West))];
     let tape = Tape::new(42, TapeStart::NewGame, entries, checkpoints, [0u8; 32]).unwrap();
     let bytes = tape.to_bytes().unwrap();
     let deserialized = Tape::from_bytes(&bytes).unwrap();
@@ -76,19 +69,28 @@ fn roundtrip_all_command_variants() {
         (4, Command::Interact),
         (5, Command::OpenMenu),
         (6, Command::CloseMenu),
-        (7, Command::SelectAction(
-            mc_core::command::ActorId(0),
-            mc_core::command::Action::Attack {
-                target: mc_core::command::TargetId(1),
-            },
-        )),
+        (
+            7,
+            Command::SelectAction(
+                mc_core::command::ActorId(0),
+                mc_core::command::Action::Attack {
+                    target: mc_core::command::TargetId(1),
+                },
+            ),
+        ),
         (8, Command::ConfirmTarget(mc_core::command::TargetId(0))),
         (9, Command::CancelSelection),
         (10, Command::SetWaitMode(true)),
         (11, Command::SceneAdvance),
         (12, Command::SceneChoose(mc_core::command::ChoiceIdx(0))),
-        (13, Command::SwapPersona(mc_core::command::PersonaId::MonteCristo)),
-        (14, Command::FastTravel(mc_core::ids::RegionId::R01_MARSEILLE)),
+        (
+            13,
+            Command::SwapPersona(mc_core::command::PersonaId::MonteCristo),
+        ),
+        (
+            14,
+            Command::FastTravel(mc_core::ids::RegionId::R01_MARSEILLE),
+        ),
         (15, Command::NameYourself),
         (16, Command::Save(mc_core::command::SaveSlot(0))),
         (17, Command::Load(mc_core::command::SaveSlot(1))),
@@ -138,10 +140,7 @@ fn roundtrip_with_1024_step_gaps() {
         (1500, Command::OpenMenu),
         (3000, Command::CloseMenu),
     ];
-    let checkpoints = vec![
-        (1024, [0xAA; 32]),
-        (2048, [0xBB; 32]),
-    ];
+    let checkpoints = vec![(1024, [0xAA; 32]), (2048, [0xBB; 32])];
     let tape = Tape::new(42, TapeStart::NewGame, entries, checkpoints, [0u8; 32]).unwrap();
     let bytes = tape.to_bytes().unwrap();
     let deserialized = Tape::from_bytes(&bytes).unwrap();

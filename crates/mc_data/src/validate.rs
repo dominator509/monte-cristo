@@ -157,9 +157,7 @@ pub fn vocabulary_check(content_root: &Path) -> Vec<ContentError> {
     let flags_content = match std::fs::read_to_string(&flags_path) {
         Ok(s) => s,
         Err(e) => {
-            errors.push(ContentError::new(format!(
-                "cannot read flags.ron: {e}"
-            )));
+            errors.push(ContentError::new(format!("cannot read flags.ron: {e}")));
             return errors;
         }
     };
@@ -167,9 +165,7 @@ pub fn vocabulary_check(content_root: &Path) -> Vec<ContentError> {
     let vocabulary: HashSet<String> = match ron::from_str::<Vec<String>>(&flags_content) {
         Ok(v) => v.into_iter().collect(),
         Err(e) => {
-            errors.push(ContentError::new(format!(
-                "cannot parse flags.ron: {e}"
-            )));
+            errors.push(ContentError::new(format!("cannot parse flags.ron: {e}")));
             return errors;
         }
     };
@@ -178,9 +174,7 @@ pub fn vocabulary_check(content_root: &Path) -> Vec<ContentError> {
     let mut check_flag = |flag: &str, file: &str| {
         if !vocabulary.contains(flag) {
             errors.push(ContentError::in_field(
-                format!(
-                    "flag identifier `{flag}` is not in the locked vocabulary from flags.ron"
-                ),
+                format!("flag identifier `{flag}` is not in the locked vocabulary from flags.ron"),
                 file,
                 flag,
             ));
@@ -189,9 +183,7 @@ pub fn vocabulary_check(content_root: &Path) -> Vec<ContentError> {
 
     // --- Check enemies (string-based FlagExpr in gate) ---
     let bestiary_dir = content_root.join("bestiary");
-    for (path, enemy) in
-        load_ron::<Enemy>(&bestiary_dir, "Enemy", &mut Vec::new())
-    {
+    for (path, enemy) in load_ron::<Enemy>(&bestiary_dir, "Enemy", &mut Vec::new()) {
         let file = path.display().to_string();
         for flag in collect_flag_strings_from_enemy_gate(&enemy.gate) {
             check_flag(&flag, &file);
@@ -200,9 +192,7 @@ pub fn vocabulary_check(content_root: &Path) -> Vec<ContentError> {
 
     // --- Check scenes (effects.set_flags / .clear_flags) ---
     let scenes_dir = content_root.join("scenes");
-    for (path, scene) in
-        load_ron::<Scene>(&scenes_dir, "Scene", &mut Vec::new())
-    {
+    for (path, scene) in load_ron::<Scene>(&scenes_dir, "Scene", &mut Vec::new()) {
         let file = path.display().to_string();
         if let Some(ref effects) = scene.on_exit {
             for flag in collect_flag_strings_from_effects(effects) {
@@ -324,6 +314,12 @@ pub fn orphan_detect(content_root: &Path) -> Vec<ContentError> {
 
     // Check enemies
     for (path, enemy) in &enemies {
+        // Boss-family enemies are intentionally exclusive to scene encounters
+        // and are never referenced by spawn tables. Skip orphan check for them.
+        let family_debug = format!("{:?}", enemy.family);
+        if family_debug.eq_ignore_ascii_case("Boss") {
+            continue;
+        }
         let key = enemy.id.to_lowercase();
         if !referenced_enemies.contains(&key) {
             errors.push(ContentError::in_file(
@@ -385,15 +381,16 @@ pub fn supernatural_lint(content_root: &Path) -> Vec<ContentError> {
     .into();
 
     let bestiary_dir = content_root.join("bestiary");
-    for (path, enemy) in
-        load_ron::<Enemy>(&bestiary_dir, "Enemy", &mut Vec::new())
-    {
+    for (path, enemy) in load_ron::<Enemy>(&bestiary_dir, "Enemy", &mut Vec::new()) {
         let file = path.display().to_string();
         // We can't inspect the serialised form directly, but we can verify
         // that the family is one of the known variants by round-tripping
         // through serde's debug representation.
         let family_debug = format!("{:?}", enemy.family);
-        if !valid_families.iter().any(|f| f.eq_ignore_ascii_case(&family_debug)) {
+        if !valid_families
+            .iter()
+            .any(|f| f.eq_ignore_ascii_case(&family_debug))
+        {
             errors.push(ContentError::in_field(
                 format!(
                     "enemy `{}` has unrecognised family `{:?}`; expected one of: {}",
@@ -440,9 +437,7 @@ pub fn region_affinity_check(content_root: &Path) -> Vec<ContentError> {
 
     // Check every spawn table
     let spawn_dir = content_root.join("spawn_tables");
-    for (path, table) in
-        load_ron::<SpawnTable>(&spawn_dir, "SpawnTable", &mut Vec::new())
-    {
+    for (path, table) in load_ron::<SpawnTable>(&spawn_dir, "SpawnTable", &mut Vec::new()) {
         let file = path.display().to_string();
         for entry in &table.entries {
             let key = entry.enemy.to_lowercase();

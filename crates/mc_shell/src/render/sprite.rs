@@ -35,7 +35,8 @@ pub struct Sprite {
 impl Sprite {
     pub fn new(x: f32, y: f32) -> Self {
         Sprite {
-            x, y,
+            x,
+            y,
             frame: 0,
             flip_x: false,
             flip_y: false,

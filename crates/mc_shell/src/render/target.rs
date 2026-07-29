@@ -63,7 +63,7 @@ impl ShellRenderTarget {
         let (win_w, win_h) = (screen_width(), screen_height());
         let scale_x = (win_w / INTERNAL_WIDTH as f32).floor() as u16;
         let scale_y = (win_h / INTERNAL_HEIGHT as f32).floor() as u16;
-        let scale = scale_x.min(scale_y).min(MAX_SCALE).max(1);
+        let scale = scale_x.min(scale_y).clamp(1, MAX_SCALE);
         let sw = INTERNAL_WIDTH as f32 * scale as f32;
         let sh = INTERNAL_HEIGHT as f32 * scale as f32;
         let ox = ((win_w - sw) / 2.0).floor();
@@ -109,7 +109,7 @@ impl ShellRenderTarget {
         let (win_w, win_h) = (screen_width(), screen_height());
         let scale_x = (win_w / INTERNAL_WIDTH as f32).floor() as u16;
         let scale_y = (win_h / INTERNAL_HEIGHT as f32).floor() as u16;
-        let new_scale = scale_x.min(scale_y).min(MAX_SCALE).max(1);
+        let new_scale = scale_x.min(scale_y).clamp(1, MAX_SCALE);
         if new_scale != self.scale {
             self.recompute();
         }

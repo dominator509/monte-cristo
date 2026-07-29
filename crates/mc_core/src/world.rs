@@ -145,7 +145,7 @@ impl World {
             party: Party::new(vec![edmond]),
             flags: FlagSet::new(),
             trust: std::collections::BTreeMap::new(),
-            mask: 50,
+            mask: 100,
             inventory: Inventory::new(),
             rng,
         }

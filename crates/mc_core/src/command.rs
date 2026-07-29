@@ -62,9 +62,17 @@ pub enum CampaignAction {
 /// Maps onto mc_core's internal BattleAction.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Action {
-    Attack { target: TargetId },
-    Tech { tech_id: crate::ids::TechId, target: TargetId },
-    Item { item_id: ItemId, target: TargetId },
+    Attack {
+        target: TargetId,
+    },
+    Tech {
+        tech_id: crate::ids::TechId,
+        target: TargetId,
+    },
+    Item {
+        item_id: ItemId,
+        target: TargetId,
+    },
     Guard,
     Flee,
 }
@@ -198,27 +206,35 @@ pub fn apply_commands(world: &mut World, commands: &[Command]) -> Vec<CoreEvent>
 fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
     match cmd {
         // Navigation — always valid
-        Command::Move(_) => CoreEvent::Applied { command: cmd.clone() },
+        Command::Move(_) => CoreEvent::Applied {
+            command: cmd.clone(),
+        },
 
         // Interaction — always valid
-        Command::Interact => CoreEvent::Applied { command: cmd.clone() },
+        Command::Interact => CoreEvent::Applied {
+            command: cmd.clone(),
+        },
 
         // Menu — always valid
-        Command::OpenMenu | Command::CloseMenu => {
-            CoreEvent::Applied { command: cmd.clone() }
-        }
+        Command::OpenMenu | Command::CloseMenu => CoreEvent::Applied {
+            command: cmd.clone(),
+        },
 
         // Battle commands — valid only during active battle
         Command::SelectAction(..) | Command::ConfirmTarget(_) | Command::CancelSelection => {
             // TODO(EP-005): bridge to battle system
-            CoreEvent::Applied { command: cmd.clone() }
+            CoreEvent::Applied {
+                command: cmd.clone(),
+            }
         }
-        Command::SetWaitMode(_) => CoreEvent::Applied { command: cmd.clone() },
+        Command::SetWaitMode(_) => CoreEvent::Applied {
+            command: cmd.clone(),
+        },
 
         // Scene commands — always valid
-        Command::SceneAdvance | Command::SceneChoose(_) => {
-            CoreEvent::Applied { command: cmd.clone() }
-        }
+        Command::SceneAdvance | Command::SceneChoose(_) => CoreEvent::Applied {
+            command: cmd.clone(),
+        },
 
         // Calendar — valid only during Act II
         Command::CalendarAct(_) => {
@@ -229,7 +245,9 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
                         .into(),
                 };
             }
-            CoreEvent::Applied { command: cmd.clone() }
+            CoreEvent::Applied {
+                command: cmd.clone(),
+            }
         }
 
         // Season — valid only during Act VI
@@ -240,11 +258,15 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
                     reason: "Season actions are only available during Act VI (Paris)".into(),
                 };
             }
-            CoreEvent::Applied { command: cmd.clone() }
+            CoreEvent::Applied {
+                command: cmd.clone(),
+            }
         }
 
         // Persona swap — always valid
-        Command::SwapPersona(_) => CoreEvent::Applied { command: cmd.clone() },
+        Command::SwapPersona(_) => CoreEvent::Applied {
+            command: cmd.clone(),
+        },
 
         // Fast travel — valid only if region exists
         Command::FastTravel(rid) => {
@@ -254,18 +276,22 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
                     reason: format!("Unknown region: {:?}", rid),
                 };
             }
-            CoreEvent::Applied { command: cmd.clone() }
+            CoreEvent::Applied {
+                command: cmd.clone(),
+            }
         }
 
         // NameYourself — gated on Phase2 + three dossier flags
         Command::NameYourself => {
-            let phase2 = world.flags
-                .is_set(crate::ids::FlagId::FLG_FINAL_PHASE2);
-            let yanina = world.flags
+            let phase2 = world.flags.is_set(crate::ids::FlagId::FLG_FINAL_PHASE2);
+            let yanina = world
+                .flags
                 .is_set(crate::ids::FlagId::FLG_MORCERF_YANINA_DOSSIER);
-            let albert = world.flags
+            let albert = world
+                .flags
                 .is_set(crate::ids::FlagId::FLG_MORCERF_ALBERT_WITHDRAWN);
-            let mercedes = world.flags
+            let mercedes = world
+                .flags
                 .is_set(crate::ids::FlagId::FLG_MERCEDES_RECOGNITION);
 
             if !phase2 || !yanina || !albert || !mercedes {
@@ -287,13 +313,15 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
                     reason: format!("NameYourself denied: {}", missing.join(", ")),
                 };
             }
-            CoreEvent::Applied { command: cmd.clone() }
+            CoreEvent::Applied {
+                command: cmd.clone(),
+            }
         }
 
         // Save/Load — always valid (actual I/O happens in the shell)
-        Command::Save(_) | Command::Load(_) => {
-            CoreEvent::Applied { command: cmd.clone() }
-        }
+        Command::Save(_) | Command::Load(_) => CoreEvent::Applied {
+            command: cmd.clone(),
+        },
     }
 }
 

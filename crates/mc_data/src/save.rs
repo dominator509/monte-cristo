@@ -49,15 +49,17 @@ impl Save {
         content_digest: [u8; 32],
         world: World,
     ) -> Result<Self, SaveError> {
-        assert!(
-            version <= MAX_SCHEMA_VERSION,
-            "schema_version {version} exceeds max {MAX_SCHEMA_VERSION}",
-        );
-        assert!(
-            product.len() <= MAX_PRODUCT_VERSION_LEN,
-            "product_version length {} exceeds max {MAX_PRODUCT_VERSION_LEN}",
-            product.len(),
-        );
+        if version > MAX_SCHEMA_VERSION {
+            return Err(SaveError::Deserialize(format!(
+                "schema_version {version} exceeds max {MAX_SCHEMA_VERSION}",
+            )));
+        }
+        if product.len() > MAX_PRODUCT_VERSION_LEN {
+            return Err(SaveError::Deserialize(format!(
+                "product_version length {} exceeds max {MAX_PRODUCT_VERSION_LEN}",
+                product.len(),
+            )));
+        }
         let mut s = Save {
             schema_version: version,
             product_version: product,
@@ -100,9 +102,13 @@ impl Save {
             .map_err(|_| SaveError::Deserialize("trailing digest is not 32 bytes".into()))?;
 
         // 1. Decode the body
-        let (schema_version, product_version, content_digest, world): (u16, String, [u8; 32], World) =
-            postcard::from_bytes(body)
-                .map_err(|e| SaveError::Deserialize(format!("postcard decode failed: {e}")))?;
+        let (schema_version, product_version, content_digest, world): (
+            u16,
+            String,
+            [u8; 32],
+            World,
+        ) = postcard::from_bytes(body)
+            .map_err(|e| SaveError::Deserialize(format!("postcard decode failed: {e}")))?;
 
         // 2. Version check – refuse newer
         if schema_version > CURRENT_SCHEMA_VERSION {
@@ -136,9 +142,7 @@ impl Save {
 
         // 5. Basic sanity check on content_digest (non-zero)
         if content_digest == [0u8; 32] {
-            return Err(SaveError::Deserialize(
-                "content_digest is all zeros".into(),
-            ));
+            return Err(SaveError::Deserialize("content_digest is all zeros".into()));
         }
 
         Ok(Save {

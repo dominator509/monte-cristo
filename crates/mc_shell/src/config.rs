@@ -4,23 +4,16 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
-
-use crate::fsroot::{self, Root};
+use std::path::PathBuf;
 
 /// The four text speed settings (SPEC-004 section 8).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TextSpeed {
-    Slow,
+    #[default]
     Normal,
+    Slow,
     Fast,
     Instant,
-}
-
-impl Default for TextSpeed {
-    fn default() -> Self {
-        TextSpeed::Normal
-    }
 }
 
 /// An input action that can be remapped.
@@ -131,7 +124,7 @@ impl ValidatedConfig {
     pub fn load_or_default(data_dir: PathBuf) -> Self {
         let settings_path = data_dir.join("settings.ron");
         let cfg = if settings_path.exists() {
-            fsroot::read_to_string(Root::Data, Path::new("settings.ron"))
+            std::fs::read_to_string(&settings_path)
                 .ok()
                 .and_then(|s| ron::from_str::<ShellConfig>(&s).ok())
                 .unwrap_or_default()
@@ -155,8 +148,11 @@ impl ValidatedConfig {
             captions_enabled: self.captions_enabled,
             input_map: self.input_map.clone(),
         };
-        if let Ok(s) = ron::to_string(&cfg) {
-            let _ = fsroot::write(Root::Data, Path::new("settings.ron"), s.as_bytes());
+        if let Some(parent) = self.settings_path.parent() {
+            std::fs::create_dir_all(parent).expect("settings directory creation should succeed");
         }
+        let s = ron::to_string(&cfg).expect("ShellConfig serialization should never fail");
+        std::fs::write(&self.settings_path, s.as_bytes())
+            .expect("settings file write should succeed");
     }
 }

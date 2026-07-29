@@ -3,9 +3,9 @@
 //! A `Pack` bundles all content data into a single canonical binary
 //! addressed by its BLAKE3 digest.
 
-use std::path::Path;
 use std::collections::HashSet;
 use std::fs;
+use std::path::Path;
 
 use crate::error::{ContentError, SaveError};
 use crate::schema::enemy::Enemy;
@@ -60,7 +60,15 @@ impl Pack {
             Vec::new()
         };
 
-        Ok(Pack { enemies, regions, scenes, spawn_tables, items, flags, strings })
+        Ok(Pack {
+            enemies,
+            regions,
+            scenes,
+            spawn_tables,
+            items,
+            flags,
+            strings,
+        })
     }
 
     /// Canonical binary encoding.
@@ -89,8 +97,7 @@ impl Pack {
 
     /// Load pack from disk, verifying digest.
     pub fn load(pack_path: &Path, digest_path: &Path) -> Result<Pack, SaveError> {
-        let expected_hex = fs::read_to_string(digest_path)
-            .map_err(SaveError::Io)?;
+        let expected_hex = fs::read_to_string(digest_path).map_err(SaveError::Io)?;
         let expected_hex = expected_hex.trim().to_string();
 
         let bytes = fs::read(pack_path).map_err(SaveError::Io)?;
@@ -98,11 +105,13 @@ impl Pack {
         let actual_hash = blake3::hash(&bytes);
         let actual_hex = actual_hash.to_hex().to_string();
         if actual_hex != expected_hex {
-            return Err(SaveError::DigestMismatch { expected: expected_hex, actual: actual_hex });
+            return Err(SaveError::DigestMismatch {
+                expected: expected_hex,
+                actual: actual_hex,
+            });
         }
 
-        postcard::from_bytes(&bytes)
-            .map_err(|e| SaveError::Deserialize(e.to_string()))
+        postcard::from_bytes(&bytes).map_err(|e| SaveError::Deserialize(e.to_string()))
     }
 
     /// Load from directory containing content.pack and content.pack.blake3.

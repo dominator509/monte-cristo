@@ -17,7 +17,10 @@ fn tolerance_monotonic() {
         let lethal = state.administer(edmond, PoisonId::PSN_BRUCINE, Fx::from_raw(16384), 0);
         let after = state.tolerance_for(edmond, PoisonId::PSN_BRUCINE);
         assert!(!lethal, "sub-lethal dose must not be lethal");
-        assert!(after >= before, "tolerance must not decrease: before={before:?}, after={after:?}");
+        assert!(
+            after >= before,
+            "tolerance must not decrease: before={before:?}, after={after:?}"
+        );
     }
 }
 
@@ -32,7 +35,9 @@ fn lethal_dose_above_tolerance_kills() {
     let tolerance = state.tolerance_for(edmond, PoisonId::PSN_BRUCINE);
     // Need dose >= lethal_dose + tolerance
     // Brucine lethal_dose is RAW_4_0 = 262144 (4.0 in Q16.16)
-    let lethal_dose = mc_core::poison::lookup(PoisonId::PSN_BRUCINE).unwrap().lethal_dose;
+    let lethal_dose = mc_core::poison::lookup(PoisonId::PSN_BRUCINE)
+        .unwrap()
+        .lethal_dose;
     let overdose = lethal_dose + tolerance + Fx::ONE;
     let lethal = state.administer(edmond, PoisonId::PSN_BRUCINE, overdose, 0);
     assert!(lethal, "dose above tolerance must be lethal: dose={overdose:?}, tol={tolerance:?}, lethal_dose={lethal_dose:?}");
@@ -56,7 +61,10 @@ fn onset_positive() {
         let pid = PoisonId::from_raw(raw);
         let data = mc_core::poison::lookup(pid).expect("poison data must exist");
         assert!(data.onset > 0, "onset must be > 0 for poison {raw}");
-        assert!(data.onset <= 1000, "onset must be reasonable for poison {raw}");
+        assert!(
+            data.onset <= 1000,
+            "onset must be reasonable for poison {raw}"
+        );
     }
 }
 
@@ -66,6 +74,9 @@ fn lethal_dose_positive() {
     for raw in 0..5u16 {
         let pid = PoisonId::from_raw(raw);
         let data = mc_core::poison::lookup(pid).expect("poison data must exist");
-        assert!(data.lethal_dose > Fx::ZERO, "lethal dose must be > 0 for poison {raw}");
+        assert!(
+            data.lethal_dose > Fx::ZERO,
+            "lethal dose must be > 0 for poison {raw}"
+        );
     }
 }

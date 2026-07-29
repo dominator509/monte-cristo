@@ -64,10 +64,15 @@ fn battle_commands_accepted_even_outside_battle() {
             },
         )],
     );
-    assert_valid(&events[0], &Command::SelectAction(
-        mc_core::command::ActorId(0),
-        Action::Attack { target: TargetId(0) },
-    ));
+    assert_valid(
+        &events[0],
+        &Command::SelectAction(
+            mc_core::command::ActorId(0),
+            Action::Attack {
+                target: TargetId(0),
+            },
+        ),
+    );
 }
 
 #[test]
@@ -117,7 +122,10 @@ fn fast_travel_unknown_region_rejected() {
 #[test]
 fn fast_travel_valid_region_accepted() {
     let mut world = World::new(42);
-    let events = apply_commands(&mut world, &[Command::FastTravel(RegionId::R02_CHATEAU_DIF)]);
+    let events = apply_commands(
+        &mut world,
+        &[Command::FastTravel(RegionId::R02_CHATEAU_DIF)],
+    );
     assert_valid(&events[0], &Command::FastTravel(RegionId::R02_CHATEAU_DIF));
 }
 
@@ -125,11 +133,7 @@ fn fast_travel_valid_region_accepted() {
 #[test]
 fn swap_persona_accepted() {
     let mut world = World::new(42);
-    for persona in &[
-        PersonaId::Edmond,
-        PersonaId::MonteCristo,
-        PersonaId::Sinbad,
-    ] {
+    for persona in &[PersonaId::Edmond, PersonaId::MonteCristo, PersonaId::Sinbad] {
         let events = apply_commands(&mut world, &[Command::SwapPersona(*persona)]);
         assert_valid(&events[0], &Command::SwapPersona(*persona));
     }
@@ -221,7 +225,10 @@ fn state_view_hash_at_checkpoint() {
     assert_eq!(world.tick, 1024);
     let events = [];
     let view = mc_core::command::StateView::from_world(&world, &events);
-    assert!(view.state_hash.is_some(), "expected hash at checkpoint tick");
+    assert!(
+        view.state_hash.is_some(),
+        "expected hash at checkpoint tick"
+    );
 }
 
 /// StateView hash is None at non-checkpoint ticks.
@@ -231,7 +238,10 @@ fn state_view_no_hash_outside_checkpoint() {
     world.step(); // tick 1
     let events = [];
     let view = mc_core::command::StateView::from_world(&world, &events);
-    assert!(view.state_hash.is_none(), "expected no hash outside checkpoint tick");
+    assert!(
+        view.state_hash.is_none(),
+        "expected no hash outside checkpoint tick"
+    );
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

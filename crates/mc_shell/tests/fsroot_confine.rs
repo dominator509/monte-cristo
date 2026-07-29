@@ -15,11 +15,7 @@ fn legitimate_path_accepted() {
     let file = sub.join("test.txt");
     fs::write(&file, "hello").expect("write file");
 
-    let result = mc_shell::fsroot::confine_to_path(
-        dir.path(),
-        mc_shell::fsroot::Root::Data,
-        &file,
-    );
+    let result = mc_shell::fsroot::confine_to_path(dir.path(), mc_shell::fsroot::Root::Data, &file);
     assert!(result.is_ok(), "legitimate path should be accepted");
 }
 
@@ -44,7 +40,10 @@ fn absolute_path_outside_root_rejected() {
         mc_shell::fsroot::Root::Data,
         Path::new("/tmp/somefile"),
     );
-    assert!(result.is_err(), "absolute path outside root should be rejected");
+    assert!(
+        result.is_err(),
+        "absolute path outside root should be rejected"
+    );
 }
 
 /// Test that a path with .. traversal is rejected.
@@ -52,11 +51,7 @@ fn absolute_path_outside_root_rejected() {
 fn dotdot_traversal_rejected() {
     let dir = tempfile::tempdir().expect("create temp dir");
     let bad = dir.path().join("../../etc/passwd");
-    let result = mc_shell::fsroot::confine_to_path(
-        dir.path(),
-        mc_shell::fsroot::Root::Data,
-        &bad,
-    );
+    let result = mc_shell::fsroot::confine_to_path(dir.path(), mc_shell::fsroot::Root::Data, &bad);
     assert!(result.is_err(), ".. traversal should be rejected");
 }
 
@@ -65,10 +60,10 @@ fn dotdot_traversal_rejected() {
 fn write_new_file_inside_root() {
     let dir = tempfile::tempdir().expect("create temp dir");
     let new_file = dir.path().join("new_file.txt");
-    let result = mc_shell::fsroot::confine_to_path(
-        dir.path(),
-        mc_shell::fsroot::Root::Data,
-        &new_file,
+    let result =
+        mc_shell::fsroot::confine_to_path(dir.path(), mc_shell::fsroot::Root::Data, &new_file);
+    assert!(
+        result.is_ok(),
+        "writing new file inside root should be accepted"
     );
-    assert!(result.is_ok(), "writing new file inside root should be accepted");
 }

@@ -14,23 +14,23 @@ use mc_tape::replay::replay;
 fn muted_and_unmuted_produce_same_hash() {
     // Load the Act I tape
     let tape_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent().unwrap()
-        .parent().unwrap()
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
         .join("tapes/act1.tape");
     let tape_bytes = std::fs::read(&tape_path).expect("act1.tape must exist");
     let tape = Tape::from_bytes(&tape_bytes).expect("tape must deserialize");
 
     // Replay once (equivalent to "muted")
-    let result1 = replay(&tape)
-        .expect("first replay must succeed");
+    let result1 = replay(&tape).expect("first replay must succeed");
     assert!(
         result1.first_divergence.is_none(),
         "first replay must not diverge"
     );
 
     // Replay again (equivalent to "loud" — replays are always deterministic)
-    let result2 = replay(&tape)
-        .expect("second replay must succeed");
+    let result2 = replay(&tape).expect("second replay must succeed");
     assert!(
         result2.first_divergence.is_none(),
         "second replay must not diverge"

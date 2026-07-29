@@ -64,8 +64,8 @@ fn save_roundtrip_preserves_world() {
 /// Save to file, load from file, assert state matches.
 #[test]
 fn save_file_roundtrip() {
-    let _ = fs::remove_dir_all(&tmp_dir());
-    fs::create_dir_all(&tmp_dir()).unwrap();
+    let _ = fs::remove_dir_all(tmp_dir());
+    fs::create_dir_all(tmp_dir()).unwrap();
 
     let content_digest = build_content_digest();
     let mut world = World::new(42);
@@ -92,7 +92,7 @@ fn save_file_roundtrip() {
         "world state must match after file round-trip"
     );
 
-    let _ = fs::remove_dir_all(&tmp_dir());
+    let _ = fs::remove_dir_all(tmp_dir());
 }
 
 /// Reject schema_version beyond the maximum.
@@ -125,7 +125,7 @@ fn reject_newer_save_version() {
 
     // Build a save with a version higher than CURRENT
     // We can't use Save::new because it asserts. Build it manually.
-    let mut save = Save {
+    let save = Save {
         schema_version: CURRENT_SCHEMA_VERSION + 1,
         product_version: "0.1.0".into(),
         content_digest,

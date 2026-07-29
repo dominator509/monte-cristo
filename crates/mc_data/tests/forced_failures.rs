@@ -3,7 +3,7 @@
 //! Each test exercises a real failure mode — no simulated conditions.
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use mc_core::world::World;
 use mc_data::error::SaveError;
@@ -193,15 +193,15 @@ fn future_schema_version() {
 fn dangling_reference() {
     let tmp = tmp_dir("dangling-ref");
     let _ = fs::remove_dir_all(&tmp);
-    fs::create_dir_all(&tmp.join("bestiary")).expect("create bestiary");
-    fs::create_dir_all(&tmp.join("items")).expect("create items");
-    fs::create_dir_all(&tmp.join("regions")).expect("create regions");
-    fs::create_dir_all(&tmp.join("spawn_tables")).expect("create spawn tables");
-    fs::create_dir_all(&tmp.join("scenes").join("act1")).expect("create scenes");
+    fs::create_dir_all(tmp.join("bestiary")).expect("create bestiary");
+    fs::create_dir_all(tmp.join("items")).expect("create items");
+    fs::create_dir_all(tmp.join("regions")).expect("create regions");
+    fs::create_dir_all(tmp.join("spawn_tables")).expect("create spawn tables");
+    fs::create_dir_all(tmp.join("scenes").join("act1")).expect("create scenes");
 
     // Copy flags.ron from real content (needed by schema_check)
     let flags_src = repo_root().join("content").join("flags.ron");
-    fs::copy(&flags_src, &tmp.join("flags.ron")).expect("copy flags.ron");
+    fs::copy(&flags_src, tmp.join("flags.ron")).expect("copy flags.ron");
 
     // ── Enemy referencing non-existent item "GHOST_SWORD" in loot ──
     let enemy_ron = r#"(
@@ -218,8 +218,7 @@ fn dangling_reference() {
         tier: 1,
         sprite: "test_raider",
     )"#;
-    fs::write(tmp.join("bestiary").join("enm_test_raider.ron"), enemy_ron)
-        .expect("write enemy");
+    fs::write(tmp.join("bestiary").join("enm_test_raider.ron"), enemy_ron).expect("write enemy");
 
     // ── Minimal item (not "GHOST_SWORD") so loot reference is dangling ──
     let item_ron = r#"Item(
@@ -232,8 +231,7 @@ fn dangling_reference() {
         usable_in: [],
         value: 5,
     )"#;
-    fs::write(tmp.join("items").join("itm_rusty_dagger.ron"), item_ron)
-        .expect("write item");
+    fs::write(tmp.join("items").join("itm_rusty_dagger.ron"), item_ron).expect("write item");
 
     // ── Minimal region ──
     let region_ron = r#"(
@@ -258,11 +256,7 @@ fn dangling_reference() {
             (enemy: "ENM_DOES_NOT_EXIST", weight: 1, gate: Always),
         ],
     )"#;
-    fs::write(
-        tmp.join("spawn_tables").join("R99-test.ron"),
-        spawn_ron,
-    )
-    .expect("write spawn table");
+    fs::write(tmp.join("spawn_tables").join("R99-test.ron"), spawn_ron).expect("write spawn table");
 
     // Run bake — should fail because reference_resolve catches the
     // dangling spawn-table → enemy reference

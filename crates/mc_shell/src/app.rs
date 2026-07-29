@@ -8,9 +8,9 @@ use crate::config::ValidatedConfig;
 use crate::render::target::{ShellRenderTarget, INTERNAL_HEIGHT, INTERNAL_WIDTH};
 use crate::render::tilemap::{Tilemap, TILES_X, TILES_Y};
 use crate::ui::{battle::draw_battle_interface, menu::draw_menu_screen};
+use macroquad::prelude::*;
 use mc_core::command::{Command, StateView};
 use mc_core::world::World;
-use macroquad::prelude::*;
 use tracing::info;
 
 /// Fixed time step: 60 fps = 16.666... ms.
@@ -62,9 +62,11 @@ impl App {
         // Fill layer0 with a checkerboard pattern
         for y in 0..TILES_Y {
             for x in 0..TILES_X {
-                let is_checker = ((x + y) % 2) as u16;
+                let is_checker = (x + y) % 2;
                 tilemap.layer0.set_tile(x, y, is_checker);
-                tilemap.layer1.set_tile(x, y, if is_checker == 0 { 2 } else { 3 });
+                tilemap
+                    .layer1
+                    .set_tile(x, y, if is_checker == 0 { 2 } else { 3 });
             }
         }
         App {
@@ -83,7 +85,7 @@ impl App {
     /// Advance the simulation by one frame's worth of fixed ticks.
     /// Called from headless mode.
     pub fn headless_update(&mut self) {
-        let mut commands = Vec::new();
+        let commands = Vec::new();
         self.accum += 1.0 / 60.0;
         if self.accum > MAX_ACCUM {
             self.accum = MAX_ACCUM;
@@ -122,7 +124,10 @@ impl App {
         self.audio.update(self.world.tick, self.world.act);
 
         // Take the render target out to avoid borrow conflicts
-        let mut rt = self.render_target.take().expect("render target not initialised");
+        let mut rt = self
+            .render_target
+            .take()
+            .expect("render target not initialised");
         rt.handle_resize();
 
         let view = StateView::from_world(&self.world, &[]);
@@ -174,18 +179,19 @@ impl App {
 
                 // Map tile_id to a colour tint
                 let (r, g, b) = match tile_id {
-                    0 => (0.15, 0.15, 0.2),    // even checker
-                    1 => (0.2, 0.25, 0.3),     // odd checker
-                    2 => (0.25, 0.2, 0.15),    // alt
+                    0 => (0.15, 0.15, 0.2), // even checker
+                    1 => (0.2, 0.25, 0.3),  // odd checker
+                    2 => (0.25, 0.2, 0.15), // alt
                     3 => (0.3, 0.25, 0.2),
                     _ => (0.1, 0.1, 0.1),
                 };
-                draw_rectangle(x, y, 16.0, 16.0, Color::from_rgba(
-                    (r * 255.0) as u8,
-                    (g * 255.0) as u8,
-                    (b * 255.0) as u8,
-                    255,
-                ));
+                draw_rectangle(
+                    x,
+                    y,
+                    16.0,
+                    16.0,
+                    Color::from_rgba((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8, 255),
+                );
             }
         }
 
@@ -205,23 +211,38 @@ impl App {
                     3 => (0.4, 0.35, 0.3),
                     _ => (0.2, 0.2, 0.25),
                 };
-                draw_rectangle(x, y, 16.0, 16.0, Color::from_rgba(
-                    (r * 255.0) as u8,
-                    (g * 255.0) as u8,
-                    (b * 255.0) as u8,
-                    255,
-                ));
+                draw_rectangle(
+                    x,
+                    y,
+                    16.0,
+                    16.0,
+                    Color::from_rgba((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8, 255),
+                );
             }
         }
 
         // Grid overlay lines
         for ty in 0..=tiles_y {
             let y = ty as f32 * 16.0;
-            draw_line(0.0, y, INTERNAL_WIDTH as f32, y, 0.5, Color::from_rgba(40, 40, 50, 255));
+            draw_line(
+                0.0,
+                y,
+                INTERNAL_WIDTH as f32,
+                y,
+                0.5,
+                Color::from_rgba(40, 40, 50, 255),
+            );
         }
         for tx in 0..=tiles_x {
             let x = tx as f32 * 16.0;
-            draw_line(x, 0.0, x, INTERNAL_HEIGHT as f32, 0.5, Color::from_rgba(40, 40, 50, 255));
+            draw_line(
+                x,
+                0.0,
+                x,
+                INTERNAL_HEIGHT as f32,
+                0.5,
+                Color::from_rgba(40, 40, 50, 255),
+            );
         }
     }
 

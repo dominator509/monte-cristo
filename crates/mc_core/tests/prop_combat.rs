@@ -6,9 +6,8 @@
 
 use mc_core::battle::atb::AtbGauge;
 use mc_core::battle::damage::{apply_damage, apply_heal, base_damage, compute_damage};
-use mc_core::battle::status::{terror_applicable, StatusKind};
+use mc_core::battle::status::terror_applicable;
 use mc_core::battle::{Affiliation, Combatant, CombatantKind};
-use mc_core::bestiary::Family;
 use mc_core::fx::Fx;
 use mc_core::ids::{CharId, EnemyId};
 

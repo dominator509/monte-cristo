@@ -23,9 +23,9 @@
     "FLG_FINAL_PHASE2",
     "FLG_FINAL_PHASE3",
 
-    // ---- 4 reserved-and-forbidden identifiers ----
-    "MERCEDES_ROUTE",
-    "FERNAND_FORGIVEN",
-    "POWER_OF_FRIENDSHIP",
-    "DEUS_EX_MACHINA",
+    // ---- 4 reserved-and-forbidden identifiers (SPEC-000 §4) ----
+    "MERCEDES_ROMANCE",
+    "VILLEFORT_SPARED",
+    "EDOUARD_SAVED",
+    "ENDING_ALT",
 ]

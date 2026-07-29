@@ -18,13 +18,35 @@ fn no_networking_crates_in_tree() {
 
     // Denylist of crates that provide networking capabilities
     let denylist = [
-        "tokio", "async-std", "smol", "mio", "libc", // Runtime/I/O layers
-        "hyper", "reqwest", "ureq", "isahc", "attohttpc", "curl", // HTTP clients
-        "warp", "axum", "actix-web", "rocket", "tide", "salvo", // HTTP servers
-        "tungstenite", "tokio-tungstenite", "websocket", // WebSocket
-        "quinn", "quiche", "s2n-quic", // QUIC
-        "rustls", "native-tls", "openssl", // TLS (not needed offline)
-        "dns-lookup", "trust-dns", "hickory-resolver", // DNS
+        "tokio",
+        "async-std",
+        "smol",
+        "mio",
+        "libc", // Runtime/I/O layers
+        "hyper",
+        "reqwest",
+        "ureq",
+        "isahc",
+        "attohttpc",
+        "curl", // HTTP clients
+        "warp",
+        "axum",
+        "actix-web",
+        "rocket",
+        "tide",
+        "salvo", // HTTP servers
+        "tungstenite",
+        "tokio-tungstenite",
+        "websocket", // WebSocket
+        "quinn",
+        "quiche",
+        "s2n-quic", // QUIC
+        "rustls",
+        "native-tls",
+        "openssl", // TLS (not needed offline)
+        "dns-lookup",
+        "trust-dns",
+        "hickory-resolver", // DNS
     ];
 
     for &crate_name in &denylist {

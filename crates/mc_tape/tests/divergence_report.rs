@@ -44,7 +44,10 @@ fn mutated_checkpoint_reported() {
     // The report should flag tick 2048 as the first divergent tick.
     assert!(
         report.first_divergent_tick == Some(mutated_tick)
-            || report.divergences.iter().any(|(t, _, _)| *t == mutated_tick),
+            || report
+                .divergences
+                .iter()
+                .any(|(t, _, _)| *t == mutated_tick),
         "expected divergence at tick {}, report: first={:?}, divergences={:?}",
         mutated_tick,
         report.first_divergent_tick,
@@ -52,42 +55,31 @@ fn mutated_checkpoint_reported() {
     );
 
     // The divergence at tick 2048 should have expected != actual.
-    if let Some(pos) = report.divergences.iter().position(|(t, _, _)| *t == mutated_tick) {
+    if let Some(pos) = report
+        .divergences
+        .iter()
+        .position(|(t, _, _)| *t == mutated_tick)
+    {
         let (tick, expected, actual) = report.divergences[pos];
         assert_eq!(tick, mutated_tick);
         assert_eq!(expected, [0xDE; 32]);
-        assert_ne!(expected, actual, "mutated checkpoint should differ from actual");
+        assert_ne!(
+            expected, actual,
+            "mutated checkpoint should differ from actual"
+        );
     }
 }
 
 /// Compare two tapes where one has a changed checkpoint.
 #[test]
 fn compare_tapes_detects_divergence() {
-    let checkpoints_a = vec![
-        (1024, [1u8; 32]),
-        (2048, [2u8; 32]),
-        (3072, [3u8; 32]),
-    ];
+    let checkpoints_a = vec![(1024, [1u8; 32]), (2048, [2u8; 32]), (3072, [3u8; 32])];
     let mut checkpoints_b = checkpoints_a.clone();
     // Mutate the second checkpoint.
     checkpoints_b[1] = (2048, [0xFF; 32]);
 
-    let tape_a = Tape::new(
-        42,
-        TapeStart::NewGame,
-        vec![],
-        checkpoints_a,
-        [0u8; 32],
-    )
-    .unwrap();
-    let tape_b = Tape::new(
-        42,
-        TapeStart::NewGame,
-        vec![],
-        checkpoints_b,
-        [0u8; 32],
-    )
-    .unwrap();
+    let tape_a = Tape::new(42, TapeStart::NewGame, vec![], checkpoints_a, [0u8; 32]).unwrap();
+    let tape_b = Tape::new(42, TapeStart::NewGame, vec![], checkpoints_b, [0u8; 32]).unwrap();
 
     let report = compare_tapes(&tape_a, &tape_b);
     assert_eq!(report.total_checked, 3);
@@ -96,7 +88,7 @@ fn compare_tapes_detects_divergence() {
     let (tick, expected, actual) = report.divergences[0];
     assert_eq!(tick, 2048);
     assert_eq!(expected, [2u8; 32]); // from tape_a at tick 2048
-    assert_eq!(actual, [0xFF; 32]);  // from tape_b at tick 2048
+    assert_eq!(actual, [0xFF; 32]); // from tape_b at tick 2048
 }
 
 /// Replay a tape with mismatched final_hash — divergence should show.
@@ -111,8 +103,10 @@ fn final_hash_mismatch_detected() {
     // We'll manually compare final_hash vs replay final_hash.
     // First, replay to get the correct final hash.
     let result = mc_tape::replay::replay(&tape).unwrap();
-    assert_eq!(result.final_hash, tape.final_hash,
-        "initial tape's final_hash should match replay");
+    assert_eq!(
+        result.final_hash, tape.final_hash,
+        "initial tape's final_hash should match replay"
+    );
 
     // Now mutate the final_hash in the tape.
     tape.final_hash = [0xEE; 32];

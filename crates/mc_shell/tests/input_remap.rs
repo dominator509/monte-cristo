@@ -30,10 +30,16 @@ fn default_input_map() -> InputMap {
     m.insert(InputAction::MoveDown, vec!["Down".into(), "S".into()]);
     m.insert(InputAction::MoveLeft, vec!["Left".into(), "A".into()]);
     m.insert(InputAction::MoveRight, vec!["Right".into(), "D".into()]);
-    m.insert(InputAction::Confirm, vec!["Z".into(), "Enter".into(), "Space".into()]);
+    m.insert(
+        InputAction::Confirm,
+        vec!["Z".into(), "Enter".into(), "Space".into()],
+    );
     m.insert(InputAction::Cancel, vec!["X".into(), "Escape".into()]);
     m.insert(InputAction::Menu, vec!["C".into()]);
-    m.insert(InputAction::Run, vec!["LeftShift".into(), "RightShift".into()]);
+    m.insert(
+        InputAction::Run,
+        vec!["LeftShift".into(), "RightShift".into()],
+    );
     m.insert(InputAction::WaitMode, vec!["Tab".into()]);
     m
 }
@@ -84,7 +90,10 @@ fn custom_map_round_trips_correctly() {
         ron::from_str(&serialised).expect("deserialisation must succeed");
     let round_tripped = deserialise_map(&deserialised);
 
-    assert_eq!(custom, round_tripped, "custom map must round-trip losslessly");
+    assert_eq!(
+        custom, round_tripped,
+        "custom map must round-trip losslessly"
+    );
 }
 
 #[test]
@@ -102,14 +111,10 @@ fn map_persists_to_disk_and_loads_back() {
 
     // Load
     let loaded_str = std::fs::read_to_string(&path).expect("read");
-    let loaded: HashMap<String, Vec<String>> =
-        ron::from_str(&loaded_str).expect("deserialisation");
+    let loaded: HashMap<String, Vec<String>> = ron::from_str(&loaded_str).expect("deserialisation");
     let loaded_map = deserialise_map(&loaded);
 
-    assert_eq!(
-        original, loaded_map,
-        "map must survive disk round-trip"
-    );
+    assert_eq!(original, loaded_map, "map must survive disk round-trip");
 
     // Cleanup
     let _ = std::fs::remove_file(&path);
@@ -127,7 +132,7 @@ fn validate_map_rejects_more_than_two_bindings() {
         vec![String::from("Z"), String::from("Enter")],
     );
     // 2 bindings is the maximum allowed
-    for (_action, bindings) in &map {
+    for bindings in map.values() {
         assert!(
             bindings.len() <= 2,
             "more than 2 bindings per action is invalid: got {} bindings",
@@ -138,7 +143,11 @@ fn validate_map_rejects_more_than_two_bindings() {
     let mut bad_map = HashMap::new();
     bad_map.insert(
         InputAction::Confirm,
-        vec![String::from("Z"), String::from("Enter"), String::from("Space")],
+        vec![
+            String::from("Z"),
+            String::from("Enter"),
+            String::from("Space"),
+        ],
     );
     let one_bad = bad_map.values().any(|v: &Vec<String>| v.len() > 2);
     assert!(one_bad, "bad_map should have >2 bindings for one action");

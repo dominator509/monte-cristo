@@ -8,10 +8,10 @@ use macroquad::prelude::*;
 /// Affine transformation matrix for the layer.
 #[derive(Debug, Clone, Copy)]
 pub struct AffineMatrix {
-    pub a: f32, // scale-x, also horizontal skew
-    pub b: f32, // horizontal skew
-    pub c: f32, // vertical skew
-    pub d: f32, // scale-y, also vertical skew
+    pub a: f32,  // scale-x, also horizontal skew
+    pub b: f32,  // horizontal skew
+    pub c: f32,  // vertical skew
+    pub d: f32,  // scale-y, also vertical skew
     pub tx: f32, // translate-x
     pub ty: f32, // translate-y
 }
@@ -19,9 +19,12 @@ pub struct AffineMatrix {
 impl AffineMatrix {
     pub fn identity() -> Self {
         AffineMatrix {
-            a: 1.0, b: 0.0,
-            c: 0.0, d: 1.0,
-            tx: 0.0, ty: 0.0,
+            a: 1.0,
+            b: 0.0,
+            c: 0.0,
+            d: 1.0,
+            tx: 0.0,
+            ty: 0.0,
         }
     }
 

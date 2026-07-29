@@ -8,7 +8,6 @@ use std::path::{Path, PathBuf};
 use mc_shell::app::App;
 use mc_shell::config::ValidatedConfig;
 use mc_shell::fsroot::{self, Root};
-use mc_shell::render::target::ShellRenderTarget;
 
 /// Get the data directory for settings and saves.
 fn data_dir() -> PathBuf {
@@ -41,9 +40,7 @@ fn run_headless(seed: u128, config: ValidatedConfig) {
 /// Real main — checks MC_HEADLESS before any window creation.
 fn main() {
     // Initialize tracing
-    tracing_subscriber::fmt()
-        .with_target(false)
-        .init();
+    tracing_subscriber::fmt().with_target(false).init();
 
     // Parse command-line arguments
     let args: Vec<String> = std::env::args().collect();
@@ -69,18 +66,15 @@ fn main() {
 
 /// Run the windowed application via macroquad.
 fn run_windowed(seed: u128, config: ValidatedConfig) {
-    macroquad::Window::new(
-        "Monte Cristo",
-        async move {
-            tracing::info!("starting windowed mode: 256x224 internal resolution");
-            let mut app = App::new(seed, config, false);
-            let render_target = mc_shell::render::target::ShellRenderTarget::new();
-            app.render_target = Some(render_target);
+    macroquad::Window::new("Monte Cristo", async move {
+        tracing::info!("starting windowed mode: 256x224 internal resolution");
+        let mut app = App::new(seed, config, false);
+        let render_target = mc_shell::render::target::ShellRenderTarget::new();
+        app.render_target = Some(render_target);
 
-            loop {
-                app.windowed_frame();
-                macroquad::prelude::next_frame().await;
-            }
-        },
-    );
+        loop {
+            app.windowed_frame();
+            macroquad::prelude::next_frame().await;
+        }
+    });
 }

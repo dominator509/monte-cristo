@@ -120,9 +120,7 @@ impl RecordTape {
     /// content digest and final hash.
     pub fn finalize(&mut self) -> Result<Tape, TapeError> {
         if self.finalized {
-            return Err(TapeError::BoundsExceeded(
-                "tape already finalized".into(),
-            ));
+            return Err(TapeError::BoundsExceeded("tape already finalized".into()));
         }
         self.finalized = true;
 
