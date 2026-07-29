@@ -340,6 +340,18 @@ explicit user decision and passing evidence.
 - 2026-07-29, M6: The user explicitly authorized exactly one additional coverage attempt
   without rollback after the six-attempt cap produced 84.98%. The added pack-reference
   assertions covered eight known missing lines; the authorized rerun exited 0 at 85.09%.
+- 2026-07-29, M7: Keep the narrow out-of-list portability fix in
+  `scripts/test-e2e.sh`. The cross-profile check read the CRLF `tapes/HASHES.txt` with POSIX
+  `read`, leaving `\r` on the expected hash. The displayed expected and actual hashes were
+  identical, but the hidden carriage return produced `DETERMINISM_HASH_MISMATCH`. Stripping
+  only `\r` from the manifest field preserves the exact 64-hex-digit comparison and does
+  not re-record or weaken either golden tape.
+- 2026-07-29, M7: Commit the CRLF portability fix and its append-only evidence before the
+  next full verification run. `scripts/test-integration.sh` requires the repository to be
+  clean after its test commands and reports all pre-existing modifications as residue, so
+  an uncommitted gate fix makes the M7 verify command fail independently of test behavior.
+  This corrective checkpoint is necessary to verify the fix from the clean state required
+  by M7; the final M7 evidence commit remains separate and retains the prescribed subject.
 
 ## 14. Outcomes and Retrospective
 

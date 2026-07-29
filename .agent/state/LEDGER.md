@@ -122,3 +122,7 @@
 2026-07-29T18:49:55Z | codex-root | EP-007 | SIG | FORMAT_CHECK_PACK_REFERENCE_ASSERTIONS
 2026-07-29T18:53:57Z | codex-root | EP-007 | MILESTONE_PASS | M6_coverage_85.09_percent_zero_ignored_user_override
 2026-07-29T18:53:57Z | codex-root | EP-007 | HEARTBEAT | M6_complete_precommit_scope_audit
+2026-07-29T18:57:37Z | codex-root | EP-007 | ATTEMPT_FAIL | M7_verify_cross_profile_hash_crlf
+2026-07-29T18:57:37Z | codex-root | EP-007 | SIG | DETERMINISM_HASH_MISMATCH
+2026-07-29T19:00:23Z | codex-root | EP-007 | ATTEMPT_FAIL | M7_verify_integration_gate_requires_clean_tree
+2026-07-29T19:00:24Z | codex-root | EP-007 | SIG | INTEGRATION_TESTS_PREEXISTING_DIRTY_TREE

@@ -17,6 +17,7 @@ if [ -f tapes/HASHES.txt ]; then
   while read -r tape hash; do
     [ -n "$tape" ] || continue
     case "$tape" in \#*) continue ;; esac
+    hash=$(printf '%s' "$hash" | tr -d '\r')
     [ -f "tapes/$tape" ] || { echo "e2e tests: FAIL - missing tape: tapes/$tape" >&2; exit 1; }
     got=$(cargo run --locked --quiet -p mc_tools -- replay --tape "tapes/$tape" --print-hash | tr -d ' ')
     [ "$got" = "$hash" ] || {
