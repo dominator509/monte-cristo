@@ -373,6 +373,11 @@ explicit user decision and passing evidence.
   inherit those values and the smoke evidence reported `MC_REFERENCE_MACHINE` as `unset`.
   Source and export the already-required, gitignored `.env` once at the verifier entry point
   so every child gate receives the exact configuration that preflight validates.
+- 2026-07-29, M7: Keep the narrow fsroot unit-test isolation fix. Once the verifier
+  correctly propagated `.env`, `test_read_to_string_wrapper` failed because it assumed
+  `MC_DATA_DIR` was absent in the parent process. Request a uniquely missing relative file
+  without mutating process-global environment and assert the correct error for either
+  supported invocation context: unresolved configured root or confined file resolution.
 
 ## 14. Outcomes and Retrospective
 

@@ -335,13 +335,15 @@ mod tests {
 
     #[test]
     fn test_read_to_string_wrapper() {
-        let dir = tempfile::tempdir().unwrap();
-        let root_path = dir.path().canonicalize().unwrap();
-        let file = root_path.join("test.txt");
-        fs::write(&file, b"hello world").unwrap();
-        let result = read_to_string(Root::Data, Path::new("test.txt")).unwrap_err();
-        // Will fail because MC_DATA_DIR is not set; that's expected
-        assert!(matches!(result, FsError::UnresolvedRoot(Root::Data)));
+        let result = read_to_string(
+            Root::Data,
+            Path::new("definitely-missing-fsroot-wrapper-test.txt"),
+        )
+        .unwrap_err();
+        assert!(matches!(
+            result,
+            FsError::UnresolvedRoot(Root::Data) | FsError::ResolveError(_)
+        ));
     }
 
     #[test]

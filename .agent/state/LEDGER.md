@@ -132,3 +132,6 @@
 2026-07-29T19:12:05Z | codex-root | EP-007 | ATTEMPT_FAIL | M7_verify_smoke_cold_start_63_seconds
 2026-07-29T19:12:05Z | codex-root | EP-007 | SIG | SMOKE_COLD_START_63S_EXCEEDS_BUDGET
 2026-07-29T19:15:46Z | codex-root | EP-007 | HEARTBEAT | M7_smoke_health_and_env_propagation_repaired_precommit
+2026-07-29T19:16:39Z | codex-root | EP-007 | ATTEMPT_FAIL | M7_verify_fsroot_test_assumed_unset_env
+2026-07-29T19:16:39Z | codex-root | EP-007 | SIG | FSROOT_READ_TEST_DEPENDS_ON_PARENT_ENV
+2026-07-29T19:17:27Z | codex-root | EP-007 | HEARTBEAT | M7_fsroot_env_isolation_fixed_precommit
