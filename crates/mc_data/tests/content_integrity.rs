@@ -18,11 +18,11 @@ fn content_root() -> PathBuf {
     p.join("content")
 }
 
-fn tmp_dir() -> PathBuf {
+fn tmp_dir(name: &str) -> PathBuf {
     let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     p.pop();
     p.pop();
-    p.join("target").join("tmp-test-pack")
+    p.join("target").join(format!("tmp-test-pack-{}", name))
 }
 
 fn require_clean_bake() {
@@ -60,7 +60,7 @@ fn bake_pack_is_deterministic() {
 #[test]
 fn save_load_roundtrip() {
     let pack = build_pack();
-    let tmp = tmp_dir();
+    let tmp = tmp_dir("roundtrip");
     let _ = fs::remove_dir_all(&tmp);
     fs::create_dir_all(&tmp).unwrap();
 
@@ -90,7 +90,7 @@ fn save_load_roundtrip() {
 #[test]
 fn bake_twice_identical_digests() {
     let pack = build_pack();
-    let tmp = tmp_dir();
+    let tmp = tmp_dir("bake_twice");
     let _ = fs::remove_dir_all(&tmp);
     fs::create_dir_all(&tmp).unwrap();
 
@@ -217,7 +217,7 @@ fn pack_has_content() {
 #[test]
 fn pack_load_rejects_corrupted_digest() {
     let pack = build_pack();
-    let tmp = tmp_dir();
+    let tmp = tmp_dir("corrupted");
     let _ = fs::remove_dir_all(&tmp);
     fs::create_dir_all(&tmp).unwrap();
 
@@ -235,7 +235,7 @@ fn pack_load_rejects_corrupted_digest() {
 /// Loading with missing files fails.
 #[test]
 fn pack_load_rejects_missing_file() {
-    let tmp = tmp_dir();
+    let tmp = tmp_dir("missing");
     let _ = fs::remove_dir_all(&tmp);
     fs::create_dir_all(&tmp).unwrap();
 
