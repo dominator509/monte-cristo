@@ -49,6 +49,7 @@ echo "LF-07 save-load-state-identity ok"
 # LF-08 golden-tape-full-run
 if [ -f tapes/golden-full.tape ]; then
     $MC replay --tape tapes/golden-full.tape --assert-hash >/dev/null || fail "LF-08 golden tape hash"
+    $MC prove epilogue >/dev/null || fail "LF-08 epilogue content incomplete"
     echo "LF-08 golden-tape-full-run ok"
 else
     echo "LF-08 golden-tape-full-run SKIP (tape not yet recorded)"
