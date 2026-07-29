@@ -221,8 +221,8 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
         },
 
         // Battle commands — valid only during active battle
+        // EP-005 will bridge to battle system; for now all battle commands are accepted.
         Command::SelectAction(..) | Command::ConfirmTarget(_) | Command::CancelSelection => {
-            // TODO(EP-005): bridge to battle system
             CoreEvent::Applied {
                 command: cmd.clone(),
             }

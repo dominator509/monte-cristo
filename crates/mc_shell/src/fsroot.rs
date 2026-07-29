@@ -273,7 +273,7 @@ mod tests {
     #[test]
     fn test_non_existent_root_returns_error() {
         let err = confine_to_path(
-            Path::new("/tmp/nonexistent_mc_test_XXXXXX"),
+            Path::new("/tmp/nonexistent_mc_test_MARKERS"),
             Root::Content,
             Path::new("foo.ron"),
         )
