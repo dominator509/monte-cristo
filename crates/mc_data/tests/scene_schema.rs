@@ -11,8 +11,8 @@
 //! 2. Runtime: Deserialize a representative scene and assert no combat terms
 //!    appear in the resulting structure.
 
-use mc_data::schema::scene::{Choice, Effects, Node, Scene};
 use mc_core::flags::FlagExpr;
+use mc_data::schema::scene::{Choice, Effects, Node, Scene};
 
 /// Compile-time: Verify the Scene struct's serialized schema has no combat
 /// fields.
@@ -35,8 +35,20 @@ fn scene_struct_has_no_combat_fields() {
     let ron_str = ron::to_string(&scene).expect("Scene should serialize to RON");
     let lower = ron_str.to_lowercase();
 
-    let combat_terms = ["hp", "health", "turn", "meter", "atb", "gauge", "combat",
-                        "attack", "defense", "damage", "initiative", "speed"];
+    let combat_terms = [
+        "hp",
+        "health",
+        "turn",
+        "meter",
+        "atb",
+        "gauge",
+        "combat",
+        "attack",
+        "defense",
+        "damage",
+        "initiative",
+        "speed",
+    ];
 
     for term in &combat_terms {
         assert!(
@@ -60,8 +72,19 @@ fn node_struct_has_no_combat_fields() {
     let ron_str = ron::to_string(&node).expect("Node should serialize to RON");
     let lower = ron_str.to_lowercase();
 
-    let combat_terms = ["hp", "health", "turn", "meter", "atb", "gauge",
-                        "combat", "attack", "defense", "damage", "initiative"];
+    let combat_terms = [
+        "hp",
+        "health",
+        "turn",
+        "meter",
+        "atb",
+        "gauge",
+        "combat",
+        "attack",
+        "defense",
+        "damage",
+        "initiative",
+    ];
 
     for term in &combat_terms {
         assert!(
@@ -86,8 +109,18 @@ fn choice_struct_has_no_combat_fields() {
     let ron_str = ron::to_string(&choice).expect("Choice should serialize to RON");
     let lower = ron_str.to_lowercase();
 
-    let combat_terms = ["hp", "health", "turn", "meter", "atb", "gauge",
-                        "combat", "attack", "damage", "initiative"];
+    let combat_terms = [
+        "hp",
+        "health",
+        "turn",
+        "meter",
+        "atb",
+        "gauge",
+        "combat",
+        "attack",
+        "damage",
+        "initiative",
+    ];
 
     for term in &combat_terms {
         assert!(
@@ -116,8 +149,18 @@ fn effects_struct_has_no_combat_fields() {
 
     // `mask` is a resource meter for the disguise/narrative system, not combat.
     // The combat terms we check are specific to HP/damage/turn-order.
-    let combat_terms = ["hp", "health", "turn_order", "atb", "gauge",
-                        "combat", "attack", "damage", "initiative", "speed_stat"];
+    let combat_terms = [
+        "hp",
+        "health",
+        "turn_order",
+        "atb",
+        "gauge",
+        "combat",
+        "attack",
+        "damage",
+        "initiative",
+        "speed_stat",
+    ];
 
     for term in &combat_terms {
         assert!(
@@ -201,8 +244,15 @@ fn scene_field_count_matches_expected() {
 
     let ron_str = ron::to_string(&scene).expect("serialize");
     // The RON output should contain exactly these top-level field keys.
-    let expected_fields = ["id", "act", "participants", "requires", "nodes",
-                           "on_exit", "terminal"];
+    let expected_fields = [
+        "id",
+        "act",
+        "participants",
+        "requires",
+        "nodes",
+        "on_exit",
+        "terminal",
+    ];
     for field in &expected_fields {
         assert!(
             ron_str.contains(field),
