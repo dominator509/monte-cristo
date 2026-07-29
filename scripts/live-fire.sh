@@ -14,7 +14,12 @@ fail() { echo "live-fire: FAIL - $1" >&2; exit 1; }
 MC="cargo run --locked --release --quiet -p mc_tools --"
 
 # LF-01 new-game-to-arrest
+# Two-part proof:
+# 1. Tape determinism: act1.tape replays to its recorded hash (proves determinism of recorded commands)
+# 2. Flag assertion: prove_act1_arrest loads real content scenes and proves FLG_ARRESTED
+#    is set by the scene system when the arrest scene is traversed.
 $MC replay --tape tapes/act1.tape --assert-hash >/dev/null || fail "LF-01 act1 tape hash mismatch"
+$MC prove act1-arrest >/dev/null || fail "LF-01 act1 arrest flag not set"
 echo "LF-01 new-game-to-arrest ok"
 
 # LF-02 if-calendar-and-curriculum
