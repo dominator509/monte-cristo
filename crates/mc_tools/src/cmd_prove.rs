@@ -281,7 +281,7 @@ fn prove_epilogue() -> bool {
     }
     let act7_confidence_count = confidence_files
         .iter()
-        .filter(|p| p.to_string_lossy().contains("/act7/"))
+        .filter(|p| p.parent() == Some(act7_dir.as_path()))
         .count();
     if act7_confidence_count < 6 {
         eprintln!(

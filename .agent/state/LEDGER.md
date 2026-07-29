@@ -86,3 +86,9 @@
 2026-07-29T15:49:40Z | codex-root | EP-007 | SIG | M3_EXPECTED_HASH_MATCH_GOT_HASH_OK
 2026-07-29T15:51:10Z | codex-root | EP-007 | MILESTONE_PASS | M3-golden-tape-recorded-hash-match
 2026-07-29T15:51:14Z | codex-root | EP-007 | HEARTBEAT | M3-complete-preparing-checkpoint
+2026-07-29T15:55:02Z | codex-root | EP-007 | ATTEMPT_FAIL | M4-LF08-expected-six-Act-VII-confidence-files-found-zero
+2026-07-29T15:55:05Z | codex-root | EP-007 | SIG | EPILOGUE_MISSING_ACT_VII_CONFIDENCE_FILES
+2026-07-29T15:58:15Z | codex-root | EP-007 | ATTEMPT_FAIL | M4-LF11-frame-budget-skipped-despite-live-fire-ok
+2026-07-29T15:58:18Z | codex-root | EP-007 | SIG | LF11_FRAME_BUDGET_SKIPPED
+2026-07-29T16:08:22Z | codex-root | EP-007 | MILESTONE_PASS | M4-live-fire-ok-all-twelve-proofs
+2026-07-29T16:08:28Z | codex-root | EP-007 | HEARTBEAT | M4-complete-preparing-checkpoint

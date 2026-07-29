@@ -223,7 +223,7 @@ not match `tapes/HASHES.txt`, do not re-record it.** Enter the ladder with signa
 - [x] M1 complete the content tree
 - [x] M2 property tests over combat and poison
 - [x] M3 record the golden tape
-- [ ] M4 the twelve live-fire proofs
+- [x] M4 the twelve live-fire proofs
 - [ ] M5 frame budget and memory ceiling
 - [ ] M6 coverage and flaky-test purge
 - [ ] M7 node verification
@@ -239,6 +239,17 @@ not match `tapes/HASHES.txt`, do not re-record it.** Enter the ladder with signa
   printed `hash: ok`, while this ExecPlan and the prior ledger evidence require the
   observable sentinel `hash: match`. Changing only that success string restores the
   specified CLI contract without changing replay or hashing behaviour.
+- 2026-07-29, M4: Keep the narrow out-of-list change to
+  `crates/mc_tools/src/cmd_prove.rs`. LF-08 found all 45 Confidence files but counted zero
+  under `content/scenes/act7` on Windows because it searched native paths for the Unix-only
+  string `/act7/`. Comparing each file's native parent path to the authored Act VII
+  directory preserves the six-file requirement across platforms.
+- 2026-07-29, M4: Complete the already-authored M5 benchmark while wiring LF-11.
+  `scripts/live-fire.sh` hardcoded a skip, and the existing benchmark timed
+  `World::step()`, whose battle dispatch branches are empty. The replacement fixture uses
+  the public ATB, status, targeting, and damage APIs with the authored four-enemy R14
+  encounter stats and enforces both SPEC-008 p99 limits over 10,000 frames. This is required
+  for M4's exact twelve-proof acceptance and does not change production behaviour.
 
 ## 14. Outcomes and Retrospective
 

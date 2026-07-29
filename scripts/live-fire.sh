@@ -66,7 +66,9 @@ $MC validate --input ./content >/dev/null || fail "LF-10"
 echo "LF-10 content-integrity ok"
 
 # LF-11 frame-budget
-echo "LF-11 frame-budget SKIP (benchmark not yet implemented)"
+cargo bench --locked -p mc_core --bench battle_step -- --noplot >/dev/null ||
+    fail "LF-11 frame budget"
+echo "LF-11 frame-budget ok"
 
 # LF-12 final-boss-two-phase
 $MC prove final-encounter >/dev/null || fail "LF-12"
