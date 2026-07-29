@@ -4,8 +4,10 @@
 //! SPEC-007 §1 item 7: "The debug overlay is behind the `debug-overlay`
 //! feature, reads `StateView` only, and cannot alter a replay hash."
 //!
-//! This test is behind `#[cfg(feature = "debug-overlay")]` because the
+//! This entire test file is gated behind `debug-overlay` because the
 //! overlay module is only compiled when the feature is enabled.
+
+#![cfg(feature = "debug-overlay")]
 
 use mc_core::command::{Command, StateView};
 use mc_core::world::World;
