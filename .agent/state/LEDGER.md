@@ -129,3 +129,6 @@
 2026-07-29T19:03:45Z | codex-root | EP-007 | ATTEMPT_FAIL | M7_verify_linux_cross_link_selected_mingw_ld
 2026-07-29T19:03:46Z | codex-root | EP-007 | SIG | LINUX_TARGET_LINKER_MINGW_REJECTS_EH_FRAME_HDR
 2026-07-29T19:09:33Z | codex-root | EP-007 | HEARTBEAT | M7_build_gate_repaired_precommit
+2026-07-29T19:12:05Z | codex-root | EP-007 | ATTEMPT_FAIL | M7_verify_smoke_cold_start_63_seconds
+2026-07-29T19:12:05Z | codex-root | EP-007 | SIG | SMOKE_COLD_START_63S_EXCEEDS_BUDGET
+2026-07-29T19:15:46Z | codex-root | EP-007 | HEARTBEAT | M7_smoke_health_and_env_propagation_repaired_precommit

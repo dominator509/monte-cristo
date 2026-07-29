@@ -206,4 +206,18 @@ fn real_shell_entry_point_supports_version_and_headless_execution() {
         String::from_utf8_lossy(&headless.stderr)
     );
     assert!(dir.exists());
+
+    let missing_content_dir = temp_dir("missing-content");
+    let verify_content = Command::new(binary)
+        .arg("--verify-content")
+        .current_dir(&missing_content_dir)
+        .output()
+        .expect("content verification command should launch");
+    assert!(!verify_content.status.success());
+    assert!(
+        String::from_utf8_lossy(&verify_content.stderr)
+            .contains("Content verification failed for content.pack"),
+        "verification stderr: {}",
+        String::from_utf8_lossy(&verify_content.stderr)
+    );
 }

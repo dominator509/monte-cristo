@@ -11,6 +11,9 @@ export CARGO_TERM_COLOR=never
 export CARGO_INCREMENTAL=0
 export RUST_BACKTRACE=1
 export MC_HEADLESS=1
+set -a
+. ./.env
+set +a
 sh scripts/preflight.sh
 sh scripts/install.sh
 sh scripts/lint.sh

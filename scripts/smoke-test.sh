@@ -23,12 +23,20 @@ if [ -f tapes/golden-smoke.tape ]; then
     || fail "golden smoke tape hash mismatch"
 fi
 
+# Compile outside the timing window, then measure the real release executable.
+cargo build --locked --release --quiet -p mc_shell
+shell_bin=target/release/monte-cristo
+[ -x "$shell_bin" ] || shell_bin=target/release/monte-cristo.exe
+[ -x "$shell_bin" ] || fail "release shell executable missing"
+
 # Cold start budget: under 2.5 s to title (SPEC-008 section 3).
-start=$(date +%s)
-cargo run --locked --release --quiet -p mc_shell -- --verify-content >/dev/null 2>&1 || true
-end=$(date +%s)
-elapsed=$((end - start))
-[ "$elapsed" -le 30 ] || fail "cold start check took ${elapsed}s; investigate before trusting the bench"
+start=$(date +%s%3N)
+"$shell_bin" --verify-content >/dev/null 2>&1 \
+  || fail "release shell content verification failed"
+end=$(date +%s%3N)
+elapsed_ms=$((end - start))
+[ "$elapsed_ms" -le 2500 ] \
+  || fail "cold start check took ${elapsed_ms}ms; budget is 2500ms"
 
 echo "smoke test: reference machine ${MC_REFERENCE_MACHINE:-unset}"
 echo "smoke test: ok"

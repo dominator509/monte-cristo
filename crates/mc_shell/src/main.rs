@@ -4,6 +4,7 @@
 //! The binary is named "monte-cristo".
 
 use std::path::{Path, PathBuf};
+use std::process::ExitCode;
 
 use mc_shell::app::App;
 use mc_shell::config::ValidatedConfig;
@@ -38,7 +39,23 @@ fn run_headless(seed: u128, config: ValidatedConfig) {
 }
 
 /// Real main — checks MC_HEADLESS before any window creation.
-fn main() {
+fn verify_content() -> ExitCode {
+    match mc_data::pack::Pack::load_from_dir(Path::new(".")) {
+        Ok(_) => {
+            println!("content verification: ok");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!(
+                "Content verification failed for content.pack: {error}. \
+                 Restore content.pack and content.pack.blake3, then retry."
+            );
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn main() -> ExitCode {
     // Initialize tracing
     tracing_subscriber::fmt().with_target(false).init();
 
@@ -47,7 +64,10 @@ fn main() {
     let print_version = args.iter().any(|a| a == "--version" || a == "-V");
     if print_version {
         println!("Monte Cristo v{}", env!("CARGO_PKG_VERSION"));
-        return;
+        return ExitCode::SUCCESS;
+    }
+    if args.iter().any(|a| a == "--verify-content") {
+        return verify_content();
     }
 
     let seed: u128 = 42;
@@ -57,11 +77,12 @@ fn main() {
     // Headless mode: no window, no audio, pure simulation
     if std::env::var("MC_HEADLESS").is_ok() {
         run_headless(seed, config);
-        return;
+        return ExitCode::SUCCESS;
     }
 
     // Windowed mode: use macroquad
     run_windowed(seed, config);
+    ExitCode::SUCCESS
 }
 
 /// Run the windowed application via macroquad.

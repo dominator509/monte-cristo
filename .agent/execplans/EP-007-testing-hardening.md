@@ -360,6 +360,19 @@ explicit user decision and passing evidence.
   already does for macOS, and explicitly select the available target compiler. This makes
   the existing partial-build contract truthful; the all-three-platform artifact gate
   remains in EP-009 and the run-level ship gate.
+- 2026-07-29, M7: Keep the out-of-list smoke-health correction in `mc_shell` and
+  `scripts/smoke-test.sh`. The smoke gate timed `cargo run`, so a first release compilation
+  consumed 63 seconds inside a claimed startup measurement; it also passed `--verify-content`
+  to a binary that did not implement the documented flag and suppressed every non-zero
+  result. Build outside the timing window, invoke the release executable directly, enforce
+  the specified 2500 ms budget in milliseconds, and make `--verify-content` load and verify
+  the real baked pack with a failing exit status on error. The real-binary integration test
+  now proves the missing-pack failure path.
+- 2026-07-29, M7: Keep the narrow `scripts/verify.sh` environment propagation fix.
+  Preflight sourced the required `.env` inside its child process, so later gates did not
+  inherit those values and the smoke evidence reported `MC_REFERENCE_MACHINE` as `unset`.
+  Source and export the already-required, gitignored `.env` once at the verifier entry point
+  so every child gate receives the exact configuration that preflight validates.
 
 ## 14. Outcomes and Retrospective
 
