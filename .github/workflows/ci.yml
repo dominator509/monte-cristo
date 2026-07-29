@@ -1,0 +1,40 @@
+# EP-009 M1: GitHub Actions CI.
+#
+# Runs on push to main and on PRs. Executes exactly verify.sh.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: 0
+  MC_HEADLESS: 1
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.83.0
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Install cargo-deny
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: cargo-deny
+          version: "0.17.0"
+
+      - name: Restore cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run verify.sh
+        run: bash scripts/verify.sh
