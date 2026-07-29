@@ -6,6 +6,7 @@ use std::path::PathBuf;
 mod cmd_prove;
 mod cmd_record;
 mod cmd_replay;
+mod cmd_report;
 
 #[derive(Parser)]
 #[command(name = "mc_tools", about = "Monte Cristo developer and CI tools")]
@@ -37,6 +38,8 @@ enum Command {
     Record(cmd_record::RecordArgs),
     /// Run live-fire proofs for the ship gate
     Prove(cmd_prove::ProveArgs),
+    /// Print content and diagnostic reports
+    Report(cmd_report::ReportArgs),
 }
 
 fn main() {
@@ -93,6 +96,11 @@ fn main() {
                 std::process::ExitCode::SUCCESS => 0,
                 _ => 1,
             });
+        }
+        Command::Report(args) => {
+            if !cmd_report::execute(&args) {
+                std::process::exit(1);
+            }
         }
     }
 }
