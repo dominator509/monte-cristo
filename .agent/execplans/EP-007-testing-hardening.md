@@ -293,6 +293,44 @@ missing-enemy and missing-region diagnostics. The single authorized exact rerun 
 The prior `NODE_BLOCKED` report remains as append-only history but is superseded by this
 explicit user decision and passing evidence.
 
+### NODE_BLOCKED report — EP-007 node-final changed-files audit
+
+1. **Exact blocker:** M7 and the node VERIFY command are green, but the mandatory
+   Expected Changed Files audit cannot pass. `green/EP-006..HEAD` contains 961 changed
+   paths; 863 match section 6 or the always-written active ExecPlan/ledger evidence, while
+   98 paths are outside the immutable expected list.
+2. **Full evidence:**
+   - `sh scripts/verify.sh` — exit 0 on M7 attempt 6; observed every sentinel through
+     `live-fire: ok` and `verify: ok`.
+   - `git rev-list --count green/EP-006..HEAD` — `40`.
+   - `git diff --name-only green/EP-006..HEAD` classified against section 6 — `961`
+     actual, `863` expected-or-evidence, `98` unexpected.
+   - Unexpected groups: `.agent` 4; `crates/mc_core` 9; `crates/mc_data` 15;
+     `crates/mc_shell` 31; `crates/mc_tape` 8; `crates/mc_tools` 10; scripts 8; root or
+     other 13.
+   - The range includes historical commits labelled EP-008, EP-009, EP-010, gap fixes,
+     CI/release work, and broad production/test changes before this resumed M6/M7 work.
+3. **Error signature and hypothesis:**
+   - `EXPECTED_CHANGED_FILES_MISMATCH`: the repository history advanced later-node and
+     gap-fix work on top of `green/EP-006` before EP-007 acquired its valid NODE_DONE/tag,
+     so the required node boundary now spans unrelated committed work.
+4. **Rungs climbed and diffs:**
+   - Isolated the authoritative range from `green/EP-006` and enumerated all changed paths.
+   - Classified exact section-6 patterns while excluding only the active ExecPlan and
+     append-only ledger evidence.
+   - No corrective diff was applied. Section 6 cannot be edited during the run, and
+     retroactive Decision Log entries would not satisfy the rule that exceptions are
+     recorded before keeping them.
+   - Rollback to `green/EP-006` would discard 40 commits, including already-pushed
+     historical work and the now-green EP-007 milestones. That destructive history rewrite
+     is not an M7 fallback and is outside the user's one-attempt M6 no-rollback override.
+5. **Smallest human decision:** Explicitly grandfather the 98 historical out-of-list paths
+   for this node-final audit without rewriting history, or direct a separate graph-history
+   repair.
+6. **Recommended default:** Grandfather this historical mismatch once, retain the complete
+   audit evidence above, create `green/EP-007` at the verified M7 commit, and require strict
+   expected-file equality from EP-008 onward.
+
 ## 12. Surprises and Discoveries
 
 - 2026-07-29, M5: The existing `memory_ceiling` suite passed in 0.06 seconds because it
