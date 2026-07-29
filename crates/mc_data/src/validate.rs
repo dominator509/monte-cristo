@@ -526,9 +526,5 @@ pub fn reserved_identifier_reject(content_root: &Path) -> Vec<ContentError> {
         }
     }
 
-    // Deduplicate: if a file contains the same reserved identifier in multiple
-    // places we only report it once per identifier per file.
-    errors.dedup_by(|a, b| a.file == b.file && a.field == b.field);
-
     errors
 }

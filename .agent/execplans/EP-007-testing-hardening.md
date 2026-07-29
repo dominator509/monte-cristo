@@ -225,8 +225,73 @@ not match `tapes/HASHES.txt`, do not re-record it.** Enter the ladder with signa
 - [x] M3 record the golden tape
 - [x] M4 the twelve live-fire proofs
 - [x] M5 frame budget and memory ceiling
-- [ ] M6 coverage and flaky-test purge
+- [x] M6 coverage and flaky-test purge
 - [ ] M7 node verification
+
+### NODE_BLOCKED report — EP-007 M6
+
+1. **Exact blocker:** The sixth and final allowed M6 attempt ran the immutable workspace
+   coverage command successfully across every test but reported 84.98% line coverage
+   (5,996 of 7,056 lines), two executed lines below the required 85%, so the command exited
+   1 and the retry budget is exhausted.
+2. **Full evidence:**
+   - `cargo llvm-cov --locked --workspace --fail-under-lines 85` — exit 1; successive full
+     reports were `64.43%`, `79.39%`, `83.75%`, `84.69%`, `84.96%`, and `84.98%`.
+     Final report: `TOTAL 3700 regions / 745 missed, 816 functions / 142 missed,
+     7056 lines / 1060 missed, 84.98%`; every invoked test passed, but the floor check failed.
+   - `cargo llvm-cov report --workspace --summary-only` — exit 1; full output:
+     `error: invalid option '--workspace' for subcommand 'report'`.
+   - `cargo llvm-cov report --summary-only` — exit 0; reproduced the saved 79.39% report
+     and localized the largest reachable gaps to identifier vocabulary, shell entry points
+     and key translation, tape divergence, CLI replay, and data validators.
+   - `cargo test --locked -p mc_tools --test cli_end_to_end` — final exit 0;
+     `3 passed; 0 failed`.
+   - `cargo test --locked -p mc_shell --test shell_state` — final exit 0;
+     `5 passed; 0 failed`.
+   - `cargo test --locked -p mc_core --test id_vocabulary` — exit 0;
+     `1 passed; 0 failed`.
+   - `cargo test --locked -p mc_tape --test divergence_paths` — exit 0;
+     `2 passed; 0 failed`.
+   - `cargo test --locked -p mc_data --test validator_failure_paths` — final exit 0;
+     `4 passed; 0 failed`.
+   - `cargo fmt --all -- --check` — final exit 0 with no output.
+   - `cargo test --locked --workspace -- --list | grep -c ignored` — printed `0`;
+     `grep` exited 1 because there were no matching ignored tests.
+3. **Error signatures and hypotheses:**
+   - `COVERAGE_TOTAL_LINES_BELOW_85`: initial subprocess tests did not flush profiles because
+     successful CLI paths used `process::exit`; confirmed and fixed by normal `ExitCode`
+     returns.
+   - `COVERAGE_TOTAL_LINES_BELOW_85`: existing tests duplicated shell types and omitted the
+     real binaries/public vocabulary; confirmed by the coverage report and fixed with real
+     integration tests.
+   - `COVERAGE_TOTAL_LINES_BELOW_85`: validator and pack failure paths were not exercised;
+     confirmed and raised coverage from 83.75% to 84.98%, but did not clear the floor.
+   - New targeted signatures encountered and fixed: `SHELL_TEST_ACT_VARIANT_I_NOT_FOUND`,
+     `CLI_TEST_GOLDEN_SMOKE_RELATIVE_PATH_NOT_FOUND`,
+     `RESERVED_IDENTIFIER_ERRORS_COLLAPSED_TO_ONE`, and the recorded formatting signatures.
+4. **Rungs climbed and diffs:**
+   - Rung 1: added real `mc_tools` subprocess coverage and moved golden generation behind a
+     callable library function without rewriting the locked tapes.
+   - Rung 2: isolated the report by file; added production-module shell tests, exhaustive
+     locked-ID tests, and tape divergence tests.
+   - Rung 3: exercised validator/pack failure paths and fixed distinct reserved identifiers
+     being collapsed into one error.
+   - Rung 4: the sixth exact coverage attempt exhausted `MAX_ATTEMPTS_PER_MILESTONE: 6`.
+     A destructive rollback was not performed because it would discard the near-green M6
+     work and requires explicit user authority under the host safety policy.
+5. **Smallest human decision:** Explicitly authorize one additional M6 attempt without
+   rollback, overriding the six-attempt cap for this milestone only.
+6. **Recommended default:** Authorize exactly one additional attempt; add one deterministic
+   public pack/tape failure-path assertion worth at least two covered lines, rerun the exact
+   coverage command once, and block permanently if it still does not reach 85%.
+
+**Human-override resolution, 2026-07-29:** The user explicitly authorized one additional M6
+attempt without rollback. A line-level report identified eight uncovered executable lines
+in `Pack::verify_references`; the existing parsed-content fixture was extended to assert its
+missing-enemy and missing-region diagnostics. The single authorized exact rerun exited 0 at
+85.09% line coverage (6,004 of 7,056 lines), and the ignored-test inventory printed `0`.
+The prior `NODE_BLOCKED` report remains as append-only history but is superseded by this
+explicit user decision and passing evidence.
 
 ## 12. Surprises and Discoveries
 
@@ -252,6 +317,29 @@ not match `tapes/HASHES.txt`, do not re-record it.** Enter the ladder with signa
   the public ATB, status, targeting, and damage APIs with the authored four-enemy R14
   encounter stats and enforces both SPEC-008 p99 limits over 10,000 frames. This is required
   for M4's exact twelve-proof acceptance and does not change production behaviour.
+- 2026-07-29, M6: Keep the testability refactor in `mc_tools/src/main.rs`. Successful
+  `prove` commands called `std::process::exit`, preventing LLVM's coverage runtime from
+  flushing subprocess profiles even though the real CLI paths executed. Returning
+  `ExitCode` from `main` preserves every exit status and message while allowing normal
+  process teardown and truthful CLI coverage collection.
+- 2026-07-29, M6: Keep the narrow out-of-list fix in `mc_data/src/validate.rs`.
+  `reserved_identifier_reject` checked each forbidden identifier once per file, then
+  deduplicated errors using only file and field. That collapsed four distinct violations
+  in one file to one report. Removing the redundant deduplication restores one actionable
+  error per forbidden identifier without changing valid-content behavior.
+- 2026-07-29, M6: Keep the narrow `mc_tools` replay error-path refactor. Hash mismatches and
+  missing required flags previously called `process::exit`, which prevented LLVM profile
+  flushing and made those real CLI outcomes untestable in-process. Returning the same
+  messages as errors preserves non-zero CLI status through the existing `main` dispatcher
+  while allowing normal teardown.
+- 2026-07-29, M6: Keep the golden-tape generator extraction into
+  `mc_tools/src/golden_tapes.rs` plus a thin binary wrapper. The locked repository tapes
+  were not rewritten; tests generate equivalent tapes in a temporary directory, replay
+  them, and verify their manifest. This exercises the real generator without violating
+  M3's write-once recovery rule.
+- 2026-07-29, M6: The user explicitly authorized exactly one additional coverage attempt
+  without rollback after the six-attempt cap produced 84.98%. The added pack-reference
+  assertions covered eight known missing lines; the authorized rerun exited 0 at 85.09%.
 
 ## 14. Outcomes and Retrospective
 

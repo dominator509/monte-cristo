@@ -40,20 +40,20 @@ pub fn execute(args: &ReplayArgs) -> Result<(), Box<dyn std::error::Error>> {
 
     if args.assert_hash {
         if result.final_hash != tape.final_hash {
-            eprintln!(
+            let mut message = format!(
                 "hash mismatch: expected {}, got {}",
                 hex_fmt(&tape.final_hash),
                 hex_fmt(&result.final_hash)
             );
             if let Some((tick, expected, actual)) = result.first_divergence {
-                eprintln!(
-                    "first divergence at tick {}: expected {}, got {}",
+                message.push_str(&format!(
+                    "; first divergence at tick {}: expected {}, got {}",
                     tick,
                     hex_fmt(&expected),
                     hex_fmt(&actual)
-                );
+                ));
             }
-            std::process::exit(1);
+            return Err(message.into());
         }
         println!("hash: match");
     }
@@ -62,8 +62,7 @@ pub fn execute(args: &ReplayArgs) -> Result<(), Box<dyn std::error::Error>> {
         let flag_id = parse_flag_id(flag_name)
             .ok_or_else(|| format!("unknown flag name: `{}`", flag_name))?;
         if !result.final_world.flags.is_set(flag_id) {
-            eprintln!("flag `{}` is not set at end of replay", flag_name);
-            std::process::exit(1);
+            return Err(format!("flag `{}` is not set at end of replay", flag_name).into());
         }
         println!("flag `{}`: ok", flag_name);
     }

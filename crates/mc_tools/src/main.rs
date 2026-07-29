@@ -2,6 +2,7 @@
 
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+use std::process::ExitCode;
 
 mod cmd_prove;
 mod cmd_record;
@@ -42,7 +43,7 @@ enum Command {
     Report(cmd_report::ReportArgs),
 }
 
-fn main() {
+fn main() -> ExitCode {
     let cli = Cli::parse();
 
     match cli.command {
@@ -51,13 +52,14 @@ fn main() {
             match errors {
                 Ok(()) => {
                     println!("content: ok");
+                    ExitCode::SUCCESS
                 }
                 Err(errs) => {
                     for err in &errs {
                         eprintln!("{}", err);
                     }
                     eprintln!("content: {} error(s) found", errs.len());
-                    std::process::exit(1);
+                    ExitCode::FAILURE
                 }
             }
         }
@@ -68,38 +70,37 @@ fn main() {
                     eprintln!("{}", err);
                 }
                 eprintln!("bake failed: {} error(s)", errs.len());
-                std::process::exit(1);
+                return ExitCode::FAILURE;
             }
             let pack = mc_data::pack::Pack::from_content(&input)
                 .expect("bake validation passed but Pack::from_content failed");
             if let Err(e) = pack.save(&output) {
                 eprintln!("bake: failed to write pack: {}", e);
-                std::process::exit(1);
+                return ExitCode::FAILURE;
             }
             println!("bake: ok -> {}", output.display());
+            ExitCode::SUCCESS
         }
-        Command::Replay(args) => {
-            if let Err(e) = cmd_replay::execute(&args) {
+        Command::Replay(args) => match cmd_replay::execute(&args) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
                 eprintln!("error: {}", e);
-                std::process::exit(1);
+                ExitCode::FAILURE
             }
-        }
-        Command::Record(args) => {
-            if let Err(e) = cmd_record::execute(&args) {
+        },
+        Command::Record(args) => match cmd_record::execute(&args) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
                 eprintln!("error: {}", e);
-                std::process::exit(1);
+                ExitCode::FAILURE
             }
-        }
-        Command::Prove(args) => {
-            let exit_code = cmd_prove::execute(&args);
-            std::process::exit(match exit_code {
-                std::process::ExitCode::SUCCESS => 0,
-                _ => 1,
-            });
-        }
+        },
+        Command::Prove(args) => cmd_prove::execute(&args),
         Command::Report(args) => {
-            if !cmd_report::execute(&args) {
-                std::process::exit(1);
+            if cmd_report::execute(&args) {
+                ExitCode::SUCCESS
+            } else {
+                ExitCode::FAILURE
             }
         }
     }
