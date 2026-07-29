@@ -5,6 +5,8 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 
+default-run = "mc_tools"
+
 [dependencies]
 mc_core = { path = "../mc_core", version = "0.1.0" }
 mc_data = { path = "../mc_data", version = "0.1.0" }
