@@ -352,6 +352,14 @@ explicit user decision and passing evidence.
   an uncommitted gate fix makes the M7 verify command fail independently of test behavior.
   This corrective checkpoint is necessary to verify the fix from the clean state required
   by M7; the final M7 evidence commit remains separate and retains the prescribed subject.
+- 2026-07-29, M7: Keep the narrow out-of-list cross-toolchain fix in `scripts/build.sh`.
+  On this Windows host, the Linux Rust standard library was installed but no Linux linker
+  was available, so Cargo's unconfigured linker fallback selected MinGW `cc` and its
+  Windows `ld.exe` rejected Linux linker flags. Probe the matching cross compiler before
+  each non-host Linux or Windows build, skip only an unavailable toolchain as the script
+  already does for macOS, and explicitly select the available target compiler. This makes
+  the existing partial-build contract truthful; the all-three-platform artifact gate
+  remains in EP-009 and the run-level ship gate.
 
 ## 14. Outcomes and Retrospective
 

@@ -16,9 +16,30 @@ OUT="${MC_ARTIFACT_DIR:-target/artifacts}"
 mkdir -p "$OUT"
 
 TARGETS="x86_64-unknown-linux-gnu x86_64-pc-windows-gnu aarch64-apple-darwin"
+HOST=$(rustc -vV | sed -n 's/^host: //p')
 built=0
 for t in $TARGETS; do
   if rustup target list --installed 2>/dev/null | grep -q "^$t$"; then
+    if [ "$t" = "x86_64-unknown-linux-gnu" ] && [ "$HOST" != "$t" ]; then
+      if ! command -v x86_64-linux-gnu-gcc >/dev/null 2>&1; then
+        echo "build: cross toolchain not available for $t, skipping (install x86_64-linux-gnu-gcc)"
+        continue
+      fi
+      CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=x86_64-linux-gnu-gcc \
+        cargo build --locked --release -p mc_shell --target "$t"
+      built=$((built + 1))
+      continue
+    fi
+    if [ "$t" = "x86_64-pc-windows-gnu" ] && [ "$HOST" != "$t" ]; then
+      if ! command -v x86_64-w64-mingw32-gcc >/dev/null 2>&1; then
+        echo "build: cross toolchain not available for $t, skipping (install mingw-w64)"
+        continue
+      fi
+      CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=x86_64-w64-mingw32-gcc \
+        cargo build --locked --release -p mc_shell --target "$t"
+      built=$((built + 1))
+      continue
+    fi
     # For aarch64-apple-darwin, verify the full cross toolchain works
     if [ "$t" = "aarch64-apple-darwin" ]; then
       # Check if the full cross toolchain works (zig with macOS SDK, or osxcross)
