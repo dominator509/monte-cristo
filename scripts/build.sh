@@ -19,7 +19,19 @@ TARGETS="x86_64-unknown-linux-gnu x86_64-pc-windows-gnu aarch64-apple-darwin"
 built=0
 for t in $TARGETS; do
   if rustup target list --installed 2>/dev/null | grep -q "^$t$"; then
-    cargo build --locked --release -p mc_shell --target "$t"
+    # For aarch64-apple-darwin, verify the full cross toolchain works
+    if [ "$t" = "aarch64-apple-darwin" ]; then
+      # Check if the full cross toolchain works (zig with macOS SDK, or osxcross)
+      if ! (command -v aarch64-apple-darwin-cc >/dev/null 2>&1 || \
+            (command -v zig >/dev/null 2>&1 && \
+             echo 'int main(void){}' | zig cc -target aarch64-macos-none -framework Foundation -x c - -o /dev/null 2>/dev/null)); then
+        echo "build: cross toolchain not available for $t, skipping (install osxcross or zig + macOS SDK)"
+        continue
+      fi
+      CARGO_FEATURE_PURE=1 cargo build --locked --release -p mc_shell --target "$t"
+    else
+      cargo build --locked --release -p mc_shell --target "$t"
+    fi
     built=$((built + 1))
   else
     echo "build: target not installed, skipping: $t" >&2
