@@ -81,3 +81,8 @@
 2026-07-28T22:09:32Z | hermes-ipman | EP-007 | LEASE | node start
 2026-07-28T22:27:34Z | hermes-ipman | EP-007 | MILESTONE_PASS | M1 content complete
 2026-07-28T22:27:34Z | hermes-ipman | EP-007 | MILESTONE_PASS | M2 combat and poison properties hold
+2026-07-29T15:45:39Z | codex-root | EP-007 | LEASE_TAKEOVER | stale-lease-from-hermes-ipman-over-90-minutes
+2026-07-29T15:49:36Z | codex-root | EP-007 | ATTEMPT_FAIL | M3-expected-hash-match-sentinel-got-hash-ok
+2026-07-29T15:49:40Z | codex-root | EP-007 | SIG | M3_EXPECTED_HASH_MATCH_GOT_HASH_OK
+2026-07-29T15:51:10Z | codex-root | EP-007 | MILESTONE_PASS | M3-golden-tape-recorded-hash-match
+2026-07-29T15:51:14Z | codex-root | EP-007 | HEARTBEAT | M3-complete-preparing-checkpoint

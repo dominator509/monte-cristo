@@ -220,9 +220,9 @@ not match `tapes/HASHES.txt`, do not re-record it.** Enter the ladder with signa
 
 ## 11. Progress
 
-- [ ] M1 complete the content tree
-- [ ] M2 property tests over combat and poison
-- [ ] M3 record the golden tape
+- [x] M1 complete the content tree
+- [x] M2 property tests over combat and poison
+- [x] M3 record the golden tape
 - [ ] M4 the twelve live-fire proofs
 - [ ] M5 frame budget and memory ceiling
 - [ ] M6 coverage and flaky-test purge
@@ -234,7 +234,11 @@ not match `tapes/HASHES.txt`, do not re-record it.** Enter the ladder with signa
 
 ## 13. Decision Log
 
-<empty>
+- 2026-07-29, M3 resume: Keep the narrow out-of-list change to
+  `crates/mc_tools/src/cmd_replay.rs`. The exact M3 replay command exited successfully but
+  printed `hash: ok`, while this ExecPlan and the prior ledger evidence require the
+  observable sentinel `hash: match`. Changing only that success string restores the
+  specified CLI contract without changing replay or hashing behaviour.
 
 ## 14. Outcomes and Retrospective
 

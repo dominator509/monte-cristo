@@ -55,7 +55,7 @@ pub fn execute(args: &ReplayArgs) -> Result<(), Box<dyn std::error::Error>> {
             }
             std::process::exit(1);
         }
-        println!("hash: ok");
+        println!("hash: match");
     }
 
     if let Some(ref flag_name) = args.require_flag {
