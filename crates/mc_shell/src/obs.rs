@@ -134,16 +134,27 @@ fn crash_dir() -> PathBuf {
 // ── Rotating file writer ──────────────────────────────────────────────────────
 
 /// A writer that rotates the log file when it exceeds a size threshold.
+/// Retains up to `max_generations` rotated files; older ones are deleted.
 pub struct RotatingFileWriter {
     base: PathBuf,
     max_bytes: u64,
+    max_generations: u32,
     current: std::fs::File,
     current_size: u64,
     generation: u32,
 }
 
 impl RotatingFileWriter {
+    /// Create a new rotating file writer.
+    ///
+    /// `max_generations` controls how many rotated files are retained.
+    /// The current file + `max_generations - 1` rotated files are kept.
     pub fn new(base: PathBuf, max_bytes: u64) -> Self {
+        Self::with_retention(base, max_bytes, 7)
+    }
+
+    /// Create a new rotating file writer with explicit retention count.
+    pub fn with_retention(base: PathBuf, max_bytes: u64, max_generations: u32) -> Self {
         let current = std::fs::OpenOptions::new()
             .create(true)
             .append(true)
@@ -153,6 +164,7 @@ impl RotatingFileWriter {
         RotatingFileWriter {
             base,
             max_bytes,
+            max_generations,
             current,
             current_size,
             generation: 0,
@@ -171,6 +183,26 @@ impl RotatingFileWriter {
             .open(&self.base)
             .expect("reopen log file");
         self.current_size = 0;
+
+        // Enforce retention limit: delete files older than max_generations.
+        self.cleanup_old_files();
+    }
+
+    /// Remove rotated files whose generation number is beyond the
+    /// retention limit. Keeps at most `max_generations` rotated files.
+    fn cleanup_old_files(&self) {
+        if self.max_generations == 0 {
+            return;
+        }
+        if self.generation <= self.max_generations {
+            return;
+        }
+        // Delete files where gen <= generation - max_generations
+        let cutoff = self.generation - self.max_generations;
+        for gen in 1..=cutoff {
+            let old_path = self.base.with_extension(format!("jsonl.{}", gen));
+            let _ = std::fs::remove_file(&old_path);
+        }
     }
 }
 
