@@ -254,9 +254,7 @@ fn prove_epilogue() -> bool {
                         let path = scene_entry.path();
                         if path.extension().map_or(false, |e| e == "ron") {
                             total_scene_files += 1;
-                            let fname = path.file_stem()
-                                .and_then(|s| s.to_str())
-                                .unwrap_or("");
+                            let fname = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
                             if fname.starts_with("scn_confidence_cf") {
                                 confidence_files.push(path);
                             }
@@ -281,7 +279,8 @@ fn prove_epilogue() -> bool {
         eprintln!("epilogue: FAIL - act7 directory not found");
         return false;
     }
-    let act7_confidence_count = confidence_files.iter()
+    let act7_confidence_count = confidence_files
+        .iter()
         .filter(|p| p.to_string_lossy().contains("/act7/"))
         .count();
     if act7_confidence_count < 6 {
@@ -293,15 +292,22 @@ fn prove_epilogue() -> bool {
     }
 
     let required_act7 = [
-        "scn_confidence_cf40", "scn_confidence_cf41",
-        "scn_confidence_cf42", "scn_confidence_cf43",
-        "scn_confidence_cf44", "scn_confidence_cf45",
+        "scn_confidence_cf40",
+        "scn_confidence_cf41",
+        "scn_confidence_cf42",
+        "scn_confidence_cf43",
+        "scn_confidence_cf44",
+        "scn_confidence_cf45",
     ];
     for id in &required_act7 {
-        let found = confidence_files.iter()
+        let found = confidence_files
+            .iter()
             .any(|p| p.file_stem().and_then(|s| s.to_str()) == Some(*id));
         if !found {
-            eprintln!("epilogue: FAIL - required Act VII scene `{}` not found on disk", id);
+            eprintln!(
+                "epilogue: FAIL - required Act VII scene `{}` not found on disk",
+                id
+            );
             return false;
         }
     }
@@ -327,7 +333,10 @@ fn prove_epilogue() -> bool {
     ];
     for flag in &required_flags {
         if !flag_list.contains(flag) {
-            eprintln!("epilogue: FAIL - required flag `{}` not found in flags.ron", flag);
+            eprintln!(
+                "epilogue: FAIL - required flag `{}` not found in flags.ron",
+                flag
+            );
             return false;
         }
     }
@@ -372,11 +381,20 @@ fn prove_epilogue() -> bool {
 
     let known_count = known_flags.len();
     println!("epilogue: ok");
-    println!("  scene files: {} total, {} confidence (45 required)",
-             total_scene_files, confidence_files.len());
-    println!("  act7 scenes: {} (cf40-cf45 present)", act7_confidence_count);
-    println!("  flags in pack: {} known, {} scene references valid",
-             known_count, bad_refs.len());
+    println!(
+        "  scene files: {} total, {} confidence (45 required)",
+        total_scene_files,
+        confidence_files.len()
+    );
+    println!(
+        "  act7 scenes: {} (cf40-cf45 present)",
+        act7_confidence_count
+    );
+    println!(
+        "  flags in pack: {} known, {} scene references valid",
+        known_count,
+        bad_refs.len()
+    );
     println!("  note: content_invariants test separately validates terminal scene");
     true
 }
