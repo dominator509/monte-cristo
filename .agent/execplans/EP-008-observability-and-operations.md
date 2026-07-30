@@ -178,7 +178,7 @@ unchecked milestone, re-run the previous milestone's RUN, continue.
 - [x] M2 rotation and retention
 - [x] M3 metrics
 - [x] M4 debug overlay
-- [ ] M5 crash reports
+- [x] M5 crash reports
 - [ ] M6 runbooks and operational smoke
 
 ## 12. Surprises and Discoveries
