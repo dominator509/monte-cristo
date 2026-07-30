@@ -171,6 +171,109 @@ milestone's RUN, continue.
 - [ ] M4 cross-target determinism drill
 - [ ] M5 migration check and rollback drill
 
+### NODE_BLOCKED report — M3 three-target artifact staging
+
+1. **Exact blocker:** EP-009 cannot stage the required Linux and Apple aarch64 tarballs on
+   this host because the Linux pinned toolchain download fails in WSL and no Apple
+   SDK/osxcross toolchain is installed; only the genuine Windows GNU artifact can be built.
+
+2. **Full evidence (commands, observed output, exit codes):**
+
+   - `sh scripts/build.sh` (exit 1):
+
+         build: cross toolchain not available for x86_64-unknown-linux-gnu, skipping (install x86_64-linux-gnu-gcc)
+         build: cross toolchain not available for x86_64-pc-windows-gnu, skipping (install mingw-w64)
+         build: target not installed, skipping: aarch64-apple-darwin
+         build: FAIL - no target could be built
+
+   - `CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=clang cargo build --locked --release
+     -p mc_shell --target x86_64-pc-windows-gnu` (exit 1): compilation reached link, then
+     `clang` selected `lld-link` and reported every required GNU import/CRT library absent,
+     including `winapi_advapi32.lib`, `winapi_gdi32.lib`, `gcc_eh.lib`, `libpthread.a`,
+     `mingwex.lib`, `mingw32.lib`, and `gcc.lib`; final line:
+
+         clang: error: linker command failed with exit code 1
+
+   - `wsl.exe -d Ubuntu -- sh -lc "rustup toolchain install 1.83.0 --profile minimal"`
+     (exit 1):
+
+         info: syncing channel updates for 1.83.0-x86_64-unknown-linux-gnu
+         info: latest update on 2024-11-28 for version 1.83.0 (90b35a623 2024-11-26)
+         info: downloading 3 components
+         error: component download failed for rust-std-x86_64-unknown-linux-gnu:
+         error decoding response body: error reading a body from connection:
+         cannot decrypt peer's message
+
+   - The same pinned install with `RUSTUP_USE_CURL=1` (exit 1):
+
+         info: downloading 3 components
+         info: rolling back changes
+         error: component download failed for rust-std-x86_64-unknown-linux-gnu:
+         Failure when receiving data from the peer
+         (OpenSSL SSL_read: decryption failed or bad record mac)
+
+   - `choco install mingw -y --no-progress` (exit 0) reported MinGW 16.1.0 already
+     installed. Read-only discovery located
+     `C:\ProgramData\mingw64\mingw64\bin\x86_64-w64-mingw32-gcc.exe`.
+     After the build gate learned that standard location, `sh scripts/build.sh` (exit 0)
+     observed:
+
+         build: cross toolchain not available for x86_64-unknown-linux-gnu, skipping (install x86_64-linux-gnu-gcc)
+         build: target not installed, skipping: aarch64-apple-darwin
+         bake: ok -> content.pack
+         build: partial (1/3 targets)
+
+   - M3 artifact inventory (exit 0) contained only:
+
+         SHA256SUMS
+         monte-cristo-0.1.0-x86_64-pc-windows-gnu.tar.gz
+
+     The plan's root-directory `sha256sum -c "$MC_ARTIFACT_DIR/SHA256SUMS"` form failed
+     because deployable manifests contain archive-relative names. Verification from the
+     artifact directory (exit 0) observed:
+
+         monte-cristo-0.1.0-x86_64-pc-windows-gnu.tar.gz: OK
+
+   - `tar tzf` on the Windows archive (exit 0) listed all required members:
+     `monte-cristo.exe`, `content.pack`, `content.pack.blake3`, `LICENSE`,
+     `THIRD-PARTY-LICENSES.txt`, and `README.txt`.
+
+   - The extracted shipped binary's clean-directory drill
+     `monte-cristo.exe --replay tapes/golden-full.tape --assert-hash` (exit 0) printed:
+
+         hash: match
+
+3. **Error signatures and hypotheses:**
+   - `BUILD_FAIL_NO_TARGET_COULD_BE_BUILT`: hypothesis that required linkers were on PATH
+     was false.
+   - `LINK_FAIL_MINGW_IMPORT_AND_CRT_LIBS_MISSING`: hypothesis that generic LLVM `clang`
+     could replace MinGW was killed by the complete missing-library list.
+   - `RUSTUP_COMPONENT_DOWNLOAD_CANNOT_DECRYPT_PEER_MESSAGE`: hypothesis that existing WSL
+     could provide the pinned Linux host was blocked by both rustup download backends.
+   - `ARTIFACT_SET_INCOMPLETE_1_OF_3`: MinGW discovery recovered Windows GNU, but does not
+     supply Linux or the legally required Apple SDK.
+
+4. **Ladder climbed:**
+   - Rung 1: tried the smallest existing-linker substitution; no repository diff.
+   - Rung 2: isolated installed targets, linkers, WSL compiler state, and missing libraries.
+   - Rung 3: took M2's declared A-06 fallback; discovered the installed MinGW path and built
+     one real target without relabeling it.
+   - Rung 4: exhausted the fallback with one of three targets. Resetting to the M1 checkpoint
+     cannot install external toolchains, and M3 declares no fallback, so no destructive
+     rollback was applied.
+   - Rung 5: terminal `NODE_BLOCKED`; M3 is not checked, M4/M5 were not skipped, and neither
+     `build: ok` nor a three-artifact claim is fabricated.
+
+5. **Smallest human decision that unblocks:** choose and authorize a native build surface
+   for the two missing targets: either provision the pinned Linux toolchain plus an
+   Apple-arm64 SDK/osxcross toolchain locally, or approve an EP-009 GitHub Actions
+   native-runner workflow whose artifacts are downloaded and verified here.
+
+6. **Recommended default:** use GitHub-hosted `ubuntu-24.04` and arm64 `macos-14` runners,
+   retain this host for Windows GNU, and require every runner to replay the golden tape before
+   uploading its exact-target tarball. This avoids fabricating cross-builds or acquiring an
+   Apple SDK on Windows.
+
 ## 12. Surprises and Discoveries
 
 - M2 first build attempt: all three required release targets were unavailable. The Linux
@@ -200,6 +303,11 @@ milestone's RUN, continue.
   artifacts, print `build: partial (<n>/3 targets)`, and return success only so M2's declared
   unavailable-host fallback can continue gathering evidence. Such a partial result cannot
   satisfy node VERIFY or the ship gate.
+- 2026-07-29, M3 license scope exception: DEPLOYMENT.md requires every tarball to contain
+  the project's `LICENSE`, but the inherited repository declares `license = "MIT"` without
+  carrying the license file. Add the canonical MIT text as root `LICENSE`, attributed to
+  MONTE CRISTO contributors, and pre-declare it as the smallest scope exception needed to
+  make the artifact contract true.
 
 ## 14. Outcomes and Retrospective
 

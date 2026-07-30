@@ -19,6 +19,7 @@ WORKSPACE_VER=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\([^"]*\)"/\
 }
 OUT="${MC_ARTIFACT_DIR:-target/artifacts}"
 mkdir -p "$OUT"
+rm -f "$OUT"/monte-cristo-*.tar.gz "$OUT"/SHA256SUMS
 
 TARGETS="x86_64-unknown-linux-gnu x86_64-pc-windows-gnu aarch64-apple-darwin"
 HOST=$(rustc -vV | sed -n 's/^host: //p')
@@ -71,6 +72,16 @@ done
 [ "$built" -gt 0 ] || { echo "build: FAIL - no target could be built" >&2; exit 1; }
 
 cargo run --locked --release -p mc_tools -- bake --input "${MC_CONTENT_DIR:-./content}" --output content.pack
+[ -f content.pack ] || { echo "build: FAIL - content.pack missing after bake" >&2; exit 1; }
+[ -f content.pack.blake3 ] || {
+  echo "build: FAIL - content.pack.blake3 missing after bake" >&2
+  exit 1
+}
+[ -f LICENSE ] || { echo "build: FAIL - LICENSE missing" >&2; exit 1; }
+[ -f docs/artifact-README.txt ] || {
+  echo "build: FAIL - docs/artifact-README.txt missing" >&2
+  exit 1
+}
 
 for t in $TARGETS; do
   bin="target/$t/release/monte-cristo"
@@ -78,10 +89,13 @@ for t in $TARGETS; do
   [ -f "$bin" ] || continue
   stage=$(mktemp -d)
   cp "$bin" "$stage/"
-  cp content.pack content.pack.blake3 "$stage/" 2>/dev/null || true
-  [ -f LICENSE ] && cp LICENSE "$stage/"
-  cargo deny list -f tsv > "$stage/THIRD-PARTY-LICENSES.txt" 2>/dev/null || true
-  [ -f docs/artifact-README.txt ] && cp docs/artifact-README.txt "$stage/README.txt"
+  cp content.pack content.pack.blake3 LICENSE "$stage/"
+  cargo deny list -f tsv > "$stage/THIRD-PARTY-LICENSES.txt"
+  [ -s "$stage/THIRD-PARTY-LICENSES.txt" ] || {
+    echo "build: FAIL - generated third-party license file is empty" >&2
+    exit 1
+  }
+  cp docs/artifact-README.txt "$stage/README.txt"
   tar czf "$OUT/monte-cristo-$VER-$t.tar.gz" -C "$stage" .
   rm -rf "$stage"
 done
