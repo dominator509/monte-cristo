@@ -179,7 +179,7 @@ unchecked milestone, re-run the previous milestone's RUN, continue.
 - [x] M3 metrics
 - [x] M4 debug overlay
 - [x] M5 crash reports
-- [ ] M6 runbooks and operational smoke
+- [x] M6 runbooks and operational smoke
 
 ## 12. Surprises and Discoveries
 
@@ -194,6 +194,12 @@ unchecked milestone, re-run the previous milestone's RUN, continue.
   Preserve that working structure unless an acceptance command exposes a real contract
   failure; treat the already-grandfathered implementation paths as the node's code baseline
   and record only new fixes plus ExecPlan/ledger evidence in this resumed graph pass.
+- 2026-07-29, M6 health-check correction: `OPERATIONS.md` section 4 and M6 require the
+  release shell to expose `--check-paths`, but the inherited `mc_shell` binary only handled
+  `--verify-content`, and its success text did not match the documented `content: ok`
+  sentinel. Add the smallest command implementation in `crates/mc_shell/src/main.rs` and
+  retain that path as a pre-declared scope exception. Without this correction,
+  `scripts/smoke-test.sh` could not genuinely exercise all four required health checks.
 
 ## 14. Outcomes and Retrospective
 

@@ -5,6 +5,7 @@
 
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+use std::{fs, io::Write};
 
 use mc_shell::app::App;
 use mc_shell::config::ValidatedConfig;
@@ -42,7 +43,7 @@ fn run_headless(seed: u128, config: ValidatedConfig) {
 fn verify_content() -> ExitCode {
     match mc_data::pack::Pack::load_from_dir(Path::new(".")) {
         Ok(_) => {
-            println!("content verification: ok");
+            println!("content: ok");
             ExitCode::SUCCESS
         }
         Err(error) => {
@@ -53,6 +54,50 @@ fn verify_content() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+fn check_paths() -> ExitCode {
+    for root in [Root::Content, Root::Data, Root::Artifact] {
+        let Some(path) = root.resolve_env() else {
+            eprintln!("Path check failed: {} is unset or empty.", root.env_var());
+            return ExitCode::FAILURE;
+        };
+        let Ok(path) = path.canonicalize() else {
+            eprintln!(
+                "Path check failed: {} does not resolve to an existing directory.",
+                root.env_var()
+            );
+            return ExitCode::FAILURE;
+        };
+        if !path.is_dir() {
+            eprintln!("Path check failed: {} is not a directory.", root.env_var());
+            return ExitCode::FAILURE;
+        }
+
+        let probe = path.join(format!(".monte-cristo-write-probe-{}", std::process::id()));
+        let write_result = fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&probe)
+            .and_then(|mut file| file.write_all(b"ok"));
+        if let Err(error) = write_result {
+            eprintln!(
+                "Path check failed: {} is not writable: {error}",
+                root.env_var()
+            );
+            return ExitCode::FAILURE;
+        }
+        if let Err(error) = fs::remove_file(&probe) {
+            eprintln!(
+                "Path check failed: could not remove the {} write probe: {error}",
+                root.env_var()
+            );
+            return ExitCode::FAILURE;
+        }
+    }
+
+    println!("paths: ok");
+    ExitCode::SUCCESS
 }
 
 fn main() -> ExitCode {
@@ -68,6 +113,9 @@ fn main() -> ExitCode {
     }
     if args.iter().any(|a| a == "--verify-content") {
         return verify_content();
+    }
+    if args.iter().any(|a| a == "--check-paths") {
+        return check_paths();
     }
 
     let seed: u128 = 42;
