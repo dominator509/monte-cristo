@@ -175,7 +175,7 @@ unchecked milestone, re-run the previous milestone's RUN, continue.
 ## 11. Progress
 
 - [x] M1 structured logging
-- [ ] M2 rotation and retention
+- [x] M2 rotation and retention
 - [ ] M3 metrics
 - [ ] M4 debug overlay
 - [ ] M5 crash reports
