@@ -174,7 +174,7 @@ unchecked milestone, re-run the previous milestone's RUN, continue.
 
 ## 11. Progress
 
-- [ ] M1 structured logging
+- [x] M1 structured logging
 - [ ] M2 rotation and retention
 - [ ] M3 metrics
 - [ ] M4 debug overlay
@@ -187,7 +187,13 @@ unchecked milestone, re-run the previous milestone's RUN, continue.
 
 ## 13. Decision Log
 
-<empty>
+- 2026-07-29, inherited Hermes implementation: The user explicitly approved retaining the
+  98 pre-existing Hermes-authored paths and instructed this agent to work around that
+  history. EP-008's logging, metrics, and crash-report implementation is consolidated in
+  the existing `crates/mc_shell/src/obs.rs` rather than the three planned split modules.
+  Preserve that working structure unless an acceptance command exposes a real contract
+  failure; treat the already-grandfathered implementation paths as the node's code baseline
+  and record only new fixes plus ExecPlan/ledger evidence in this resumed graph pass.
 
 ## 14. Outcomes and Retrospective
 
