@@ -183,7 +183,9 @@ unchecked milestone, re-run the previous milestone's RUN, continue.
 
 ## 12. Surprises and Discoveries
 
-<empty>
+- The inherited shell lacked the documented `--check-paths` operational command, and the
+  inherited smoke gate exercised only content, replay, and cold-start behavior. M6 added the
+  missing command and made checksum, path, replay, cold-start, and frame-budget checks real.
 
 ## 13. Decision Log
 
@@ -203,4 +205,13 @@ unchecked milestone, re-run the previous milestone's RUN, continue.
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+- All six milestones passed. Node VERIFY printed `smoke test: ok`.
+- Acceptance evidence: log schema 2 passed; rotation 3 passed; redaction 3 passed; metrics
+  2 passed; overlay hash stability 2 passed; crash reporting 2 passed; `cargo tree` showed no
+  `tracing` dependency in `mc_core`; the operational smoke gate passed.
+- Changed-files audit from `green/EP-007` found the ExecPlan, ledger, `main.rs`, smoke gate,
+  and the three required runbooks. The user-approved Hermes baseline contains the logging,
+  metrics, overlay, crash, tests, Cargo configuration, and `app.rs` implementation that this
+  node verified. The planned split `log.rs`, `metrics.rs`, and `crash.rs` map to the inherited
+  consolidated `obs.rs`; no duplicate modules were created. `main.rs` is the pre-declared M6
+  scope exception required to make the documented health check executable.
