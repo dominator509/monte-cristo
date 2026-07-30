@@ -100,6 +100,63 @@ fn check_paths() -> ExitCode {
     ExitCode::SUCCESS
 }
 
+fn hex(bytes: &[u8; 32]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+fn save_info(path: &Path) -> ExitCode {
+    match mc_data::save::Save::from_file(path) {
+        Ok(save) => {
+            println!("schema_version: {}", save.schema_version);
+            println!("product_version: {}", save.product_version);
+            println!("content_digest: {}", hex(&save.content_digest));
+            println!("save_digest: {}", hex(&save.digest));
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("Save inspection failed for {}: {error}", path.display());
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn replay_tape(path: &Path, assert_hash: bool) -> ExitCode {
+    let result = fs::read(path)
+        .map_err(|error| format!("failed to read tape {}: {error}", path.display()))
+        .and_then(|bytes| {
+            mc_tape::format::Tape::from_bytes(&bytes)
+                .map_err(|error| format!("failed to deserialize tape: {error}"))
+        })
+        .and_then(|tape| {
+            mc_tape::replay::replay(&tape)
+                .map_err(|error| format!("replay failed: {error}"))
+                .map(|result| (tape, result))
+        });
+
+    match result {
+        Ok((tape, result)) if assert_hash && result.final_hash != tape.final_hash => {
+            eprintln!(
+                "hash: mismatch (expected {}, got {})",
+                hex(&tape.final_hash),
+                hex(&result.final_hash)
+            );
+            ExitCode::FAILURE
+        }
+        Ok((_tape, result)) => {
+            if assert_hash {
+                println!("hash: match");
+            } else {
+                println!("{}", hex(&result.final_hash));
+            }
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("{error}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
 fn main() -> ExitCode {
     // Initialize tracing
     tracing_subscriber::fmt().with_target(false).init();
@@ -116,6 +173,23 @@ fn main() -> ExitCode {
     }
     if args.iter().any(|a| a == "--check-paths") {
         return check_paths();
+    }
+    if let Some(index) = args.iter().position(|arg| arg == "--save-info") {
+        let Some(path) = args.get(index + 1) else {
+            eprintln!("--save-info requires a save-file path");
+            return ExitCode::FAILURE;
+        };
+        return save_info(Path::new(path));
+    }
+    if let Some(index) = args.iter().position(|arg| arg == "--replay") {
+        let Some(path) = args.get(index + 1) else {
+            eprintln!("--replay requires a tape-file path");
+            return ExitCode::FAILURE;
+        };
+        return replay_tape(
+            Path::new(path),
+            args.iter().any(|arg| arg == "--assert-hash"),
+        );
     }
 
     let seed: u128 = 42;

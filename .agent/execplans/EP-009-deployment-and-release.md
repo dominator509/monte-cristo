@@ -166,14 +166,22 @@ milestone's RUN, continue.
 ## 11. Progress
 
 - [x] M1 version and changelog
-- [ ] M2 cross-target build
+- [x] M2 cross-target build (fallback: Windows GNU built; Linux and macOS blocking)
 - [ ] M3 artifact staging and manifest
 - [ ] M4 cross-target determinism drill
 - [ ] M5 migration check and rollback drill
 
 ## 12. Surprises and Discoveries
 
-<empty>
+- M2 first build attempt: all three required release targets were unavailable. The Linux
+  target is installed but has no `x86_64-linux-gnu-gcc`; the Windows GNU target is installed
+  but has no MinGW linker/runtime; the Apple aarch64 target is not installed and no Apple
+  SDK/osxcross toolchain is present. An isolated attempt to use the installed LLVM `clang`
+  for Windows GNU reached link and proved the required MinGW CRT/import libraries absent.
+  This kills the hypothesis that an already-installed generic LLVM linker can satisfy M2.
+- Chocolatey reported MinGW 16.1.0 already installed outside `PATH` at
+  `C:/ProgramData/mingw64/mingw64/bin`. The build gate now discovers this standard
+  Chocolatey location without changing the target triple or relabeling a binary.
 
 ## 13. Decision Log
 
@@ -182,6 +190,16 @@ milestone's RUN, continue.
   `CHANGELOG.md`, `scripts/build.sh`, and the initial release CLI/build implementation
   therefore enter EP-009 as an inherited baseline. Verify every milestone contract against
   live commands, preserve correct work, and patch only observed release defects.
+- 2026-07-29, M2 fallback: Apply the declared ASSUMPTION A-06 fallback after proving the
+  installed LLVM linker cannot replace MinGW. Complete and verify the target-independent
+  shell CLI contract, retain exact target names, and never fabricate or relabel a native
+  MSVC binary as one of the required artifacts. Missing target toolchains remain blocking
+  items for the ship gate.
+- 2026-07-29, honest partial-build sentinel: `build: ok` means all three exact targets
+  built. When at least one but fewer than three targets builds, stage only those real
+  artifacts, print `build: partial (<n>/3 targets)`, and return success only so M2's declared
+  unavailable-host fallback can continue gathering evidence. Such a partial result cannot
+  satisfy node VERIFY or the ship gate.
 
 ## 14. Outcomes and Retrospective
 

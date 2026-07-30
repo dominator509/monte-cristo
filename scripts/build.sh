@@ -12,11 +12,21 @@ export RUST_BACKTRACE=1
 export MC_HEADLESS=1
 [ -f VERSION ] || { echo "build: FAIL - VERSION missing" >&2; exit 1; }
 VER=$(cat VERSION)
+WORKSPACE_VER=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\([^"]*\)"/\1/p' Cargo.toml)
+[ "$VER" = "$WORKSPACE_VER" ] || {
+  echo "build: FAIL - VERSION $VER does not match workspace version $WORKSPACE_VER" >&2
+  exit 1
+}
 OUT="${MC_ARTIFACT_DIR:-target/artifacts}"
 mkdir -p "$OUT"
 
 TARGETS="x86_64-unknown-linux-gnu x86_64-pc-windows-gnu aarch64-apple-darwin"
 HOST=$(rustc -vV | sed -n 's/^host: //p')
+if ! command -v x86_64-w64-mingw32-gcc >/dev/null 2>&1 &&
+   [ -x /c/ProgramData/mingw64/mingw64/bin/x86_64-w64-mingw32-gcc.exe ]; then
+  PATH="/c/ProgramData/mingw64/mingw64/bin:$PATH"
+  export PATH
+fi
 built=0
 for t in $TARGETS; do
   if rustup target list --installed 2>/dev/null | grep -q "^$t$"; then
@@ -81,4 +91,8 @@ done
   else
     shasum -a 256 monte-cristo-*.tar.gz > SHA256SUMS
   fi )
-echo "build: ok"
+if [ "$built" -eq 3 ]; then
+  echo "build: ok"
+else
+  echo "build: partial ($built/3 targets)"
+fi
