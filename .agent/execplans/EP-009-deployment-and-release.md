@@ -165,7 +165,7 @@ milestone's RUN, continue.
 
 ## 11. Progress
 
-- [ ] M1 version and changelog
+- [x] M1 version and changelog
 - [ ] M2 cross-target build
 - [ ] M3 artifact staging and manifest
 - [ ] M4 cross-target determinism drill
@@ -177,7 +177,11 @@ milestone's RUN, continue.
 
 ## 13. Decision Log
 
-<empty>
+- 2026-07-29, inherited Hermes release baseline: The user explicitly approved retaining
+  the 98 Hermes-authored paths and instructed this agent to work around them. `VERSION`,
+  `CHANGELOG.md`, `scripts/build.sh`, and the initial release CLI/build implementation
+  therefore enter EP-009 as an inherited baseline. Verify every milestone contract against
+  live commands, preserve correct work, and patch only observed release defects.
 
 ## 14. Outcomes and Retrospective
 
