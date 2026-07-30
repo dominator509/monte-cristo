@@ -331,6 +331,14 @@ explicit user decision and passing evidence.
    audit evidence above, create `green/EP-007` at the verified M7 commit, and require strict
    expected-file equality from EP-008 onward.
 
+#### Human-override resolution — node-final changed-files audit
+
+On 2026-07-29 the user explicitly approved inclusion of all 98 enumerated historical paths,
+explaining that a Hermes agent authored the pre-existing work and directing this agent to
+work around that history. This is the exact human decision requested by item 5 above. The
+98-path inventory is grandfathered for EP-007's node-final audit only; no file is deleted,
+no history is rewritten, and strict expected-file equality resumes with EP-008.
+
 ## 12. Surprises and Discoveries
 
 - 2026-07-29, M5: The existing `memory_ceiling` suite passed in 0.06 seconds because it
@@ -422,6 +430,10 @@ explicit user decision and passing evidence.
   valid from the repository but unit-test processes run from a crate directory. Resolve
   each root once after preflight, using Git-for-Windows `pwd -W` when available and POSIX
   `pwd -P` elsewhere, so confinement receives stable absolute roots in every child process.
+- 2026-07-29, node-final audit: The user explicitly grandfathered the exact 98 historical
+  out-of-list paths created by the Hermes-led build and instructed this agent to work around
+  them. Treat the Expected Changed Files audit as passing under that one-node exception,
+  preserve all files and history, and restore strict audit equality beginning with EP-008.
 
 ## 14. Outcomes and Retrospective
 
