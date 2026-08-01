@@ -167,7 +167,7 @@ milestone's RUN, continue.
 
 - [x] M1 version and changelog
 - [x] M2 cross-target build (fallback: Windows GNU built; Linux and macOS blocking)
-- [ ] M3 artifact staging and manifest
+- [x] M3 artifact staging and manifest
 - [ ] M4 cross-target determinism drill
 - [ ] M5 migration check and rollback drill
 
@@ -178,6 +178,17 @@ workflow. Preserve the historical blocked report below as evidence, resume at M3
 GitHub-hosted Linux x64 and macOS arm64 runners to produce and replay the two artifacts this
 Windows host cannot build. The existing local MinGW build remains the Windows GNU artifact.
 No release publication is authorized.
+
+M3 resumed evidence: GitHub Actions run `30720877624` completed both native jobs on commit
+`5553df382c51d2c39ac4ea30c8cf40b879441886`. Apple arm64 job `91424348554` and Linux x64
+job `91424348584` each printed the expected native archive `OK`, `content: ok`, `paths: ok`,
+and `hash: match` sentinels before upload. The downloaded tarballs were combined with the
+local Windows GNU tarball and a fresh artifact-root `SHA256SUMS`; all three entries verified
+`OK`. Manifest digests:
+
+- Apple arm64: `9b7af614d1c2d606be8a7bb35175b06616f58c285a812ae678a36751723ab4f2`
+- Windows GNU: `4ba88e2723f290bcd1d2a47c5e90bc698ac621ec42658b58e27ad507a94504f8`
+- Linux x64: `0313de961535874e706f3d25695affa20adff3dff8a1d4390d23daa6c8f56dd3`
 
 ### NODE_BLOCKED report — M3 three-target artifact staging
 
