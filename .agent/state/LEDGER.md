@@ -211,3 +211,6 @@
 2026-08-01T23:28:31Z | codex-root | EP-010 | SIG | BUILD_PARTIAL_1_OF_3_AFTER_NATIVE_STAGE
 2026-08-01T23:30:57Z | codex-root | EP-010 | MILESTONE_PASS | M5 dry run and docs verified; native run 30723274849; three SHA256 OK; placeholders 0
 2026-08-01T23:30:57Z | codex-root | EP-010 | HEARTBEAT | M5 complete; entering M6 ship gate
+2026-08-01T23:32:16Z | codex-root | EP-010 | ATTEMPT_FAIL | M6_VERSION_TAG_V0_1_0_ALREADY_EXISTS_LOCAL_AND_REMOTE_AT_CFC2957
+2026-08-01T23:32:17Z | codex-root | EP-010 | SIG | VERSION_TAG_ALREADY_EXISTS_REMOTE
+2026-08-01T23:32:17Z | codex-root | EP-010 | LEASE_RELEASE | M6 STOP existing remote v0.1.0; no tag mutation

@@ -203,6 +203,10 @@ verification milestones is always correct and is in fact what the evidence rule 
   `content: ok`, `paths: ok`, and `hash: match`; clean Windows extraction printed version,
   content, and hash sentinels; agent-doc placeholder count 0.
 - [ ] M6 ship gate, tag, and MANUAL stop
+  BLOCKED before mutation: annotated tag `v0.1.0` already exists locally and on `origin`,
+  pointing to commit `cfc2957065da2049bee2e3c19829b47c201e9c2f` (tag object
+  `c66e57bd7597b0d8357bdee97da0e4f4b3199bf3`, dated 2026-07-29). The corrected M5
+  candidate is `8cc62cb2de0e611e86bdecb32e0f0029800ebe1e`; the tag was not moved or overwritten.
 
 ## 12. Surprises and Discoveries
 
@@ -223,6 +227,9 @@ verification milestones is always correct and is in fact what the evidence rule 
   correctly aggregated only the default-root Windows artifact. Re-running with the same
   explicit `MC_ARTIFACT_DIR` used by the clean verifier preserved both downloaded native
   archives, rebuilt Windows, regenerated the manifest, and printed `build: ok`.
+- M6's mandatory pre-tag check found `v0.1.0` already published to the remote and pointing
+  at a pre-EP-010 commit. The plan explicitly classifies this as irreversible-action STOP
+  territory; no readiness checkbox, release tag, or RUN_COMPLETE claim was fabricated.
 
 ## 13. Decision Log
 
