@@ -213,6 +213,18 @@ M5 evidence:
   restored binary reported `schema_version: 2`, the withdrawn directory existed, and the
   bad version path was no longer reachable.
 
+Final native-workflow and node-gate evidence: after upgrading the official actions to their
+Node 24 releases, GitHub Actions run `30721624134` passed on commit
+`65e3e4a6468e25d7406622ccced1116176e2a412`. Apple job `91426250705` and Linux job
+`91426250682` each printed archive `OK`, `content: ok`, `paths: ok`, and `hash: match` with no
+Node-runtime deprecation warning. Those final tarballs replaced the earlier native outputs;
+the local Windows artifact was rebuilt, replayed to the recorded hash, and `sh scripts/build.sh`
+printed `build: ok`. The authoritative final manifest verified all three entries:
+
+- Linux x64: `765cc4cd37c241fe275fa6d908475453239890bc48a40e13ecca980f54c472c0`
+- Windows GNU: `57b917333dd6c61242d5b24cbf7210485f9e3fc8fca211ad39fb9011a2e43894`
+- Apple arm64: `269f113eedf448378aea822f3b01538a2d99c0e750cbc17194d33726b8133b1b`
+
 ### NODE_BLOCKED report — M3 three-target artifact staging
 
 1. **Exact blocker:** EP-009 cannot stage the required Linux and Apple aarch64 tarballs on
@@ -388,4 +400,19 @@ M5 evidence:
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+- All five milestones and every acceptance row passed. Node VERIFY printed `build: ok` in
+  this session with three exact-target archives staged and all manifest entries `OK`.
+- Cross-platform behavior is proven by native Linux/Apple jobs plus the extracted Windows
+  binary, all replaying `golden-full.tape` to
+  `7eb44fdbf8f29f7671be60cc150bc5a240b189f1a79ac5c516a3362166444398`.
+- Changed-files audit from `green/EP-008` found: this ExecPlan and ledger;
+  `.github/workflows/release-native.yml`; `.gitignore`; `LICENSE`; `scripts/build.sh`;
+  `docs/artifact-README.txt`; `crates/mc_shell/src/main.rs`; and the M5 scope exceptions
+  `crates/mc_tools/src/main.rs` plus `crates/mc_tools/tests/cli_end_to_end.rs`.
+  `VERSION`, `CHANGELOG.md`, and `.ci/verify.yml` entered as user-approved Hermes baseline
+  and were verified rather than rewritten. The authorized native workflow replaces the
+  inapplicable self-hosted-only `.ci` path for M3 evidence; every additional actual path has
+  a pre-declared Decision Log entry.
+- No release was published. The three final archives and `SHA256SUMS` remain staged under
+  `MC_ARTIFACT_DIR`; native workflow artifacts are additionally retained by GitHub for seven
+  days.
