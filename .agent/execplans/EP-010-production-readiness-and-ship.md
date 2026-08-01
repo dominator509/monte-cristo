@@ -198,7 +198,10 @@ verification milestones is always correct and is in fact what the evidence rule 
 - [x] M4 reviews against the specs — `security check: ok`; `dependency audit: ok`;
   p99 core/frame 0.000400 ms; shell accessibility/privacy suites 10 passed; data
   glyph/backup suites 5 passed.
-- [ ] M5 deployment dry run and documentation review
+- [x] M5 deployment dry run and documentation review — all three manifest entries `OK`;
+  final native run 30723274849 clean-extracted Linux/macOS and printed version 0.1.0,
+  `content: ok`, `paths: ok`, and `hash: match`; clean Windows extraction printed version,
+  content, and hash sentinels; agent-doc placeholder count 0.
 - [ ] M6 ship gate, tag, and MANUAL stop
 
 ## 12. Surprises and Discoveries
@@ -216,6 +219,10 @@ verification milestones is always correct and is in fact what the evidence rule 
   `--save-info` accepted an unconfined path, and operator replay examples did not declare
   the tape's trusted root. Passing gates therefore did not yet make the published command
   surface consistent with INV-07.
+- The first direct post-download `build.sh` call did not inherit ignored `.env` values and
+  correctly aggregated only the default-root Windows artifact. Re-running with the same
+  explicit `MC_ARTIFACT_DIR` used by the clean verifier preserved both downloaded native
+  archives, rebuilt Windows, regenerated the manifest, and printed `build: ok`.
 
 ## 13. Decision Log
 
@@ -240,6 +247,12 @@ verification milestones is always correct and is in fact what the evidence rule 
   declare those roots explicitly. These are pre-recorded EP-005/006/008/009-owned scope
   exceptions required to make documentation and shipped behavior agree with INV-07. Rebuild
   all three artifacts from the corrected source before accepting M5.
+- 2026-08-01, M5 native execution equivalence: this Windows host cannot execute the Linux
+  archive locally. Use the explicitly authorized Ubuntu native job 91430451211, which
+  performs clean extraction plus checksum, version, confined content verification, path
+  probes, and full golden replay, as the platform-native execution of M5's Linux command.
+  Keep the local three-entry manifest check and Windows clean-extraction smoke as independent
+  evidence; do not claim Windows executed an ELF binary.
 
 ## 14. Outcomes and Retrospective
 

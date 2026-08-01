@@ -207,3 +207,7 @@
 2026-08-01T23:18:05Z | codex-root | EP-010 | HEARTBEAT | M3 complete; entering M4
 2026-08-01T23:19:16Z | codex-root | EP-010 | MILESTONE_PASS | M4 four reviews clean; p99 0.000400 ms; 15 named tests passed
 2026-08-01T23:19:16Z | codex-root | EP-010 | HEARTBEAT | M4 complete; entering M5
+2026-08-01T23:28:31Z | codex-root | EP-010 | ATTEMPT_FAIL | M5_FINAL_ARTIFACT_AGGREGATION_PARTIAL_1_OF_3
+2026-08-01T23:28:31Z | codex-root | EP-010 | SIG | BUILD_PARTIAL_1_OF_3_AFTER_NATIVE_STAGE
+2026-08-01T23:30:57Z | codex-root | EP-010 | MILESTONE_PASS | M5 dry run and docs verified; native run 30723274849; three SHA256 OK; placeholders 0
+2026-08-01T23:30:57Z | codex-root | EP-010 | HEARTBEAT | M5 complete; entering M6 ship gate
