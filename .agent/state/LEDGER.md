@@ -205,3 +205,5 @@
 2026-08-01T23:13:24Z | codex-root | EP-010 | HEARTBEAT | M2 complete; entering M3
 2026-08-01T23:18:05Z | codex-root | EP-010 | MILESTONE_PASS | M3 expected-files audit complete; inherited deviations recorded and authorized
 2026-08-01T23:18:05Z | codex-root | EP-010 | HEARTBEAT | M3 complete; entering M4
+2026-08-01T23:19:16Z | codex-root | EP-010 | MILESTONE_PASS | M4 four reviews clean; p99 0.000400 ms; 15 named tests passed
+2026-08-01T23:19:16Z | codex-root | EP-010 | HEARTBEAT | M4 complete; entering M5

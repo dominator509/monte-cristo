@@ -195,7 +195,9 @@ verification milestones is always correct and is in fact what the evidence rule 
   `green/EP-009`; every acceptance row is recorded met in its Outcomes section. Historical
   file-list deviations are enumerated rather than hidden, including the user-approved
   EP-007 98-path Hermes exception.
-- [ ] M4 reviews against the specs
+- [x] M4 reviews against the specs — `security check: ok`; `dependency audit: ok`;
+  p99 core/frame 0.000400 ms; shell accessibility/privacy suites 10 passed; data
+  glyph/backup suites 5 passed.
 - [ ] M5 deployment dry run and documentation review
 - [ ] M6 ship gate, tag, and MANUAL stop
 
