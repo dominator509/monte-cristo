@@ -83,7 +83,7 @@ jobs:
             MC_ARTIFACT_DIR="$MC_ARTIFACT_DIR" \
             MC_DATA_DIR="$MC_DATA_DIR" \
             "$stage/monte-cristo" --check-paths
-          MC_HEADLESS=1 "$stage/monte-cristo" \
+          MC_DATA_DIR="$GITHUB_WORKSPACE" MC_HEADLESS=1 "$stage/monte-cristo" \
             --replay "$GITHUB_WORKSPACE/tapes/golden-full.tape" --assert-hash
           test "$(tar tzf "$archive" | grep -c 'THIRD-PARTY-LICENSES.txt')" -eq 1
 

@@ -198,6 +198,12 @@ verification milestones is always correct and is in fact what the evidence rule 
 - M1's first clean verify exposed `clippy::format_collect` in the EP-009 release CLI hex
   formatter. Earlier targeted tests compiled successfully, but only the from-scratch lint
   gate exercised the repository-wide `-D warnings` policy.
+- M1's next clean verify passed the test suites but `scripts/security-check.sh` found that
+  the shipped shell's `--replay` path used `std::fs::read` directly. This contradicted
+  ARCHITECTURE.md INV-07 even though the native release smoke had passed.
+- The first narrow compile of the confinement correction showed that `std::fs` remains
+  required by the separately confined `--check-paths` write probe. Restoring the module
+  import, while leaving the tape read on `fsroot::read`, was the smallest correction.
 
 ## 13. Decision Log
 
@@ -206,6 +212,11 @@ verification milestones is always correct and is in fact what the evidence rule 
   into one preallocated `String`. The repository has no mechanism to reopen a green tag
   without rewriting append-only history, so record this final-review scope exception and
   rerun EP-010 M1 from `cargo clean`; do not weaken or suppress the lint.
+- 2026-08-01, M1 confinement correction: route the shipped shell's tape read through
+  `fsroot::read(Root::Data, ...)` and make the authorized native workflow explicitly
+  designate the repository workspace as `MC_DATA_DIR` for its read-only golden-tape
+  replay. Keep these two EP-009-owned paths as a pre-recorded EP-010 scope exception,
+  rebuild every native artifact from the corrected commit, and rerun M1 from clean.
 
 ## 14. Outcomes and Retrospective
 

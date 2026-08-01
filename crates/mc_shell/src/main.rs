@@ -126,8 +126,14 @@ fn save_info(path: &Path) -> ExitCode {
 }
 
 fn replay_tape(path: &Path, assert_hash: bool) -> ExitCode {
-    let result = fs::read(path)
-        .map_err(|error| format!("failed to read tape {}: {error}", path.display()))
+    let result = fsroot::read(Root::Data, path)
+        .map_err(|error| {
+            format!(
+                "failed to read tape {} within {}: {error}",
+                path.display(),
+                Root::Data.env_var()
+            )
+        })
         .and_then(|bytes| {
             mc_tape::format::Tape::from_bytes(&bytes)
                 .map_err(|error| format!("failed to deserialize tape: {error}"))
