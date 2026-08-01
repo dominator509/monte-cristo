@@ -1,6 +1,7 @@
 //! Monte Cristo developer and CI CLI.
 
 use clap::{Parser, Subcommand};
+use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
@@ -41,6 +42,54 @@ enum Command {
     Prove(cmd_prove::ProveArgs),
     /// Print content and diagnostic reports
     Report(cmd_report::ReportArgs),
+    /// Validate or perform save migration for every fixture in a directory
+    SaveMigrate {
+        /// Directory containing historical save fixtures
+        #[arg(long)]
+        dir: PathBuf,
+        /// Validate every migration in memory without modifying any fixture
+        #[arg(long)]
+        dry_run: bool,
+    },
+}
+
+fn save_migrate(dir: &std::path::Path, dry_run: bool) -> Result<usize, String> {
+    let entries = fs::read_dir(dir).map_err(|error| {
+        format!(
+            "cannot read save fixture directory {}: {error}",
+            dir.display()
+        )
+    })?;
+    let mut paths = entries
+        .map(|entry| entry.map(|item| item.path()))
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| format!("cannot enumerate save fixtures: {error}"))?;
+    paths.sort();
+    paths.retain(|path| path.is_file());
+    if paths.is_empty() {
+        return Err(format!(
+            "save fixture directory {} contains no files",
+            dir.display()
+        ));
+    }
+
+    for path in &paths {
+        if dry_run {
+            let data = fs::read(path)
+                .map_err(|error| format!("cannot read save fixture {}: {error}", path.display()))?;
+            let migrated = mc_data::migrate::migrate_save(&data)
+                .map_err(|error| format!("cannot migrate {}: {error}", path.display()))?;
+            mc_data::save::Save::load(&migrated)
+                .map_err(|error| format!("migrated save {} is invalid: {error}", path.display()))?;
+            println!("save-migrate: {}: ok (dry-run)", path.display());
+        } else {
+            mc_data::migrate::migrate_save_file(path)
+                .map_err(|error| format!("cannot migrate {}: {error}", path.display()))?;
+            println!("save-migrate: {}: ok", path.display());
+        }
+    }
+
+    Ok(paths.len())
 }
 
 fn main() -> ExitCode {
@@ -103,5 +152,16 @@ fn main() -> ExitCode {
                 ExitCode::FAILURE
             }
         }
+        Command::SaveMigrate { dir, dry_run } => match save_migrate(&dir, dry_run) {
+            Ok(count) => {
+                let mode = if dry_run { "dry-run" } else { "migrated" };
+                println!("save-migrate: ok ({count} fixture(s), {mode})");
+                ExitCode::SUCCESS
+            }
+            Err(error) => {
+                eprintln!("save-migrate: FAIL - {error}");
+                ExitCode::FAILURE
+            }
+        },
     }
 }

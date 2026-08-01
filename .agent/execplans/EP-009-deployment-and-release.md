@@ -169,7 +169,7 @@ milestone's RUN, continue.
 - [x] M2 cross-target build (fallback: Windows GNU built; Linux and macOS blocking)
 - [x] M3 artifact staging and manifest
 - [x] M4 cross-target determinism drill
-- [ ] M5 migration check and rollback drill
+- [x] M5 migration check and rollback drill
 
 ### Human-authorized resume — GitHub native runners
 
@@ -195,6 +195,23 @@ against `golden-full.tape` and printed `hash: match`. The Windows GNU archive wa
 extracted into a clean temporary directory in this session; its binary printed `hash: match`
 and raw hash `7eb44fdbf8f29f7671be60cc150bc5a240b189f1a79ac5c516a3362166444398`,
 identical to the Linux value in `tapes/HASHES.txt`. No target printed `hash: mismatch`.
+
+M5 evidence:
+
+- `cargo run --locked -p mc_tools -- save-migrate --dir tests/fixtures/saves-v1 --dry-run`
+  inspected the committed `save.v1`, loaded the migrated schema-2 result, left the fixture
+  byte-identical, and printed `save-migrate: ok (1 fixture(s), dry-run)`.
+- `sh scripts/smoke-test.sh` printed `smoke test: ok`.
+- A real temporary publish tree was created under `C:\tmp\mc-ep009-rollback-drill` with
+  retained `0.0.9`, candidate `0.1.0`, and a native `current` symlink. Appending bytes to the
+  candidate binary made checksum verification print `monte-cristo.exe: FAILED` and
+  `rollback drill: corruption detected`.
+- With `MSYS=winsymlinks:nativestrict`, the documented `ln -sfn` command repointed `current`
+  to `0.0.9`; the documented `mv` command moved the bad tree to `.withdrawn-0.1.0`.
+- Post-rollback verification printed `OK` for all six release files, `content: ok`, and
+  `hash: match`. The v1 fixture copied into the drill data directory migrated for real, the
+  restored binary reported `schema_version: 2`, the withdrawn directory existed, and the
+  bad version path was no longer reachable.
 
 ### NODE_BLOCKED report — M3 three-target artifact staging
 
@@ -310,6 +327,15 @@ identical to the Linux value in `tapes/HASHES.txt`. No target printed `hash: mis
 - Chocolatey reported MinGW 16.1.0 already installed outside `PATH` at
   `C:/ProgramData/mingw64/mingw64/bin`. The build gate now discovers this standard
   Chocolatey location without changing the target triple or relabeling a binary.
+- M5's authoritative migration command initially failed with Clap's `unrecognized
+  subcommand 'save-migrate'`. The real v1-to-current migration implementation and committed
+  fixture tests already existed in `mc_data`; only the required `mc_tools` CLI surface was
+  missing.
+- Git Bash's default `ln -sfn` behavior on this Windows host copied the candidate directory
+  instead of creating a link, so the first corruption check correctly failed to detect the
+  changed source tree. Recreating `current` with `MSYS=winsymlinks:nativestrict` produced a
+  real Windows symbolic link; the repeated corruption check then failed exactly the altered
+  binary and the rollback commands operated on the live pointer.
 
 ## 13. Decision Log
 
@@ -342,6 +368,12 @@ identical to the Linux value in `tapes/HASHES.txt`. No target printed `hash: mis
 - 2026-08-01, local agent-state hygiene: `.serena/` was regenerated concurrently as
   untracked local agent state after the clean synced baseline. Add it to `.gitignore`; do
   not include its cache, memories, or machine-local configuration in release history.
+- 2026-08-01, M5 migration CLI scope exception: DEPLOYMENT.md and SPEC-002 require
+  `mc_tools save-migrate`, but `crates/mc_tools/src/main.rs` did not register it. Add the
+  smallest real CLI implementation plus end-to-end success/failure coverage in
+  `crates/mc_tools/tests/cli_end_to_end.rs`. Dry-run must migrate and load every fixture in
+  memory without changing source files; non-dry-run delegates to the existing backup-
+  preserving `migrate_save_file` implementation.
 
 ## 14. Outcomes and Retrospective
 

@@ -131,6 +131,23 @@ fn cli_success_paths_cover_real_content_tapes_and_proofs() {
     );
 
     assert_success(&["report", "bestiary"], "report bestiary: ok");
+    let fixture_dir = Path::new(REPO_ROOT).join("tests/fixtures/saves-v1");
+    let fixture = fixture_dir.join("save.v1");
+    let fixture_before = std::fs::read(&fixture).expect("read migration fixture before dry-run");
+    assert_success(
+        &[
+            "save-migrate",
+            "--dir",
+            fixture_dir.to_str().expect("fixture directory is UTF-8"),
+            "--dry-run",
+        ],
+        "save-migrate: ok (1 fixture(s), dry-run)",
+    );
+    assert_eq!(
+        std::fs::read(&fixture).expect("read migration fixture after dry-run"),
+        fixture_before,
+        "save-migrate --dry-run must not modify source fixtures"
+    );
     assert_success(&["prove", "act1-arrest"], "act1-arrest: ok");
     assert_success(&["prove", "epilogue"], "epilogue: ok");
     assert_success(&["prove", "if-calendar"], "if-calendar: ok");
@@ -160,6 +177,15 @@ fn cli_failure_paths_report_real_errors() {
     std::fs::write(&bad_commands, "Move Up\n").expect("write invalid command fixture");
     std::fs::write(&bad_tape, b"not a tape").expect("write invalid tape fixture");
 
+    assert_failure(
+        &[
+            "save-migrate",
+            "--dir",
+            missing.to_str().expect("missing path is UTF-8"),
+            "--dry-run",
+        ],
+        "cannot read save fixture directory",
+    );
     assert_failure(
         &[
             "validate",
