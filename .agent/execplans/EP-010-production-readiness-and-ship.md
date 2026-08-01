@@ -207,6 +207,11 @@ verification milestones is always correct and is in fact what the evidence rule 
   pointing to commit `cfc2957065da2049bee2e3c19829b47c201e9c2f` (tag object
   `c66e57bd7597b0d8357bdee97da0e4f4b3199bf3`, dated 2026-07-29). The corrected M5
   candidate is `8cc62cb2de0e611e86bdecb32e0f0029800ebe1e`; the tag was not moved or overwritten.
+  Continuation rung-2 audit on 2026-08-01 killed the hypothesis that external state had
+  removed or corrected the tag: `VERSION` remains `0.1.0`; local and remote refs still peel
+  to `cfc2957`; the target is an ancestor 39 commits behind candidate `4d4092a`; and
+  `gh release view v0.1.0` reports no GitHub Release object. The conflict is the remote Git
+  tag itself, and it remains untouched.
 
 ## 12. Surprises and Discoveries
 
