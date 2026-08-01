@@ -43,7 +43,7 @@ sha256sum -c "$checksum_file" >/dev/null \
 
 # Cold start budget: under 2.5 s to title (SPEC-008 section 3).
 start=$(date +%s%3N)
-"$shell_bin" --verify-content | grep -q '^content: ok$' \
+MC_CONTENT_DIR="$(pwd)" "$shell_bin" --verify-content | grep -q '^content: ok$' \
   || fail "release shell content verification failed"
 end=$(date +%s%3N)
 elapsed_ms=$((end - start))

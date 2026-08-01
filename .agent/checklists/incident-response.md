@@ -8,8 +8,8 @@ hot-fixed remotely.
 **Detect**
 - [ ] Reproduce from a clean install of the published artifact
 - [ ] `sha256sum -c SHA256SUMS`
-- [ ] `./monte-cristo --verify-content`
-- [ ] `MC_HEADLESS=1 ./monte-cristo --replay tapes/golden-smoke.tape --assert-hash`
+- [ ] `MC_CONTENT_DIR="$(pwd)" ./monte-cristo --verify-content`
+- [ ] `MC_DATA_DIR="$(pwd)" MC_HEADLESS=1 ./monte-cristo --replay tapes/golden-smoke.tape --assert-hash`
 - [ ] If a player supplied a save and a tape, reproduce exactly on the development machine
 
 **Triage**

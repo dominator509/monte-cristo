@@ -78,7 +78,8 @@ jobs:
           trap 'rm -rf "$stage"' EXIT HUP INT TERM
           tar xzf "$archive" -C "$stage"
           test -x "$stage/monte-cristo"
-          (cd "$stage" && ./monte-cristo --version && ./monte-cristo --verify-content)
+          (cd "$stage" && ./monte-cristo --version && \
+            MC_CONTENT_DIR="$stage" ./monte-cristo --verify-content)
           MC_CONTENT_DIR="$stage" \
             MC_ARTIFACT_DIR="$MC_ARTIFACT_DIR" \
             MC_DATA_DIR="$MC_DATA_DIR" \

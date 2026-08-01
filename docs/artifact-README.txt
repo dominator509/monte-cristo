@@ -30,5 +30,10 @@ The following commands do not open a window:
   monte-cristo --save-info <save-file>
   monte-cristo --replay <tape-file> --assert-hash
 
+Set MC_CONTENT_DIR to this extracted directory before --verify-content. Save
+and tape paths are untrusted input: set MC_DATA_DIR to their trusted parent
+directory and pass a path contained by that root. Paths outside the declared
+root are rejected.
+
 Crash reports are local-only and are never transmitted. Sharing a crash report,
 save, tape, or log is always your choice.

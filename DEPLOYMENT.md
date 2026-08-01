@@ -94,7 +94,10 @@ Against the published artifact, from a clean directory:
     sha256sum -c SHA256SUMS
     tar xzf monte-cristo-<version>-x86_64-unknown-linux-gnu.tar.gz
     ./monte-cristo --version
-    MC_HEADLESS=1 ./monte-cristo --replay tapes/golden-smoke.tape --assert-hash
+    MC_CONTENT_DIR="$(pwd)" ./monte-cristo --verify-content
+    source_root=/path/to/verified/monte-cristo-checkout
+    MC_DATA_DIR="$source_root" MC_HEADLESS=1 ./monte-cristo \
+      --replay "$source_root/tapes/golden-smoke.tape" --assert-hash
 
 ## 9. Deployment STOP conditions
 
@@ -105,5 +108,7 @@ is missing or contains a licence outside the allowlist; or the version tag alrea
 ## 10. Production verification commands
 
     ./monte-cristo --version
-    ./monte-cristo --verify-content        # digest check against content.pack.blake3
-    MC_HEADLESS=1 ./monte-cristo --replay tapes/golden-smoke.tape --assert-hash
+    MC_CONTENT_DIR="$(pwd)" ./monte-cristo --verify-content
+    source_root=/path/to/verified/monte-cristo-checkout
+    MC_DATA_DIR="$source_root" MC_HEADLESS=1 ./monte-cristo \
+      --replay "$source_root/tapes/golden-smoke.tape" --assert-hash

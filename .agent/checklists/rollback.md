@@ -13,8 +13,8 @@
 
 **Verify:**
 - [ ] `sha256sum -c SHA256SUMS` verifies for the restored version
-- [ ] `./monte-cristo --verify-content` -> `content: ok`
-- [ ] `MC_HEADLESS=1 ./monte-cristo --replay tapes/golden-smoke.tape --assert-hash` ->
+- [ ] `MC_CONTENT_DIR="$(pwd)" ./monte-cristo --verify-content` -> `content: ok`
+- [ ] `MC_DATA_DIR="$(pwd)" MC_HEADLESS=1 ./monte-cristo --replay tapes/golden-smoke.tape --assert-hash` ->
       `hash: match`
 - [ ] a save from two versions back still loads
 - [ ] the withdrawn version is unreachable from the published index

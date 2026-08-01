@@ -60,8 +60,10 @@ From a clean directory, against the published files:
     sha256sum -c SHA256SUMS
     tar xzf monte-cristo-<version>-x86_64-unknown-linux-gnu.tar.gz
     ./monte-cristo --version
-    ./monte-cristo --verify-content
-    MC_HEADLESS=1 ./monte-cristo --replay tapes/golden-smoke.tape --assert-hash
+    MC_CONTENT_DIR="$(pwd)" ./monte-cristo --verify-content
+    source_root=/path/to/verified/monte-cristo-checkout
+    MC_DATA_DIR="$source_root" MC_HEADLESS=1 ./monte-cristo \
+      --replay "$source_root/tapes/golden-smoke.tape" --assert-hash
 
 ## 8. Approvals
 

@@ -28,16 +28,16 @@ rollback, and responding to reports.
 | Check | Command | Healthy |
 |---|---|---|
 | Binary integrity | `sha256sum -c SHA256SUMS` | all OK |
-| Content integrity | `./monte-cristo --verify-content` | `content: ok` |
-| Simulation integrity | `MC_HEADLESS=1 ./monte-cristo --replay tapes/golden-smoke.tape --assert-hash` | `hash: match` |
+| Content integrity | `MC_CONTENT_DIR="$(pwd)" ./monte-cristo --verify-content` | `content: ok` |
+| Simulation integrity | `MC_DATA_DIR="$(git rev-parse --show-toplevel)" MC_HEADLESS=1 ./monte-cristo --replay tapes/golden-smoke.tape --assert-hash` | `hash: match` |
 | Data directory | `./monte-cristo --check-paths` | three roots resolved and writable |
 
 ## 5. Common failure modes and exact diagnostics
 
 | Symptom | Likely cause | Diagnostic | Action |
 |---|---|---|---|
-| Game will not start, exits immediately | content.pack missing or digest mismatch | `./monte-cristo --verify-content` | reinstall from the tarball; do not hand-edit content.pack |
-| "unsupported save version" | the save was written by a newer build | `./monte-cristo --save-info <file>` | install the newer version; never downgrade a save |
+| Game will not start, exits immediately | content.pack missing or digest mismatch | `MC_CONTENT_DIR="$(pwd)" ./monte-cristo --verify-content` | reinstall from the tarball; do not hand-edit content.pack |
+| "unsupported save version" | the save was written by a newer build | `MC_DATA_DIR=/path/to/save/root ./monte-cristo --save-info /path/to/save/root/<file>` | install the newer version; never downgrade a save |
 | Save fails to write | data directory not writable or full | `./monte-cristo --check-paths`; `df -h` | fix permissions or free space; the previous save is intact |
 | Frame rate below 60 | GPU below the reference class, or a compositor forcing vsync off | run with the in-game frame overlay enabled | lower the window scale; report with the overlay numbers |
 | Input not recognised | a remap file from an older schema | `./monte-cristo --dump-input-map` | delete settings.ron; defaults are restored |

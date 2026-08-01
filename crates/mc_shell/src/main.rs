@@ -42,7 +42,18 @@ fn run_headless(seed: u128, config: ValidatedConfig) {
 
 /// Real main — checks MC_HEADLESS before any window creation.
 fn verify_content() -> ExitCode {
-    match mc_data::pack::Pack::load_from_dir(Path::new(".")) {
+    let content_dir = match fsroot::confine(Root::Content, Path::new("")) {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!(
+                "Content verification failed: {} is not a valid confined root: {error}",
+                Root::Content.env_var()
+            );
+            return ExitCode::FAILURE;
+        }
+    };
+
+    match mc_data::pack::Pack::load_from_dir(&content_dir) {
         Ok(_) => {
             println!("content: ok");
             ExitCode::SUCCESS
@@ -110,7 +121,19 @@ fn hex(bytes: &[u8; 32]) -> String {
 }
 
 fn save_info(path: &Path) -> ExitCode {
-    match mc_data::save::Save::from_file(path) {
+    let confined_path = match fsroot::confine(Root::Data, path) {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!(
+                "Save inspection failed for {} within {}: {error}",
+                path.display(),
+                Root::Data.env_var()
+            );
+            return ExitCode::FAILURE;
+        }
+    };
+
+    match mc_data::save::Save::from_file(&confined_path) {
         Ok(save) => {
             println!("schema_version: {}", save.schema_version);
             println!("product_version: {}", save.product_version);

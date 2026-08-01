@@ -29,7 +29,10 @@ previous directory as current and removing the bad version's listing:
 Then verify:
 
     sha256sum -c SHA256SUMS
-    MC_HEADLESS=1 ./monte-cristo --replay tapes/golden-smoke.tape --assert-hash
+    MC_CONTENT_DIR="$(pwd)" ./monte-cristo --verify-content
+    source_root=/path/to/verified/monte-cristo-checkout
+    MC_DATA_DIR="$source_root" MC_HEADLESS=1 ./monte-cristo \
+      --replay "$source_root/tapes/golden-smoke.tape" --assert-hash
 
 ## 4. Data rollback
 

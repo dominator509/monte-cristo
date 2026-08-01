@@ -212,6 +212,10 @@ verification milestones is always correct and is in fact what the evidence rule 
 - The first narrow compile of the confinement correction showed that `std::fs` remains
   required by the separately confined `--check-paths` write probe. Restoring the module
   import, while leaving the tape read on `fsroot::read`, was the smallest correction.
+- M5's documentation walk found that `--verify-content` ignored `MC_CONTENT_DIR`,
+  `--save-info` accepted an unconfined path, and operator replay examples did not declare
+  the tape's trusted root. Passing gates therefore did not yet make the published command
+  surface consistent with INV-07.
 
 ## 13. Decision Log
 
@@ -230,6 +234,12 @@ verification milestones is always correct and is in fact what the evidence rule 
   evidence in the affected Outcomes section. Treat only the user's explicit 98-path EP-007
   grandfathering and already-recorded node Decision Log exceptions as authorized; do not
   rewrite tags or describe the audit as exact equality.
+- 2026-08-01, M5 confinement-complete correction: confine content verification to
+  `MC_CONTENT_DIR`, save inspection and replay to `MC_DATA_DIR`, and update the release
+  workflow, smoke gate, artifact README, operator docs, and incident/rollback checklists to
+  declare those roots explicitly. These are pre-recorded EP-005/006/008/009-owned scope
+  exceptions required to make documentation and shipped behavior agree with INV-07. Rebuild
+  all three artifacts from the corrected source before accepting M5.
 
 ## 14. Outcomes and Retrospective
 
