@@ -201,3 +201,5 @@
 2026-08-01T22:59:36Z | codex-root | EP-010 | SIG | UNDECLARED_MODULE_FS_CHECK_PATHS
 2026-08-01T23:12:00Z | codex-root | EP-010 | MILESTONE_PASS | M1 verify: ok from clean
 2026-08-01T23:12:00Z | codex-root | EP-010 | HEARTBEAT | M1 complete; entering M2
+2026-08-01T23:13:24Z | codex-root | EP-010 | MILESTONE_PASS | M2 reality gate: ok, live-fire: ok
+2026-08-01T23:13:24Z | codex-root | EP-010 | HEARTBEAT | M2 complete; entering M3
