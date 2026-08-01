@@ -168,7 +168,7 @@ milestone's RUN, continue.
 - [x] M1 version and changelog
 - [x] M2 cross-target build (fallback: Windows GNU built; Linux and macOS blocking)
 - [x] M3 artifact staging and manifest
-- [ ] M4 cross-target determinism drill
+- [x] M4 cross-target determinism drill
 - [ ] M5 migration check and rollback drill
 
 ### Human-authorized resume — GitHub native runners
@@ -189,6 +189,12 @@ local Windows GNU tarball and a fresh artifact-root `SHA256SUMS`; all three entr
 - Apple arm64: `9b7af614d1c2d606be8a7bb35175b06616f58c285a812ae678a36751723ab4f2`
 - Windows GNU: `4ba88e2723f290bcd1d2a47c5e90bc698ac621ec42658b58e27ad507a94504f8`
 - Linux x64: `0313de961535874e706f3d25695affa20adff3dff8a1d4390d23daa6c8f56dd3`
+
+M4 evidence: both native jobs in run `30720877624` replayed the extracted shipped binary
+against `golden-full.tape` and printed `hash: match`. The Windows GNU archive was separately
+extracted into a clean temporary directory in this session; its binary printed `hash: match`
+and raw hash `7eb44fdbf8f29f7671be60cc150bc5a240b189f1a79ac5c516a3362166444398`,
+identical to the Linux value in `tapes/HASHES.txt`. No target printed `hash: mismatch`.
 
 ### NODE_BLOCKED report — M3 three-target artifact staging
 
