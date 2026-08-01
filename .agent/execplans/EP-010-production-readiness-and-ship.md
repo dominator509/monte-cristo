@@ -195,11 +195,17 @@ verification milestones is always correct and is in fact what the evidence rule 
 
 ## 12. Surprises and Discoveries
 
-<empty>
+- M1's first clean verify exposed `clippy::format_collect` in the EP-009 release CLI hex
+  formatter. Earlier targeted tests compiled successfully, but only the from-scratch lint
+  gate exercised the repository-wide `-D warnings` policy.
 
 ## 13. Decision Log
 
-<empty>
+- 2026-08-01, M1 owning-node correction: fix the EP-009-owned
+  `crates/mc_shell/src/main.rs` formatter exactly as Clippy recommends, using `fmt::Write`
+  into one preallocated `String`. The repository has no mechanism to reopen a green tag
+  without rewriting append-only history, so record this final-review scope exception and
+  rerun EP-010 M1 from `cargo clean`; do not weaken or suppress the lint.
 
 ## 14. Outcomes and Retrospective
 

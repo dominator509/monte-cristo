@@ -3,6 +3,7 @@
 //! SPEC-004 sections 1, 10, 11. MC_HEADLESS=1 suppresses window + audio.
 //! The binary is named "monte-cristo".
 
+use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::{fs, io::Write};
@@ -101,7 +102,11 @@ fn check_paths() -> ExitCode {
 }
 
 fn hex(bytes: &[u8; 32]) -> String {
-    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+    let mut output = String::with_capacity(64);
+    for byte in bytes {
+        write!(&mut output, "{byte:02x}").expect("writing to a String cannot fail");
+    }
+    output
 }
 
 fn save_info(path: &Path) -> ExitCode {
