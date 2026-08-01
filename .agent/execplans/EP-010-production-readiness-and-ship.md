@@ -186,7 +186,9 @@ verification milestones is always correct and is in fact what the evidence rule 
 
 ## 11. Progress
 
-- [ ] M1 verify from scratch
+- [x] M1 verify from scratch — `cargo clean` removed 5,881 files / 2.6 GiB; the
+  subsequent `sh scripts/verify.sh` exited 0 after 447.5 seconds with all subordinate
+  gates green and the final `verify: ok` sentinel.
 - [ ] M2 reality and live fire
 - [ ] M3 expected-files audit and acceptance walk
 - [ ] M4 reviews against the specs
