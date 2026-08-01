@@ -336,6 +336,10 @@ M5 evidence:
   changed source tree. Recreating `current` with `MSYS=winsymlinks:nativestrict` produced a
   real Windows symbolic link; the repeated corruption check then failed exactly the altered
   binary and the rollback commands operated on the live pointer.
+- The first authorized GitHub run passed but warned that `actions/checkout@v4` and
+  `actions/upload-artifact@v4` use deprecated Node 20. Their official Node 24 releases are
+  checkout v5 and upload-artifact v6, so the durable workflow was upgraded before node
+  completion and must be rerun green.
 
 ## 13. Decision Log
 
@@ -374,6 +378,13 @@ M5 evidence:
   `crates/mc_tools/tests/cli_end_to_end.rs`. Dry-run must migrate and load every fixture in
   memory without changing source files; non-dry-run delegates to the existing backup-
   preserving `migrate_save_file` implementation.
+- 2026-08-01, three-host build aggregation: The inherited `build.sh` deleted every staged
+  tarball before attempting local cross-builds, making it impossible for the authorized
+  native Linux/macOS artifacts to survive until node VERIFY. Preserve exact-version staged
+  tarballs for unavailable targets, overwrite artifacts actually rebuilt on the current
+  host, validate the exact required member set in all three archives, regenerate one
+  three-entry `SHA256SUMS`, and print `build: ok` only when all three exact targets validate.
+  A clean single-target native runner must continue to print an honest partial sentinel.
 
 ## 14. Outcomes and Retrospective
 

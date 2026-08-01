@@ -19,7 +19,7 @@ WORKSPACE_VER=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\([^"]*\)"/\
 }
 OUT="${MC_ARTIFACT_DIR:-target/artifacts}"
 mkdir -p "$OUT"
-rm -f "$OUT"/monte-cristo-*.tar.gz "$OUT"/SHA256SUMS
+rm -f "$OUT"/SHA256SUMS
 
 TARGETS="x86_64-unknown-linux-gnu x86_64-pc-windows-gnu aarch64-apple-darwin"
 HOST=$(rustc -vV | sed -n 's/^host: //p')
@@ -101,13 +101,38 @@ for t in $TARGETS; do
   rm -rf "$stage"
 done
 
+available=0
+archive_names=""
+for t in $TARGETS; do
+  archive="$OUT/monte-cristo-$VER-$t.tar.gz"
+  [ -f "$archive" ] || continue
+  case "$t" in
+    x86_64-pc-windows-gnu) archive_bin="monte-cristo.exe" ;;
+    *) archive_bin="monte-cristo" ;;
+  esac
+  actual_members=$(tar tzf "$archive" | sed 's|^\./||' | grep -v '^$' | sort)
+  expected_members=$(printf '%s\n' \
+    "$archive_bin" content.pack content.pack.blake3 LICENSE \
+    THIRD-PARTY-LICENSES.txt README.txt | sort)
+  [ "$actual_members" = "$expected_members" ] || {
+    echo "build: FAIL - unexpected members in $archive" >&2
+    printf 'expected:\n%s\nactual:\n%s\n' "$expected_members" "$actual_members" >&2
+    exit 1
+  }
+  available=$((available + 1))
+  archive_names="$archive_names $(basename "$archive")"
+done
+[ "$available" -gt 0 ] || { echo "build: FAIL - no artifacts staged" >&2; exit 1; }
+
 ( cd "$OUT" && if command -v sha256sum >/dev/null 2>&1; then
-    sha256sum monte-cristo-*.tar.gz > SHA256SUMS
+    # shellcheck disable=SC2086 -- archive_names is a controlled list of fixed filenames.
+    sha256sum $archive_names > SHA256SUMS
   else
-    shasum -a 256 monte-cristo-*.tar.gz > SHA256SUMS
+    # shellcheck disable=SC2086 -- archive_names is a controlled list of fixed filenames.
+    shasum -a 256 $archive_names > SHA256SUMS
   fi )
-if [ "$built" -eq 3 ]; then
+if [ "$available" -eq 3 ]; then
   echo "build: ok"
 else
-  echo "build: partial ($built/3 targets)"
+  echo "build: partial ($available/3 artifacts; $built target(s) built on this host)"
 fi
