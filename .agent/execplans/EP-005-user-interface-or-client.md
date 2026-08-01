@@ -280,4 +280,11 @@ it rather than reverting another node's work.
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+- All ten acceptance rows are met. The node ledger records headless startup, battle and
+  Confidence UI, hash-independent audio, accessibility, advisory persistence, and `e2e
+  tests: ok`; the clean EP-010 verify re-ran the named shell/data tests.
+- Changed-files audit: 44 paths changed. All declared shell modules and tests are present
+  except that no standalone font-asset path appears at the tag boundary; `font_metrics`
+  and `glyph_parity` prove the implemented behavior. The boundary also includes the L6
+  ledger, Cargo.lock, and approved cross-crate core/data/tape integration changes.
+- Retrospective: deterministic state remained below the graphical rendering shell.

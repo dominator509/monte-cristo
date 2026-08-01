@@ -191,7 +191,10 @@ verification milestones is always correct and is in fact what the evidence rule 
   gates green and the final `verify: ok` sentinel.
 - [x] M2 reality and live fire — `reality gate: ok`; LF-01 through LF-12 each
   reported `ok`; `live-fire: ok`.
-- [ ] M3 expected-files audit and acceptance walk
+- [x] M3 expected-files audit and acceptance walk — audited `green/EP-000` through
+  `green/EP-009`; every acceptance row is recorded met in its Outcomes section. Historical
+  file-list deviations are enumerated rather than hidden, including the user-approved
+  EP-007 98-path Hermes exception.
 - [ ] M4 reviews against the specs
 - [ ] M5 deployment dry run and documentation review
 - [ ] M6 ship gate, tag, and MANUAL stop
@@ -220,6 +223,11 @@ verification milestones is always correct and is in fact what the evidence rule 
   designate the repository workspace as `MC_DATA_DIR` for its read-only golden-tape
   replay. Keep these two EP-009-owned paths as a pre-recorded EP-010 scope exception,
   rebuild every native artifact from the corrected commit, and rerun M1 from clean.
+- 2026-08-01, M3 historical-boundary audit: literal equality is false for several inherited
+  green-tag boundaries. Follow M3's stated fallback by recording each discrepancy and its
+  evidence in the affected Outcomes section. Treat only the user's explicit 98-path EP-007
+  grandfathering and already-recorded node Decision Log exceptions as authorized; do not
+  rewrite tags or describe the audit as exact equality.
 
 ## 14. Outcomes and Retrospective
 

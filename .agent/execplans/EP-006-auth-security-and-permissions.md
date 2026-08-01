@@ -219,4 +219,11 @@ node's Expected Changed Files list; report a collision instead.
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+- All nine acceptance rows are met. The node ledger records confinement, the single access
+  point, parser hardening, real fuzz corpora, zero sockets, redaction, and `security check:
+  ok`; EP-010 re-observed the security sentinel after correcting the shipped replay read.
+- Changed-files audit: 28 paths changed. The declared confinement, fuzz, parser, network,
+  redaction, and security-gate surface is present; `deny.toml` was inherited from EP-001
+  rather than changed here. Extras are the L6 ledger, Cargo.lock, and approved supporting
+  data/shell tests and modules that make the security properties executable.
+- Retrospective: the final-review catch proves the static single-access-point gate's value.

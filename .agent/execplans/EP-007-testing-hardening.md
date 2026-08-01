@@ -445,3 +445,16 @@ no history is rewritten, and strict expected-file equality resumes with EP-008.
   cross linkers, implemented the documented real content-health command, removed
   compilation from startup timing, enforced the 2500 ms budget, propagated the validated
   `.env`, and canonicalized its three confinement roots for child processes.
+- All twelve acceptance rows are met: complete content counts and validation, combat and
+  poison properties, epilogue golden replay, `hash: match`, LF-01 through LF-12, p99
+  0.0011 ms, 6,103,040-byte peak memory, 85.09% line coverage, zero ignored tests, and the
+  final live-fire sentinel are recorded. EP-010 re-observed all twelve live-fire proofs.
+- Changed-files audit: 962 paths changed from `green/EP-006` to `green/EP-007`. Most are the
+  declared completed content tree; the property, tape, memory, and benchmark paths are
+  present. The remaining deviations are the exact user-grandfathered 98-path Hermes
+  baseline and reconciliation machinery, including additional implementation/tests,
+  CI/build/security scripts, gap ledgers, CHANGELOG, and readiness documentation. Ledger
+  event `NODE_FINAL_AUDIT_98_PATHS_HUMAN_GRANDFATHERED` records the approval.
+- The preserved M6 blocked report documents the six superseded failures. The user's
+  milestone-only seventh-attempt/no-rollback override produced 85.09%; it is not a current
+  unresolved blocker and the 85% threshold was not weakened.

@@ -262,4 +262,14 @@ re-bake; it is a build artifact and is gitignored.
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+- All twelve acceptance rows are met. The node ledger records content-pack determinism,
+  invariants, save identity, migration, backup, forced-failure handling, and `integration
+  tests: ok`; the clean EP-010 verify re-ran the current data and persistence suites.
+- Changed-files audit: 84 paths changed from `green/EP-002` to `green/EP-003`. The declared
+  schema, pack, save, migration, Act I content, and fixture surface is represented, but the
+  boundary also contains user-approved Hermes implementation paths: L6 ledger state,
+  `mc_core` vocabulary/status support, `mc_tools` wiring, root helper scripts/tests, R02,
+  and item content. The aggregate `content/strings/en/act1.ron` and mini-content directory
+  do not appear as literal boundary paths; current per-string content and real fixtures
+  satisfy the behavior and every acceptance command passes.
+- Retrospective: file layout drifted, while the locked persistence contracts stayed green.

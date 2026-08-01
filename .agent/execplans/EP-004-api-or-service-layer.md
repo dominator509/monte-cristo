@@ -237,4 +237,11 @@ is exactly the signal the whole harness exists to produce.
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+- All eight acceptance rows are met. Ledger evidence records command rejection, tick
+  contract, tape round-trip and rejection, divergence localization, CLI replay,
+  `hash: match`, cross-run determinism, and `e2e tests: ok`; EP-010 re-ran these suites.
+- Changed-files audit: 22 paths changed. Every declared tape, CLI, command, test, and tape
+  asset path is present except the planned standalone `mc_core/src/view.rs`; the inherited
+  implementation keeps the view surface with command/world state. The only additional path
+  is the required L6 ledger.
+- Retrospective: consolidated state avoided a duplicate view surface without changing the API.

@@ -230,4 +230,9 @@ re-running it.
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+- Historical acceptance: all eight rows met. Ledger lines for M1-M7 record Rust 1.83.0,
+  pinned cargo tools, three writable roots, registry and graphics probes, `preflight: ok`,
+  and scheduler dispatch; `green/EP-000` preserves the no-game-code boundary at completion.
+- The local `.env` remains ignored and machine-owned. The 2026-08-01 clean EP-010 verify
+  re-observed `preflight: ok`, confirming the stable toolchain and root criteria.
+- Retrospective: later crates do not invalidate the historical no-game-code acceptance fact.

@@ -328,7 +328,15 @@ half-written -- reset and redo.
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+- All twelve acceptance rows are met. Historical M1-M10 ledger evidence covers the
+  no-float/no-hash/no-clock invariants and each named domain test; the 2026-08-01 clean
+  workspace verify re-ran the core suite successfully.
+- Changed-files audit: 38 paths changed at the original green-tag boundary. Declared core
+  modules and tests were present except `prop_fixed_point.rs`, which was added and verified
+  in the recorded reconciliation commit after the first tag. Extras were this ExecPlan,
+  the L6 ledger, Cargo.lock, and the generated spawn proptest regression file; the Decision
+  Log already records those deviations.
+- Retrospective: current tests prove the reconciled deterministic domain behavior.
 
 ## 13. Decision Log
 

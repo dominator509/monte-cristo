@@ -203,3 +203,5 @@
 2026-08-01T23:12:00Z | codex-root | EP-010 | HEARTBEAT | M1 complete; entering M2
 2026-08-01T23:13:24Z | codex-root | EP-010 | MILESTONE_PASS | M2 reality gate: ok, live-fire: ok
 2026-08-01T23:13:24Z | codex-root | EP-010 | HEARTBEAT | M2 complete; entering M3
+2026-08-01T23:18:05Z | codex-root | EP-010 | MILESTONE_PASS | M3 expected-files audit complete; inherited deviations recorded and authorized
+2026-08-01T23:18:05Z | codex-root | EP-010 | HEARTBEAT | M3 complete; entering M4

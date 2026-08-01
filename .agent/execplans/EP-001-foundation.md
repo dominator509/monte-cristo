@@ -337,4 +337,12 @@ decision, because a silent lockfile change is a supply-chain event.
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+- All ten acceptance rows are met. The node ledger records the five-member workspace,
+  clean dependency direction, committed lockfile, format/lint/dependency/unit sentinels,
+  zero duplicated CI gate logic, and `verify: ok`; the 2026-08-01 clean verify rechecked
+  every stable gate.
+- Changed-files audit: 25 paths changed from `green/EP-000` to `green/EP-001`. All 17
+  declared paths are present. The eight additional paths are the L6 ledger, ENVIRONMENT.md,
+  PREFLIGHT.md, and dependency, security, and ledger gate scripts. They are recorded
+  historical Hermes baseline deviations, not hidden changes.
+- Retrospective: later work strengthened the gates without changing the five-crate layout.
