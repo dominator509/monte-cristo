@@ -213,6 +213,44 @@ verification milestones is always correct and is in fact what the evidence rule 
   `gh release view v0.1.0` reports no GitHub Release object. The conflict is the remote Git
   tag itself, and it remains untouched.
 
+### NODE_BLOCKED report — EP-010 M6
+
+1. **Exact blocker:** `VERSION` requires creation of `v0.1.0`, but that annotated tag
+   already exists locally and on `origin` at pre-ship commit `cfc2957`; replacing it is a
+   destructive external history change that M6 explicitly forbids without human authority.
+2. **Full evidence:**
+   - `sh scripts/preflight.sh` — exit 0, `preflight: ok` on all three consecutive audits.
+   - `sh scripts/graph-next.sh` — exit 0, `NEXT EP-010`; M6 is the first unchecked milestone.
+   - `Get-Content VERSION` — `0.1.0` on all three audits.
+   - `git for-each-ref refs/tags/v0.1.0` — local annotated object
+     `c66e57bd7597b0d8357bdee97da0e4f4b3199bf3`, peeled commit
+     `cfc2957065da2049bee2e3c19829b47c201e9c2f`, dated 2026-07-29.
+   - `git ls-remote --tags origin v0.1.0 v0.1.0^{}` — the remote returns those same two
+     object IDs; the conflict is not local-only.
+   - `git rev-list --count v0.1.0^{}..HEAD` — `39` on rung 2 and `40` on rung 3; current
+     candidate before this report is `b9ef8a0a4a28123092f315e36a056bec1a12b64b`.
+   - `gh release view v0.1.0 --json tagName,url` — exit 1, `release not found`; there is no
+     GitHub Release object, but the remote Git tag remains an irreversible published ref.
+   - `git status --short --branch` plus `git rev-list --left-right --count
+     origin/master...master` — branch clean before the ledger lease and `0 0` synchronized.
+3. **Error signature and hypotheses:** signature `VERSION_TAG_ALREADY_EXISTS_REMOTE`
+   recurred on three consecutive goal turns. Rung-1 hypothesis that the tag was absent was
+   disproved by local and remote refs. Rung-2 hypothesis that external state might remove or
+   correct it was disproved by identical object IDs. Rung-3 observation that no GitHub
+   Release object exists reduces collateral scope but does not authorize deleting a remote
+   Git ref.
+4. **Rungs climbed:** rung 1 performed the initial no-mutation provenance check; rung 2
+   isolated ancestry, remote equality, candidate distance, and Release-object state; rung 3
+   re-ran the authoritative boot and remote-ref checks. No code or tag diff was attempted,
+   no force push occurred, and the milestone fallback is explicitly `none`.
+5. **Smallest human decision that unblocks:** either authorize reopening release planning
+   to bump `VERSION` and release metadata to `0.1.1`, or explicitly authorize deletion and
+   replacement of both local and remote `v0.1.0` tags.
+6. **Recommended default:** bump to `0.1.1`. It preserves immutable published history and
+   permits the final clean verification, readiness checklist, tag, `green/EP-010`, and
+   `RUN_COMPLETE` to proceed. The broader graphical-facelift objective also remains
+   unverified and cannot be implemented inside M6 because feature work is a declared non-goal.
+
 ## 12. Surprises and Discoveries
 
 - M1's first clean verify exposed `clippy::format_collect` in the EP-009 release CLI hex
