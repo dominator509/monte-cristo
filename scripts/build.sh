@@ -51,8 +51,9 @@ for t in $TARGETS; do
       built=$((built + 1))
       continue
     fi
-    # For aarch64-apple-darwin, verify the full cross toolchain works
-    if [ "$t" = "aarch64-apple-darwin" ]; then
+    # For aarch64-apple-darwin cross-builds, verify the full external toolchain works.
+    # A native arm64 macOS runner uses its installed Xcode linker directly.
+    if [ "$t" = "aarch64-apple-darwin" ] && [ "$HOST" != "$t" ]; then
       # Check if the full cross toolchain works (zig with macOS SDK, or osxcross)
       if ! (command -v aarch64-apple-darwin-cc >/dev/null 2>&1 || \
             (command -v zig >/dev/null 2>&1 && \

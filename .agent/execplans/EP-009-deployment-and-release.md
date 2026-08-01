@@ -171,6 +171,14 @@ milestone's RUN, continue.
 - [ ] M4 cross-target determinism drill
 - [ ] M5 migration check and rollback drill
 
+### Human-authorized resume — GitHub native runners
+
+On 2026-08-01 the user explicitly authorized the proposed GitHub native-runner release
+workflow. Preserve the historical blocked report below as evidence, resume at M3, and use
+GitHub-hosted Linux x64 and macOS arm64 runners to produce and replay the two artifacts this
+Windows host cannot build. The existing local MinGW build remains the Windows GNU artifact.
+No release publication is authorized.
+
 ### NODE_BLOCKED report — M3 three-target artifact staging
 
 1. **Exact blocker:** EP-009 cannot stage the required Linux and Apple aarch64 tarballs on
@@ -308,6 +316,15 @@ milestone's RUN, continue.
   carrying the license file. Add the canonical MIT text as root `LICENSE`, attributed to
   MONTE CRISTO contributors, and pre-declare it as the smallest scope exception needed to
   make the artifact contract true.
+- 2026-08-01, human-authorized native-runner recovery: The user explicitly authorized the
+  GitHub workflow recommended by the NODE_BLOCKED report. Add
+  `.github/workflows/release-native.yml` as a declared M3 scope exception, dispatch it only
+  manually, require each native runner to verify content and replay the full golden tape
+  before upload, then download and independently verify the tarballs locally. This is build
+  evidence only and does not publish a release.
+- 2026-08-01, local agent-state hygiene: `.serena/` was regenerated concurrently as
+  untracked local agent state after the clean synced baseline. Add it to `.gitignore`; do
+  not include its cache, memories, or machine-local configuration in release history.
 
 ## 14. Outcomes and Retrospective
 

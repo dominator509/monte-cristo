@@ -1,0 +1,96 @@
+name: Native release artifacts
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: 0
+  MC_HEADLESS: 1
+  MC_CONTENT_DIR: ./content
+  MC_REFERENCE_MACHINE: github-native-release-runner
+
+jobs:
+  native-release:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+            graphics_stack: x11
+          - runner: macos-14
+            target: aarch64-apple-darwin
+            graphics_stack: macos
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux graphics development libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libasound2-dev libgl1-mesa-dev libx11-dev libxi-dev
+
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.83.0
+          targets: ${{ matrix.target }}
+
+      - name: Install pinned cargo-deny
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: cargo-deny
+          version: 0.17.0
+
+      - name: Build and stage the native artifact
+        env:
+          MC_ARTIFACT_DIR: ${{ runner.temp }}/artifacts
+          MC_DATA_DIR: ${{ runner.temp }}/data
+          MC_GRAPHICS_STACK: ${{ matrix.graphics_stack }}
+        run: |
+          set -eu
+          mkdir -p "$MC_ARTIFACT_DIR" "$MC_DATA_DIR"
+          sh scripts/build.sh | tee "$RUNNER_TEMP/build.log"
+          grep -q '^build: partial (1/3 targets)$' "$RUNNER_TEMP/build.log"
+          test -f "$MC_ARTIFACT_DIR/monte-cristo-$(cat VERSION)-${{ matrix.target }}.tar.gz"
+
+      - name: Verify archive and replay on the native runner
+        env:
+          MC_ARTIFACT_DIR: ${{ runner.temp }}/artifacts
+          MC_DATA_DIR: ${{ runner.temp }}/data
+        run: |
+          set -eu
+          archive="$MC_ARTIFACT_DIR/monte-cristo-$(cat VERSION)-${{ matrix.target }}.tar.gz"
+          (cd "$MC_ARTIFACT_DIR" && if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum -c SHA256SUMS
+          else
+            shasum -a 256 -c SHA256SUMS
+          fi)
+          stage=$(mktemp -d)
+          trap 'rm -rf "$stage"' EXIT HUP INT TERM
+          tar xzf "$archive" -C "$stage"
+          test -x "$stage/monte-cristo"
+          (cd "$stage" && ./monte-cristo --version && ./monte-cristo --verify-content)
+          MC_CONTENT_DIR="$stage" \
+            MC_ARTIFACT_DIR="$MC_ARTIFACT_DIR" \
+            MC_DATA_DIR="$MC_DATA_DIR" \
+            "$stage/monte-cristo" --check-paths
+          MC_HEADLESS=1 "$stage/monte-cristo" \
+            --replay "$GITHUB_WORKSPACE/tapes/golden-full.tape" --assert-hash
+          test "$(tar tzf "$archive" | grep -c 'THIRD-PARTY-LICENSES.txt')" -eq 1
+
+      - name: Upload verified native artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.target }}
+          path: ${{ runner.temp }}/artifacts/monte-cristo-*.tar.gz
+          if-no-files-found: error
+          retention-days: 7

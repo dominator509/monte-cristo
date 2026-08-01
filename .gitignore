@@ -32,6 +32,7 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+.serena/
 
 # NEVER ignore these: they are the pack.
 !.agent/
