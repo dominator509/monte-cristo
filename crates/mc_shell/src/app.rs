@@ -345,7 +345,19 @@ impl App {
             return;
         };
         for index in 0..SAVE_SLOT_COUNT {
-            self.slot_occupied[index] = store.is_occupied(SaveSlot(index as u8)).unwrap_or(false);
+            self.slot_occupied[index] = match store.is_occupied(SaveSlot(index as u8)) {
+                Ok(occupied) => occupied,
+                Err(_) => {
+                    // An unreadable or unconfined slot is not safe to present
+                    // as empty: doing so hides recoverable data and prevents
+                    // the load path from surfacing its typed error.
+                    tracing::error!(
+                        slot = index,
+                        "save-slot occupancy check failed; treating slot as occupied"
+                    );
+                    true
+                }
+            };
         }
     }
 
