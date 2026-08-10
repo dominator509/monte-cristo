@@ -61,8 +61,9 @@ HASH2=$($MC replay --tape tapes/act1.tape --print-hash 2>/dev/null | tr -d ' ')
 [ "$HASH1" = "$HASH2" ] || fail "LF-09 hashes differ: $HASH1 vs $HASH2"
 echo "LF-09 determinism-cross-run ok"
 
-# LF-10 content-integrity
+# LF-10 content-integrity and locked corpus
 $MC validate --input ./content >/dev/null || fail "LF-10"
+$MC report --input ./content bestiary >/dev/null || fail "LF-10 locked content corpus"
 echo "LF-10 content-integrity ok"
 
 # LF-11 frame-budget
