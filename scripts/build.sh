@@ -97,7 +97,7 @@ for t in $TARGETS; do
     exit 1
   }
   cp docs/artifact-README.txt "$stage/README.txt"
-  tar czf "$OUT/monte-cristo-$VER-$t.tar.gz" -C "$stage" .
+  tar --force-local -czf "$OUT/monte-cristo-$VER-$t.tar.gz" -C "$stage" .
   rm -rf "$stage"
 done
 
@@ -110,7 +110,7 @@ for t in $TARGETS; do
     x86_64-pc-windows-gnu) archive_bin="monte-cristo.exe" ;;
     *) archive_bin="monte-cristo" ;;
   esac
-  actual_members=$(tar tzf "$archive" | sed 's|^\./||' | grep -v '^$' | sort)
+  actual_members=$(tar --force-local -tzf "$archive" | sed 's|^\./||' | grep -v '^$' | sort)
   expected_members=$(printf '%s\n' \
     "$archive_bin" content.pack content.pack.blake3 LICENSE \
     THIRD-PARTY-LICENSES.txt README.txt | sort)
