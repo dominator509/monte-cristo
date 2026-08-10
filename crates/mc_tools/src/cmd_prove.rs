@@ -490,12 +490,34 @@ fn prove_if_calendar(months: u32, faria_at: u32, min_rank3: u32) -> bool {
     true
 }
 
-fn prove_field_encounter(_region: &str, _expect_victory: bool) -> bool {
+fn prove_field_encounter(region: &str, expect_victory: bool) -> bool {
     use mc_core::battle::atb::AtbGauge;
     use mc_core::battle::status::StatusList;
     use mc_core::battle::{Affiliation, Battle, Combatant, CombatantKind};
     use mc_core::fx::Fx;
-    use mc_core::ids::{CharId, EnemyId};
+    use mc_core::ids::{CharId, EnemyId, RegionId};
+
+    let region_id = match region {
+        "R01" => RegionId::R01_MARSEILLE,
+        "R02" => RegionId::R02_CHATEAU_DIF,
+        "R03" => RegionId::R03_MONTE_CRISTO,
+        "R04" => RegionId::R04_ROME,
+        "R05" => RegionId::R05_PARIS_FAUBOURG,
+        "R06" => RegionId::R06_PARIS_SALON,
+        "R07" => RegionId::R07_NORMANDY,
+        "R08" => RegionId::R08_LYON,
+        "R09" => RegionId::R09_STRASBOURG,
+        "R10" => RegionId::R10_MEDITERRANEE,
+        "R11" => RegionId::R11_ORIENT,
+        "R12" => RegionId::R12_GREECE,
+        "R13" => RegionId::R13_ALBANIA,
+        "R14" => RegionId::R14_MORCERF_ESTATE,
+        "R15" => RegionId::R15_VILLEFORT_MANSION,
+        _ => {
+            eprintln!("field-encounter: FAIL - unknown region `{region}`");
+            return false;
+        }
+    };
 
     let edmond = Combatant {
         kind: CombatantKind::PartyMember(CharId::CHR_EDMOND),
@@ -526,6 +548,7 @@ fn prove_field_encounter(_region: &str, _expect_victory: bool) -> bool {
     };
 
     let mut world = mc_core::world::World::new(42);
+    world.region = region_id;
     world.battle = Some(Battle::new(vec![edmond], vec![bandit]));
 
     for _ in 0..1000 {
@@ -545,7 +568,7 @@ fn prove_field_encounter(_region: &str, _expect_victory: bool) -> bool {
             Some((actor, target))
         });
         if let Some((actor, target)) = action {
-            let _ = mc_core::command::apply_commands(
+            let events = mc_core::command::apply_commands(
                 &mut world,
                 &[mc_core::command::Command::SelectAction(
                     mc_core::command::ActorId(actor),
@@ -554,76 +577,152 @@ fn prove_field_encounter(_region: &str, _expect_victory: bool) -> bool {
                     },
                 )],
             );
-        }
-    }
-
-    match world.battle.as_ref().map(|battle| &battle.state) {
-        Some(mc_core::battle::BattleState::Victory) => {
-            println!("field-encounter: ok (victory)");
-            true
-        }
-        Some(mc_core::battle::BattleState::Defeat) => {
-            eprintln!("field-encounter: FAIL - party defeated");
-            false
-        }
-        _ => {
-            let (party_alive, _enemy_alive) = world
-                .battle
-                .as_ref()
-                .map_or((0, 0), |battle| battle.count_alive());
-            if party_alive > 0 {
-                println!("field-encounter: ok (party alive)");
-                true
-            } else {
-                eprintln!("field-encounter: FAIL - unresolved");
-                false
-            }
-        }
-    }
-}
-
-fn prove_spawn_gating(rolls: u32, all_regions: bool) -> bool {
-    use mc_core::flags::FlagSet;
-    use mc_core::ids::RegionId;
-    use mc_core::rng::Rng;
-
-    let test_regions: Vec<RegionId> = if all_regions {
-        vec![
-            RegionId::R01_MARSEILLE,
-            RegionId::R02_CHATEAU_DIF,
-            RegionId::R03_MONTE_CRISTO,
-            RegionId::R04_ROME,
-            RegionId::R05_PARIS_FAUBOURG,
-            RegionId::R06_PARIS_SALON,
-            RegionId::R07_NORMANDY,
-            RegionId::R08_LYON,
-            RegionId::R09_STRASBOURG,
-            RegionId::R10_MEDITERRANEE,
-            RegionId::R11_ORIENT,
-            RegionId::R12_GREECE,
-            RegionId::R13_ALBANIA,
-            RegionId::R14_MORCERF_ESTATE,
-            RegionId::R15_VILLEFORT_MANSION,
-        ]
-    } else {
-        vec![RegionId::R01_MARSEILLE]
-    };
-
-    let _flags = FlagSet::new();
-    let mut rng = Rng::new(42);
-
-    for _region in &test_regions {
-        for _ in 0..rolls {
-            let roll = rng.next_range(0, 100).unwrap_or(0);
-            if roll > 100 {
-                eprintln!("spawn-gating: FAIL - roll {}", roll);
+            if !matches!(
+                events.first(),
+                Some(mc_core::command::CoreEvent::Applied { .. })
+            ) {
+                eprintln!("field-encounter: FAIL - authored attack command was rejected");
                 return false;
             }
         }
     }
 
-    println!("spawn-gating: ok");
+    let Some(actual_state) = world.battle.as_ref().map(|battle| battle.state.clone()) else {
+        eprintln!("field-encounter: FAIL - battle state disappeared");
+        return false;
+    };
+    let expected_state = if expect_victory {
+        mc_core::battle::BattleState::Victory
+    } else {
+        mc_core::battle::BattleState::Defeat
+    };
+    if actual_state != expected_state {
+        eprintln!(
+            "field-encounter: FAIL - expected {:?}, got {:?}",
+            expected_state, actual_state
+        );
+        return false;
+    }
+
+    println!(
+        "field-encounter: ok ({:?}, region {})",
+        actual_state, region
+    );
     true
+}
+
+fn prove_spawn_gating(rolls: u32, all_regions: bool) -> bool {
+    let pack = match mc_data::pack::Pack::from_content(Path::new("./content")) {
+        Ok(pack) => pack,
+        Err(error) => {
+            eprintln!("spawn-gating: FAIL - could not load authored bestiary: {error}");
+            return false;
+        }
+    };
+
+    use mc_core::rng::Rng;
+    use std::collections::BTreeSet;
+
+    const REGION_KEYS: [&str; 15] = [
+        "R01_MARSEILLE",
+        "R02_CHATEAU_DIF",
+        "R03_MONTE_CRISTO",
+        "R04_ROME",
+        "R05_PARIS_FAUBOURG",
+        "R06_PARIS_SALON",
+        "R07_NORMANDY",
+        "R08_LYON",
+        "R09_STRASBOURG",
+        "R10_MEDITERRANEE",
+        "R11_ORIENT",
+        "R12_GREECE",
+        "R13_ALBANIA",
+        "R14_MORCERF_ESTATE",
+        "R15_VILLEFORT_MANSION",
+    ];
+    let region_count = if all_regions { REGION_KEYS.len() } else { 1 };
+    let no_flags = BTreeSet::new();
+    let mut arrested = BTreeSet::new();
+    arrested.insert("FLG_ARRESTED".to_string());
+
+    for (region_index, region_key) in REGION_KEYS.iter().take(region_count).enumerate() {
+        let eligible: Vec<_> = pack
+            .enemies
+            .iter()
+            .filter(|enemy| {
+                enemy
+                    .region_affinity
+                    .iter()
+                    .any(|affinity| affinity == region_key)
+                    && authored_gate_satisfied(&enemy.gate, &no_flags)
+            })
+            .collect();
+        if eligible.is_empty() {
+            eprintln!("spawn-gating: FAIL - no authored enemy is eligible in {region_key}");
+            return false;
+        }
+
+        let mut rng_a = Rng::new(42u128 + region_index as u128);
+        let mut rng_b = Rng::new(42u128 + region_index as u128);
+        for _ in 0..rolls {
+            let upper = eligible.len() as u32 - 1;
+            let Ok(index_a) = rng_a.next_range(0, upper) else {
+                eprintln!("spawn-gating: FAIL - authored pool range was invalid");
+                return false;
+            };
+            let Ok(index_b) = rng_b.next_range(0, upper) else {
+                eprintln!("spawn-gating: FAIL - repeated authored pool range was invalid");
+                return false;
+            };
+            if index_a != index_b {
+                eprintln!("spawn-gating: FAIL - authored spawn sequence diverged");
+                return false;
+            }
+            let enemy = eligible[index_a as usize];
+            if !enemy
+                .region_affinity
+                .iter()
+                .any(|affinity| affinity == region_key)
+                || !authored_gate_satisfied(&enemy.gate, &no_flags)
+            {
+                eprintln!(
+                    "spawn-gating: FAIL - resolver escaped the authored eligibility predicate"
+                );
+                return false;
+            }
+        }
+    }
+
+    let Some(gendarme) = pack.enemies.iter().find(|enemy| enemy.id == "ENM_GENDARME") else {
+        eprintln!("spawn-gating: FAIL - authored ENM_GENDARME gate is missing");
+        return false;
+    };
+    if !authored_gate_satisfied(&gendarme.gate, &no_flags)
+        || authored_gate_satisfied(&gendarme.gate, &arrested)
+    {
+        eprintln!("spawn-gating: FAIL - FLG_ARRESTED did not close the authored ENM_GENDARME gate");
+        return false;
+    }
+
+    println!(
+        "spawn-gating: ok ({} authored pools, {} deterministic rolls each)",
+        region_count, rolls
+    );
+    true
+}
+
+fn authored_gate_satisfied(
+    gate: &mc_data::schema::enemy::FlagExpr,
+    flags: &std::collections::BTreeSet<String>,
+) -> bool {
+    use mc_data::schema::enemy::FlagExpr;
+
+    match gate {
+        FlagExpr::Always => true,
+        FlagExpr::All(required) => required.iter().all(|flag| flags.contains(flag)),
+        FlagExpr::Any(required) => required.iter().any(|flag| flags.contains(flag)),
+        FlagExpr::Not(flag) => !flags.contains(flag),
+    }
 }
 
 fn prove_encounter_budget(reentries: u32) -> bool {
@@ -656,21 +755,73 @@ fn prove_encounter_budget(reentries: u32) -> bool {
 }
 
 fn prove_confidence_gating() -> bool {
-    use mc_core::flags::FlagSet;
     use mc_core::ids::FlagId;
 
-    let mut flags = FlagSet::new();
-    flags.set(FlagId::FLG_FARIA_MET);
-    if !flags.is_set(FlagId::FLG_FARIA_MET) {
-        eprintln!("confidence-gating: FAIL - flag not set");
+    let pack = match mc_data::pack::Pack::from_content(Path::new("./content")) {
+        Ok(pack) => pack,
+        Err(error) => {
+            eprintln!("confidence-gating: FAIL - could not load authored scenes: {error}");
+            return false;
+        }
+    };
+    let catalog = match pack.scene_catalog() {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            eprintln!("confidence-gating: FAIL - scene catalog rejected content: {error}");
+            return false;
+        }
+    };
+
+    let mut world = mc_core::world::World::new(42);
+    world.flags.set(FlagId::FLG_ARRESTED);
+    if catalog.begin(&mut world, "SCN_FARIA_MEETING").is_err() {
+        eprintln!("confidence-gating: FAIL - SCN_FARIA_MEETING could not begin");
         return false;
     }
-    flags.set(FlagId::FLG_ESCAPED);
-    if !flags.is_set(FlagId::FLG_ESCAPED) {
-        eprintln!("confidence-gating: FAIL - dependent flag not set");
+    for choice in [0, 0] {
+        let events = apply_commands_with_catalog(
+            &mut world,
+            &[Command::SceneChoose(ChoiceIdx(choice))],
+            Some(&catalog),
+        );
+        if !matches!(events.first(), Some(CoreEvent::Applied { .. })) {
+            eprintln!("confidence-gating: FAIL - Faria choice was rejected");
+            return false;
+        }
+    }
+    let events = apply_commands_with_catalog(&mut world, &[Command::SceneAdvance], Some(&catalog));
+    if !matches!(events.first(), Some(CoreEvent::Applied { .. }))
+        || !world.flags.is_set(FlagId::FLG_FARIA_MET)
+    {
+        eprintln!("confidence-gating: FAIL - authored Faria scene did not set FLG_FARIA_MET");
         return false;
     }
-    println!("confidence-gating: ok");
+
+    world.flags.set(FlagId::FLG_TREASURE_KNOWN);
+    if catalog.begin(&mut world, "SCN_ESCAPE").is_err() {
+        eprintln!("confidence-gating: FAIL - SCN_ESCAPE did not honor its authored gate");
+        return false;
+    }
+    for choice in [0, 0] {
+        let events = apply_commands_with_catalog(
+            &mut world,
+            &[Command::SceneChoose(ChoiceIdx(choice))],
+            Some(&catalog),
+        );
+        if !matches!(events.first(), Some(CoreEvent::Applied { .. })) {
+            eprintln!("confidence-gating: FAIL - escape choice was rejected");
+            return false;
+        }
+    }
+    let events = apply_commands_with_catalog(&mut world, &[Command::SceneAdvance], Some(&catalog));
+    if !matches!(events.first(), Some(CoreEvent::Applied { .. }))
+        || !world.flags.is_set(FlagId::FLG_ESCAPED)
+    {
+        eprintln!("confidence-gating: FAIL - authored escape scene did not set FLG_ESCAPED");
+        return false;
+    }
+
+    println!("confidence-gating: ok (authored Faria and escape scenes)");
     true
 }
 
@@ -701,10 +852,15 @@ fn prove_save_identity() -> bool {
     true
 }
 
-fn prove_final_encounter(_expect_gated: bool) -> bool {
+fn prove_final_encounter(expect_gated: bool) -> bool {
     use mc_core::final_encounter::{EncounterPhase, FinalEncounter};
     use mc_core::ids::FlagId;
     use mc_core::world::World;
+
+    if !expect_gated {
+        eprintln!("final-encounter: FAIL - proof requires --expect-gated-name-yourself");
+        return false;
+    }
 
     let mut world = World::new(42);
     let mut encounter = FinalEncounter::new();
@@ -730,18 +886,40 @@ fn prove_final_encounter(_expect_gated: bool) -> bool {
         return false;
     }
 
+    if encounter.apply_damage(&mut world) {
+        eprintln!("final-encounter: FAIL - Phase2 accepted damage transition");
+        return false;
+    }
+    if !matches!(encounter.phase, EncounterPhase::Phase2) {
+        eprintln!("final-encounter: FAIL - Phase2 was not damage-immune");
+        return false;
+    }
+
     world.flags.set(FlagId::FLG_MORCERF_YANINA_DOSSIER);
     world.flags.set(FlagId::FLG_MORCERF_ALBERT_WITHDRAWN);
     world.flags.set(FlagId::FLG_MERCEDES_RECOGNITION);
 
-    match encounter.command_name_yourself(&world) {
-        Ok(()) => {
-            println!("final-encounter: ok");
-            true
-        }
-        Err(e) => {
-            eprintln!("final-encounter: FAIL - NameYourself rejected: {:?}", e);
-            false
-        }
+    if let Err(e) = encounter.command_name_yourself(&world) {
+        eprintln!("final-encounter: FAIL - NameYourself rejected: {:?}", e);
+        return false;
     }
+
+    encounter.execute_name_yourself(&mut world);
+    if !matches!(encounter.phase, EncounterPhase::Phase3)
+        || !world.flags.is_set(FlagId::FLG_FINAL_PHASE2)
+    {
+        eprintln!("final-encounter: FAIL - NameYourself did not enter Phase3");
+        return false;
+    }
+
+    if !encounter.resolve_phase3(&mut world)
+        || !matches!(encounter.phase, EncounterPhase::Resolved)
+        || !world.flags.is_set(FlagId::FLG_FINAL_PHASE3)
+    {
+        eprintln!("final-encounter: FAIL - Phase3 did not resolve");
+        return false;
+    }
+
+    println!("final-encounter: ok");
+    true
 }

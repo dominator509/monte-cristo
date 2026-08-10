@@ -72,7 +72,7 @@ cargo bench --locked -p mc_core --bench battle_step -- --noplot >/dev/null ||
 echo "LF-11 frame-budget ok"
 
 # LF-12 final-boss-two-phase
-$MC prove final-encounter >/dev/null || fail "LF-12"
+$MC prove final-encounter --expect-gated-name-yourself >/dev/null || fail "LF-12"
 echo "LF-12 final-boss-two-phase ok"
 
 echo "live-fire: ok"
