@@ -240,8 +240,9 @@ fn prove_epilogue() -> bool {
         return false;
     }
 
-    // Count confidence scene files directly from the filesystem
-    // (the content pack's Pack::from_content only loads act1/ scenes)
+    // Count confidence scene files directly from the filesystem. The pack
+    // loader also traverses every act directory, so these counts cross-check
+    // the authored tree against the loaded pack below.
     let scenes_base = content_dir.join("scenes");
     let mut confidence_files: Vec<std::path::PathBuf> = Vec::new();
     let mut total_scene_files = 0usize;
@@ -374,10 +375,13 @@ fn prove_epilogue() -> bool {
 
     // ── 4. Validate via content_invariants (run checks directly) ─────
     // Verify exactly one terminal scene in the loaded pack.
-    let _terminal_count = pack.scenes.iter().filter(|s| s.terminal).count();
-    // Only act1 scenes are loaded, so we expect the terminal scene count
-    // to be correct for the loaded subset. Full content_invariants test
-    // runs in the test suite.
+    let terminal_count = pack.scenes.iter().filter(|s| s.terminal).count();
+    if terminal_count != 1 {
+        eprintln!(
+            "epilogue: FAIL - expected exactly one terminal scene in the loaded pack, found {terminal_count}"
+        );
+        return false;
+    }
 
     let known_count = known_flags.len();
     println!("epilogue: ok");
@@ -391,11 +395,11 @@ fn prove_epilogue() -> bool {
         act7_confidence_count
     );
     println!(
-        "  flags in pack: {} known, {} scene references valid",
+        "  flags in pack: {} known, {} invalid scene references",
         known_count,
         bad_refs.len()
     );
-    println!("  note: content_invariants test separately validates terminal scene");
+    println!("  terminal scenes: 1");
     true
 }
 
