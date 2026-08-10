@@ -462,6 +462,121 @@ fn duration_millis(duration: Duration) -> u64 {
     duration.as_millis().min(u128::from(u64::MAX)) as u64
 }
 
+/// Read the process resident set size without introducing a runtime dependency.
+///
+/// The shell owns platform I/O, so this sampling stays outside `mc_core` and
+/// degrades to `None` only on targets without a supported native query.
+#[cfg(target_os = "linux")]
+fn resident_memory_bytes() -> Option<u64> {
+    unsafe extern "C" {
+        fn sysconf(name: i32) -> i64;
+    }
+    let pages = std::fs::read_to_string("/proc/self/statm")
+        .ok()?
+        .split_whitespace()
+        .nth(1)?
+        .parse::<u64>()
+        .ok()?;
+    let page_size = unsafe { sysconf(30) };
+    (page_size > 0)
+        .then_some(page_size as u64)
+        .and_then(|size| pages.checked_mul(size))
+}
+
+#[cfg(target_os = "macos")]
+fn resident_memory_bytes() -> Option<u64> {
+    #[repr(C)]
+    struct TimeVal {
+        seconds: i64,
+        microseconds: i64,
+    }
+    #[repr(C)]
+    struct Usage {
+        user: TimeVal,
+        system: TimeVal,
+        max_resident_set: i64,
+        rest: [i64; 13],
+    }
+    unsafe extern "C" {
+        fn getrusage(which: i32, usage: *mut Usage) -> i32;
+    }
+    let mut usage = Usage {
+        user: TimeVal {
+            seconds: 0,
+            microseconds: 0,
+        },
+        system: TimeVal {
+            seconds: 0,
+            microseconds: 0,
+        },
+        max_resident_set: 0,
+        rest: [0; 13],
+    };
+    (unsafe { getrusage(0, &mut usage) } == 0)
+        .then_some(usage.max_resident_set)
+        .filter(|bytes| *bytes > 0)
+        .map(|bytes| bytes as u64)
+}
+
+#[cfg(target_os = "windows")]
+fn resident_memory_bytes() -> Option<u64> {
+    use std::ffi::c_void;
+    use std::mem::size_of;
+
+    #[repr(C)]
+    struct ProcessMemoryCounters {
+        cb: u32,
+        page_fault_count: u32,
+        peak_working_set_size: usize,
+        working_set_size: usize,
+        quota_peak_paged_pool_usage: usize,
+        quota_paged_pool_usage: usize,
+        quota_peak_non_paged_pool_usage: usize,
+        quota_non_paged_pool_usage: usize,
+        pagefile_usage: usize,
+        peak_pagefile_usage: usize,
+    }
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn GetCurrentProcess() -> *mut c_void;
+    }
+    #[link(name = "psapi")]
+    unsafe extern "system" {
+        fn GetProcessMemoryInfo(
+            process: *mut c_void,
+            counters: *mut ProcessMemoryCounters,
+            size: u32,
+        ) -> i32;
+    }
+
+    let mut counters = ProcessMemoryCounters {
+        cb: size_of::<ProcessMemoryCounters>() as u32,
+        page_fault_count: 0,
+        peak_working_set_size: 0,
+        working_set_size: 0,
+        quota_peak_paged_pool_usage: 0,
+        quota_paged_pool_usage: 0,
+        quota_peak_non_paged_pool_usage: 0,
+        quota_non_paged_pool_usage: 0,
+        pagefile_usage: 0,
+        peak_pagefile_usage: 0,
+    };
+    (unsafe {
+        GetProcessMemoryInfo(
+            GetCurrentProcess(),
+            &mut counters,
+            size_of::<ProcessMemoryCounters>() as u32,
+        )
+    } != 0)
+        .then_some(counters.peak_working_set_size as u64)
+        .filter(|bytes| *bytes > 0)
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
+fn resident_memory_bytes() -> Option<u64> {
+    None
+}
+
 /// Runtime metrics collected across the session.
 #[derive(Debug, Clone, Serialize)]
 pub struct SessionMetrics {
@@ -529,8 +644,12 @@ static METRICS: LazyLock<Mutex<SessionMetrics>> =
 
 /// Record a tick for metrics.
 pub fn record_tick() {
+    let resident_memory = resident_memory_bytes();
     if let Ok(mut m) = METRICS.lock() {
         m.ticks_elapsed += 1;
+        if let Some(bytes) = resident_memory {
+            m.memory_resident_peak.record(bytes);
+        }
     }
 }
 
@@ -836,6 +955,13 @@ mod tests {
         record_tick();
         let after = METRICS.lock().unwrap().ticks_elapsed;
         assert_eq!(after, initial + 1, "tick should increment");
+    }
+
+    #[test]
+    fn resident_memory_sampler_is_nonzero_when_supported() {
+        if let Some(bytes) = resident_memory_bytes() {
+            assert!(bytes > 0, "resident memory sample should be positive");
+        }
     }
 
     #[test]
