@@ -303,3 +303,4 @@
 2026-08-10T14:44:32Z | codex-root | EP-010 | AUDIT_FINDING | workspace test exposed stale truncated content.pack used by mc_shell headless integration test
 2026-08-10T15:55:01Z | codex-root | EP-010 | AUDIT_VERIFY | full locked workspace tests pass: 617 tests across 73 suites after regenerating content.pack
 2026-08-10T15:55:02Z | codex-root | EP-010 | AUDIT_FIX | removed needless borrows in party and curriculum tamper tests to satisfy clippy -D warnings
+2026-08-10T16:00:26Z | codex-root | EP-010 | AUDIT_VERIFY | post-commit verify: preflight install lint format typecheck unit integration e2e build security dependency reality smoke and LF-01 through LF-09 passed; LF-10 remains blocked by maps abilities techs
