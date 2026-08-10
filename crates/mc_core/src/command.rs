@@ -664,8 +664,9 @@ mod tests {
         ];
         let events = apply_commands(&mut world, &cmds);
         assert_eq!(events.len(), 4);
-        for ev in &events {
-            assert!(matches!(ev, CoreEvent::Applied { .. }));
-        }
+        assert!(matches!(events[0], CoreEvent::Applied { .. }));
+        assert!(matches!(events[1], CoreEvent::Rejected { .. }));
+        assert!(matches!(events[2], CoreEvent::Applied { .. }));
+        assert!(matches!(events[3], CoreEvent::Applied { .. }));
     }
 }
