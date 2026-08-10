@@ -140,6 +140,15 @@ impl SlotStore {
         result
     }
 
+    /// Report whether a slot has a save file without decoding it.
+    ///
+    /// The file-select screen uses this lightweight status so rendering never
+    /// treats a corrupt or content-mismatched save as an empty slot. A later
+    /// load still performs the complete integrity and content-digest checks.
+    pub fn is_occupied(&self, slot: SaveSlot) -> Result<bool, SlotError> {
+        Ok(self.slot_path(slot)?.is_file())
+    }
+
     fn load_inner(&self, slot: SaveSlot) -> Result<Save, SlotError> {
         let path = self.slot_path(slot)?;
         if !path.is_file() {

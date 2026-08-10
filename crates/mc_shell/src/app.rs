@@ -12,7 +12,10 @@ use crate::ui::advisory::draw_advisory_screen;
 use crate::ui::{
     battle::draw_battle_interface,
     confidence::draw_confidence_scene,
-    menu::{draw_field_hud, draw_menu_screen},
+    menu::{
+        draw_field_hud, draw_file_select_screen, draw_menu_screen, MENU_ENTRIES, MENU_LOAD_INDEX,
+        MENU_SAVE_INDEX, SAVE_SLOT_COUNT,
+    },
 };
 use macroquad::prelude::*;
 use mc_core::command::{
@@ -39,6 +42,17 @@ pub enum ScreenState {
     Battle,
     /// Menu screen open.
     Menu,
+    /// Save/load slot picker open.
+    FileSelect(FileSelectMode),
+}
+
+/// Which file operation the slot picker performs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FileSelectMode {
+    /// Write the current world to the selected slot.
+    Save,
+    /// Load the selected slot into the current world.
+    Load,
 }
 
 /// The main application state.
@@ -71,6 +85,17 @@ pub struct App {
     pub slot_store: Option<crate::persistence::SlotStore>,
     /// Currently highlighted authored scene choice.
     pub scene_choice_index: usize,
+    /// Currently highlighted main-menu entry.
+    pub menu_choice_index: usize,
+    /// Currently highlighted save slot.
+    pub file_slot_index: u8,
+    /// Latest typed save/load failure shown by the file picker.
+    pub file_error: Option<String>,
+    /// Cached slot occupancy for the file picker.
+    pub slot_occupied: [bool; SAVE_SLOT_COUNT],
+    /// Commands captured between fixed ticks. Input is still applied only at
+    /// the tick boundary, but a short render frame can no longer drop a press.
+    pending_commands: Vec<Command>,
 }
 
 impl App {
@@ -149,7 +174,13 @@ impl App {
             item_catalog,
             slot_store,
             scene_choice_index: 0,
+            menu_choice_index: 0,
+            file_slot_index: 0,
+            file_error: None,
+            slot_occupied: [false; SAVE_SLOT_COUNT],
+            pending_commands: Vec::new(),
         };
+        app.refresh_slot_presence();
         if app.scene_catalog.scene("SCN_ARREST").is_some() {
             app.scene_catalog
                 .begin(&mut app.world, "SCN_ARREST")
@@ -180,16 +211,19 @@ impl App {
     }
 
     /// Process real input and advance the simulation.
-    fn process_input_and_step(&mut self) -> Vec<Command> {
+    fn process_input_and_step(&mut self) {
         let raw_commands = self.poll_input();
-        let commands = self.translate_scene_input(raw_commands);
+        let translated_commands = self.translate_scene_input(raw_commands);
+        self.pending_commands.extend(translated_commands);
         self.accum += get_frame_time() as f64;
         if self.accum > MAX_ACCUM {
             self.accum = MAX_ACCUM;
             info!("accumulation cap hit, dropping frames");
         }
         while self.accum >= FIXED_DT {
-            let _events = self.apply_commands(&commands);
+            let commands = std::mem::take(&mut self.pending_commands);
+            let events = self.apply_commands(&commands);
+            self.apply_screen_commands(&commands, &events);
             for _ in &commands {
                 crate::obs::record_command();
             }
@@ -202,7 +236,6 @@ impl App {
             self.accum -= FIXED_DT;
         }
         self.alpha = (self.accum / FIXED_DT) as f32;
-        commands
     }
 
     /// Apply one command batch and perform shell-owned save/load side effects.
@@ -232,6 +265,12 @@ impl App {
                 tracing::error!(command = ?command, error = %error, "save-slot command failed");
             }
         }
+        if commands
+            .iter()
+            .any(|command| matches!(command, Command::Save(_) | Command::Load(_)))
+        {
+            self.refresh_slot_presence();
+        }
         if previous_scene != (self.world.act, self.world.region) {
             self.tilemap = Tilemap::for_scene(self.world.act, self.world.region);
         }
@@ -259,8 +298,17 @@ impl App {
         self.world = save.world;
         self.tilemap = Tilemap::for_scene(self.world.act, self.world.region);
         self.scene_choice_index = 0;
-        self.screen_state = ScreenState::Field;
         Ok(())
+    }
+
+    fn refresh_slot_presence(&mut self) {
+        let Some(store) = self.slot_store.as_ref() else {
+            self.slot_occupied = [false; SAVE_SLOT_COUNT];
+            return;
+        };
+        for index in 0..SAVE_SLOT_COUNT {
+            self.slot_occupied[index] = store.is_occupied(SaveSlot(index as u8)).unwrap_or(false);
+        }
     }
 
     /// Run one windowed frame. Called from macroquad's render loop.
@@ -273,8 +321,7 @@ impl App {
         }
 
         // Process input and advance simulation
-        let commands = self.process_input_and_step();
-        self.apply_screen_commands(&commands);
+        self.process_input_and_step();
 
         // Update audio with current state
         self.audio.update(self.world.tick, self.world.act);
@@ -339,12 +386,6 @@ impl App {
         }
     }
 
-    /// Apply presentation-only screen transitions from the same command batch
-    /// that was sent to `mc_core`.
-    fn apply_screen_commands(&mut self, commands: &[Command]) {
-        self.screen_state = screen_state_after(self.screen_state, commands);
-    }
-
     /// Poll input and translate to commands.
     fn poll_input(&self) -> Vec<Command> {
         // Use the remappable input system when available
@@ -354,6 +395,8 @@ impl App {
             .map(|command| match (self.screen_state, command) {
                 (ScreenState::Menu, Command::CancelSelection) => Command::CloseMenu,
                 (ScreenState::Menu, Command::OpenMenu) => Command::CloseMenu,
+                (ScreenState::FileSelect(_), Command::CancelSelection) => Command::CloseMenu,
+                (ScreenState::FileSelect(_), Command::OpenMenu) => Command::CloseMenu,
                 (_, command) => command,
             })
             .collect()
@@ -362,6 +405,11 @@ impl App {
     /// Translate the existing remappable field controls into authored scene
     /// traversal without introducing a second input channel.
     fn translate_scene_input(&mut self, commands: Vec<Command>) -> Vec<Command> {
+        match self.screen_state {
+            ScreenState::Menu => return self.translate_menu_input(commands),
+            ScreenState::FileSelect(mode) => return self.translate_file_input(mode, commands),
+            ScreenState::Field | ScreenState::Battle => {}
+        }
         let Some(state) = self.world.scene.as_ref() else {
             return commands;
         };
@@ -402,6 +450,87 @@ impl App {
             }
         }
         translated
+    }
+
+    fn translate_menu_input(&mut self, commands: Vec<Command>) -> Vec<Command> {
+        let mut translated = Vec::with_capacity(commands.len());
+        for command in commands {
+            match command {
+                Command::Move(Dir::North) => {
+                    self.menu_choice_index = self.menu_choice_index.saturating_sub(1);
+                }
+                Command::Move(Dir::South) => {
+                    self.menu_choice_index =
+                        (self.menu_choice_index + 1) % MENU_ENTRIES.len().max(1);
+                }
+                Command::Interact if self.menu_choice_index == MENU_SAVE_INDEX => {
+                    self.file_slot_index = 0;
+                    self.file_error = None;
+                    self.screen_state = ScreenState::FileSelect(FileSelectMode::Save);
+                }
+                Command::Interact if self.menu_choice_index == MENU_LOAD_INDEX => {
+                    self.file_slot_index = 0;
+                    self.file_error = None;
+                    self.screen_state = ScreenState::FileSelect(FileSelectMode::Load);
+                }
+                Command::Interact => {}
+                other => translated.push(other),
+            }
+        }
+        translated
+    }
+
+    fn translate_file_input(
+        &mut self,
+        mode: FileSelectMode,
+        commands: Vec<Command>,
+    ) -> Vec<Command> {
+        let mut translated = Vec::with_capacity(commands.len());
+        for command in commands {
+            match command {
+                Command::Move(Dir::North) => {
+                    self.file_slot_index = self.file_slot_index.saturating_sub(1);
+                    self.file_error = None;
+                }
+                Command::Move(Dir::South) => {
+                    self.file_slot_index = (self.file_slot_index + 1) % SAVE_SLOT_COUNT as u8;
+                    self.file_error = None;
+                }
+                Command::Interact => translated.push(match mode {
+                    FileSelectMode::Save => Command::Save(SaveSlot(self.file_slot_index)),
+                    FileSelectMode::Load => Command::Load(SaveSlot(self.file_slot_index)),
+                }),
+                other => translated.push(other),
+            }
+        }
+        translated
+    }
+
+    /// Apply presentation transitions and surface save/load failures.
+    fn apply_screen_commands(&mut self, commands: &[Command], events: &[CoreEvent]) {
+        let prior = self.screen_state;
+        self.screen_state = screen_state_after(self.screen_state, commands);
+        for (command, event) in commands.iter().zip(events) {
+            let Some(mode) = (match command {
+                Command::Save(_) => Some(FileSelectMode::Save),
+                Command::Load(_) => Some(FileSelectMode::Load),
+                _ => None,
+            }) else {
+                continue;
+            };
+            match event {
+                CoreEvent::Applied { .. } if matches!(prior, ScreenState::FileSelect(_)) => {
+                    self.screen_state = ScreenState::Field;
+                    self.file_error = None;
+                    self.menu_choice_index = 0;
+                }
+                CoreEvent::Rejected { reason, .. } => {
+                    self.screen_state = ScreenState::FileSelect(mode);
+                    self.file_error = Some(reason.clone());
+                }
+                _ => {}
+            }
+        }
     }
 
     /// Draw the tilemap layers (layer0, layer1, overlay).
@@ -596,7 +725,15 @@ impl App {
                 draw_battle_interface(self.world.tick);
             }
             ScreenState::Menu => {
-                draw_menu_screen(self.world.tick);
+                draw_menu_screen(self.world.tick, self.menu_choice_index);
+            }
+            ScreenState::FileSelect(mode) => {
+                draw_file_select_screen(
+                    mode,
+                    self.file_slot_index,
+                    &self.slot_occupied,
+                    self.file_error.as_deref(),
+                );
             }
         }
     }
@@ -611,8 +748,115 @@ pub fn screen_state_after(current: ScreenState, commands: &[Command]) -> ScreenS
             Command::CloseMenu | Command::CancelSelection if state == ScreenState::Menu => {
                 state = ScreenState::Field
             }
+            Command::CloseMenu | Command::CancelSelection
+                if matches!(state, ScreenState::FileSelect(_)) =>
+            {
+                state = ScreenState::Menu
+            }
             _ => {}
         }
     }
     state
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::{ShellConfig, ValidatedConfig};
+    use std::path::PathBuf;
+
+    fn temp_dir(name: &str) -> PathBuf {
+        let path =
+            std::env::temp_dir().join(format!("mc-file-select-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&path);
+        std::fs::create_dir_all(&path).expect("temporary file-select directory");
+        path
+    }
+
+    fn app(name: &str) -> App {
+        App::new(
+            42,
+            ValidatedConfig::from_config(ShellConfig::default(), temp_dir(name)),
+            true,
+        )
+    }
+
+    #[test]
+    fn menu_selection_opens_save_and_load_pickers() {
+        let mut save_app = app("save-navigation");
+        save_app.screen_state = ScreenState::Menu;
+        let mut save_commands = vec![Command::Move(Dir::South); MENU_SAVE_INDEX];
+        save_commands.push(Command::Interact);
+        assert!(save_app.translate_scene_input(save_commands).is_empty());
+        assert_eq!(
+            save_app.screen_state,
+            ScreenState::FileSelect(FileSelectMode::Save)
+        );
+
+        let mut load_app = app("load-navigation");
+        load_app.screen_state = ScreenState::Menu;
+        let mut load_commands = vec![Command::Move(Dir::South); MENU_LOAD_INDEX];
+        load_commands.push(Command::Interact);
+        assert!(load_app.translate_scene_input(load_commands).is_empty());
+        assert_eq!(
+            load_app.screen_state,
+            ScreenState::FileSelect(FileSelectMode::Load)
+        );
+    }
+
+    #[test]
+    fn empty_load_stays_in_picker_and_surfaces_typed_error() {
+        let data_dir = temp_dir("empty-load");
+        let mut app = App::new_with_catalog_and_items_and_store(
+            42,
+            ValidatedConfig::from_config(ShellConfig::default(), temp_dir("empty-load-config")),
+            true,
+            AuthoredSceneCatalog::default(),
+            AuthoredItemCatalog::default(),
+            Some(crate::persistence::SlotStore::new(data_dir, [7; 32])),
+        )
+        .expect("app should construct with an empty confined save store");
+        app.screen_state = ScreenState::FileSelect(FileSelectMode::Load);
+        let commands = [Command::Load(SaveSlot(0))];
+        let events = app.apply_commands(&commands);
+        app.apply_screen_commands(&commands, &events);
+
+        assert!(matches!(
+            events.as_slice(),
+            [CoreEvent::Rejected { reason, .. }] if reason.contains("empty")
+        ));
+        assert_eq!(
+            app.screen_state,
+            ScreenState::FileSelect(FileSelectMode::Load)
+        );
+        assert!(app
+            .file_error
+            .as_deref()
+            .unwrap_or_default()
+            .contains("empty"));
+    }
+
+    #[test]
+    fn successful_save_closes_picker_and_marks_slot_used() {
+        let data_dir = temp_dir("successful-save");
+        let store = crate::persistence::SlotStore::new(data_dir, [7; 32]);
+        let mut app = App::new_with_catalog_and_items_and_store(
+            42,
+            ValidatedConfig::from_config(ShellConfig::default(), temp_dir("successful-config")),
+            true,
+            AuthoredSceneCatalog::default(),
+            AuthoredItemCatalog::default(),
+            Some(store),
+        )
+        .expect("app should construct with a confined save store");
+        app.screen_state = ScreenState::FileSelect(FileSelectMode::Save);
+        let commands = [Command::Save(SaveSlot(0))];
+        let events = app.apply_commands(&commands);
+        app.apply_screen_commands(&commands, &events);
+
+        assert!(matches!(events.as_slice(), [CoreEvent::Applied { .. }]));
+        assert_eq!(app.screen_state, ScreenState::Field);
+        assert!(app.slot_occupied[0]);
+        assert!(app.file_error.is_none());
+    }
 }

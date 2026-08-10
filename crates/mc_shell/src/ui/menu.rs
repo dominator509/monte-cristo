@@ -3,6 +3,7 @@
 //!
 //! SPEC-004 section 5.
 
+use crate::app::FileSelectMode;
 use macroquad::prelude::*;
 use mc_core::command::StateView;
 
@@ -10,8 +11,69 @@ const INK: Color = Color::new(0.04, 0.03, 0.08, 0.96);
 const PAPER: Color = Color::new(0.92, 0.78, 0.42, 1.0);
 const TEXT: Color = Color::new(1.0, 0.96, 0.84, 1.0);
 
+/// Menu entries shown by the main shell menu.
+pub const MENU_ENTRIES: &[&str] = &[
+    "Party",
+    "Inventory",
+    "Web of Debt",
+    "Ledger",
+    "Settings",
+    "Save",
+    "Load",
+];
+/// Index of the Save entry in [`MENU_ENTRIES`].
+pub const MENU_SAVE_INDEX: usize = 5;
+/// Index of the Load entry in [`MENU_ENTRIES`].
+pub const MENU_LOAD_INDEX: usize = 6;
+/// Number of save slots exposed by the file-select screen.
+pub const SAVE_SLOT_COUNT: usize = 4;
+
 /// Draw the menu overlay for the current screen.
-pub fn draw_menu_screen(_tick: u64) {
+pub fn draw_menu_screen(_tick: u64, selected: usize) {
+    draw_rectangle(18.0, 14.0, 220.0, 196.0, INK);
+    draw_rectangle_lines(18.0, 14.0, 220.0, 196.0, 2.0, PAPER);
+    draw_rectangle_lines(
+        23.0,
+        19.0,
+        210.0,
+        186.0,
+        1.0,
+        Color::new(0.45, 0.25, 0.35, 1.0),
+    );
+    draw_text("THE COUNT OF MONTE CRISTO", 31.0, 39.0, 14.0, PAPER);
+    for (row, label) in MENU_ENTRIES.iter().enumerate() {
+        let y = 61.0 + row as f32 * 18.0;
+        let active = row == selected.min(MENU_ENTRIES.len().saturating_sub(1));
+        draw_text(if active { ">" } else { "·" }, 38.0, y, 16.0, PAPER);
+        draw_text(label, 54.0, y, 13.0, if active { PAPER } else { TEXT });
+    }
+    draw_text(
+        "Z / ENTER  SELECT",
+        40.0,
+        194.0,
+        10.0,
+        Color::new(0.72, 0.68, 0.58, 1.0),
+    );
+    draw_text(
+        "X / ESC  CLOSE",
+        142.0,
+        194.0,
+        10.0,
+        Color::new(0.72, 0.68, 0.58, 1.0),
+    );
+}
+
+/// Draw the slot picker used by both Save and Load.
+pub fn draw_file_select_screen(
+    mode: FileSelectMode,
+    selected: u8,
+    occupied: &[bool; SAVE_SLOT_COUNT],
+    error: Option<&str>,
+) {
+    let title = match mode {
+        FileSelectMode::Save => "SAVE GAME",
+        FileSelectMode::Load => "LOAD GAME",
+    };
     draw_rectangle(18.0, 20.0, 220.0, 184.0, INK);
     draw_rectangle_lines(18.0, 20.0, 220.0, 184.0, 2.0, PAPER);
     draw_rectangle_lines(
@@ -22,26 +84,46 @@ pub fn draw_menu_screen(_tick: u64) {
         1.0,
         Color::new(0.45, 0.25, 0.35, 1.0),
     );
-    draw_text("THE COUNT OF MONTE CRISTO", 31.0, 45.0, 14.0, PAPER);
-    for (row, label) in ["Party", "Inventory", "Web of Debt", "Ledger", "Settings"]
-        .iter()
-        .enumerate()
-    {
-        let y = 73.0 + row as f32 * 22.0;
-        draw_text(if row == 0 { ">" } else { "·" }, 42.0, y, 16.0, PAPER);
-        draw_text(label, 58.0, y, 14.0, TEXT);
+    draw_text(title, 34.0, 48.0, 16.0, PAPER);
+    for (index, present) in occupied.iter().enumerate() {
+        let y = 76.0 + index as f32 * 25.0;
+        let active = index == selected as usize;
+        draw_text(if active { ">" } else { "·" }, 38.0, y, 16.0, PAPER);
+        draw_text(
+            &format!("SLOT {}", index + 1),
+            54.0,
+            y,
+            13.0,
+            if active { PAPER } else { TEXT },
+        );
+        draw_text(
+            if *present { "USED" } else { "EMPTY" },
+            160.0,
+            y,
+            11.0,
+            if *present {
+                TEXT
+            } else {
+                Color::new(0.72, 0.68, 0.58, 1.0)
+            },
+        );
+    }
+    if let Some(error) = error {
+        let clipped: String = error.chars().take(31).collect();
+        draw_text(&clipped, 30.0, 178.0, 9.0, Color::new(1.0, 0.44, 0.38, 1.0));
+    } else {
+        draw_text(
+            "Z / ENTER  CONFIRM",
+            34.0,
+            178.0,
+            10.0,
+            Color::new(0.72, 0.68, 0.58, 1.0),
+        );
     }
     draw_text(
-        "Z / ENTER  SELECT",
-        40.0,
-        184.0,
-        10.0,
-        Color::new(0.72, 0.68, 0.58, 1.0),
-    );
-    draw_text(
-        "X / ESC  CLOSE",
-        137.0,
-        184.0,
+        "X / ESC  BACK",
+        154.0,
+        194.0,
         10.0,
         Color::new(0.72, 0.68, 0.58, 1.0),
     );

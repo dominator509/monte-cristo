@@ -24,9 +24,15 @@ fn slot_store_round_trips_and_rejects_a_different_content_pack() {
     let mut world = World::new(42);
     world.tick = 17;
 
+    assert!(!store
+        .is_occupied(SaveSlot(0))
+        .expect("empty slot status should be readable"));
     store
         .save(SaveSlot(0), &world)
         .expect("save slot should be written");
+    assert!(store
+        .is_occupied(SaveSlot(0))
+        .expect("occupied slot status should be readable"));
     let loaded = store.load(SaveSlot(0)).expect("save slot should load");
     assert_eq!(loaded.world, world);
     assert_eq!(loaded.content_digest, content_digest);
