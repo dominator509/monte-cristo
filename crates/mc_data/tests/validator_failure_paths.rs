@@ -101,17 +101,13 @@ fn references_orphans_and_affinity_are_checked_on_parsed_content() {
     assert!(references
         .iter()
         .any(|error| error.message.contains("ENM_MISSING")));
-    assert!(references
-        .iter()
-        .any(|error| error.message.contains("R02")));
+    assert!(references.iter().any(|error| error.message.contains("R02")));
 
     let orphans = orphan_detect(fixture.path());
     assert!(orphans
         .iter()
         .any(|error| error.message.contains("ENM_ORPHAN")));
-    assert!(orphans
-        .iter()
-        .any(|error| error.message.contains("R01")));
+    assert!(orphans.iter().any(|error| error.message.contains("R01")));
 
     let affinity = region_affinity_check(fixture.path());
     assert_eq!(affinity.len(), 1);
