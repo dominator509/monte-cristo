@@ -97,10 +97,10 @@ impl App {
             scene_catalog,
             scene_choice_index: 0,
         };
-        if app.scene_catalog.scene("SCN_ARREST").is_some() {
+        if app.scene_catalog.scene("SCN_ARRIVAL").is_some() {
             app.scene_catalog
-                .begin(&mut app.world, "SCN_ARREST")
-                .map_err(|error| format!("failed to start SCN_ARREST: {error}"))?;
+                .begin(&mut app.world, "SCN_ARRIVAL")
+                .map_err(|error| format!("failed to start SCN_ARRIVAL: {error}"))?;
         }
         Ok(app)
     }

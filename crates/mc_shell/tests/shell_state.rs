@@ -1,6 +1,8 @@
 use macroquad::prelude::KeyCode;
 use mc_core::command::Command as CoreCommand;
+use mc_core::flags::FlagExpr;
 use mc_core::ids::RegionId;
+use mc_core::scene::{AuthoredNodeDefinition, AuthoredSceneCatalog, AuthoredSceneDefinition};
 use mc_core::world::Act;
 use mc_shell::app::{screen_state_after, App, ScreenState, FIXED_DT};
 use mc_shell::audio::{AudioState, CHANNELS, TRACKS};
@@ -55,6 +57,26 @@ fn headless_app_advances_the_authoritative_world_without_rendering() {
     assert_eq!(app.world.tick, initial_tick + 1);
     assert!(app.accum < FIXED_DT);
     assert!((0.0..1.0).contains(&app.alpha));
+}
+
+#[test]
+fn authored_runtime_starts_at_the_arrival_scene() {
+    let catalog = AuthoredSceneCatalog::from_definitions(vec![AuthoredSceneDefinition {
+        id: "SCN_ARRIVAL".into(),
+        requires: FlagExpr::Always,
+        nodes: vec![AuthoredNodeDefinition {
+            id: "start".into(),
+            text_key: "arrival.text".into(),
+            choices: Vec::new(),
+        }],
+        on_exit: Vec::new(),
+        terminal: false,
+    }])
+    .expect("arrival fixture should resolve");
+    let config = ValidatedConfig::from_config(ShellConfig::default(), temp_dir("arrival"));
+    let app = App::new_with_catalog(42, config, true, catalog).expect("app should start");
+
+    assert_eq!(app.world.scene.map(|scene| scene.current.raw()), Some(14));
 }
 
 #[test]
