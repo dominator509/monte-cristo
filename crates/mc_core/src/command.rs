@@ -4,6 +4,7 @@
 //! are append-only. `apply_commands` never panics; invalid commands produce a
 //! `CoreEvent::Rejected` instead.
 
+use crate::battle::{self, Affiliation, BattleState};
 use crate::ids::{ItemId, RegionId};
 use crate::world::{Party, World};
 use serde::{Deserialize, Serialize};
@@ -151,6 +152,18 @@ pub struct StateView<'a> {
     pub region: RegionId,
     /// The player's party.
     pub party: &'a Party,
+    /// Curriculum progress used by Act II and authored scene gates.
+    pub curriculum: &'a crate::curriculum::Curriculum,
+    /// Inventory projection for menu and scene rendering.
+    pub inventory: &'a crate::world::Inventory,
+    /// Active battle, when the encounter system has opened one.
+    pub battle: Option<&'a crate::battle::Battle>,
+    /// Current narrative scene position, when a scene is active.
+    pub scene: Option<&'a crate::scene::SceneState>,
+    /// Act II calendar, when the campaign is in Château d'If.
+    pub calendar: Option<&'a crate::calendar::IfCalendar>,
+    /// Act VI season clock, when the campaign is in Paris.
+    pub season: Option<&'a crate::season::SeasonClock>,
     /// The set of story flags.
     pub flags: &'a crate::flags::FlagSet,
     /// Events produced since the last frame.
@@ -173,6 +186,12 @@ impl<'a> StateView<'a> {
             act: world.act,
             region: world.region,
             party: &world.party,
+            curriculum: &world.curriculum,
+            inventory: &world.inventory,
+            battle: world.battle.as_ref(),
+            scene: world.scene.as_ref(),
+            calendar: world.calendar.as_ref(),
+            season: world.season.as_ref(),
             flags: &world.flags,
             events,
             state_hash: hash,
@@ -220,16 +239,52 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
             command: cmd.clone(),
         },
 
-        // Battle commands — valid only during active battle
-        // EP-005 will bridge to battle system; for now all battle commands are accepted.
-        Command::SelectAction(..) | Command::ConfirmTarget(_) | Command::CancelSelection => {
+        // Battle commands — valid only during an active battle. The selected
+        // attack is resolved immediately against the authoritative battle tree.
+        Command::SelectAction(actor, action) => {
+            if let Err(reason) = resolve_battle_action(world, *actor, action) {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason,
+                };
+            }
             CoreEvent::Applied {
                 command: cmd.clone(),
             }
         }
-        Command::SetWaitMode(_) => CoreEvent::Applied {
+        Command::ConfirmTarget(target) => {
+            let Some(battle) = world.battle.as_ref() else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "No active battle".into(),
+                };
+            };
+            if battle.state != BattleState::Active
+                || battle
+                    .combatants
+                    .get(target.0)
+                    .map_or(true, |c| !c.is_alive())
+            {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Target is not available in the active battle".into(),
+                };
+            }
+            CoreEvent::Applied {
+                command: cmd.clone(),
+            }
+        }
+        Command::CancelSelection => CoreEvent::Applied {
             command: cmd.clone(),
         },
+        Command::SetWaitMode(wait) => {
+            if let Some(battle) = world.battle.as_mut() {
+                battle.wait_mode = *wait;
+            }
+            CoreEvent::Applied {
+                command: cmd.clone(),
+            }
+        }
 
         // Scene commands — always valid
         Command::SceneAdvance | Command::SceneChoose(_) => CoreEvent::Applied {
@@ -237,7 +292,7 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
         },
 
         // Calendar — valid only during Act II
-        Command::CalendarAct(_) => {
+        Command::CalendarAct(action) => {
             if world.act != crate::world::Act::ActIIIf {
                 return CoreEvent::Rejected {
                     command: cmd.clone(),
@@ -245,19 +300,27 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
                         .into(),
                 };
             }
+            let calendar = world
+                .calendar
+                .get_or_insert_with(crate::calendar::IfCalendar::new);
+            calendar.advance(*action, &mut world.curriculum);
             CoreEvent::Applied {
                 command: cmd.clone(),
             }
         }
 
         // Season — valid only during Act VI
-        Command::SeasonAct(..) => {
+        Command::SeasonAct(_, _) => {
             if world.act != crate::world::Act::ActVIParis {
                 return CoreEvent::Rejected {
                     command: cmd.clone(),
                     reason: "Season actions are only available during Act VI (Paris)".into(),
                 };
             }
+            world
+                .season
+                .get_or_insert_with(|| crate::season::SeasonClock::new(Vec::new()))
+                .advance();
             CoreEvent::Applied {
                 command: cmd.clone(),
             }
@@ -276,6 +339,7 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
                     reason: format!("Unknown region: {:?}", rid),
                 };
             }
+            world.region = *rid;
             CoreEvent::Applied {
                 command: cmd.clone(),
             }
@@ -323,6 +387,61 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
             command: cmd.clone(),
         },
     }
+}
+
+/// Resolve one player battle action against the live World battle.
+fn resolve_battle_action(world: &mut World, actor: ActorId, action: &Action) -> Result<(), String> {
+    let mut rng = world.rng;
+    let battle = world
+        .battle
+        .as_mut()
+        .ok_or_else(|| "No active battle".to_string())?;
+    if battle.state != BattleState::Active {
+        return Err("Battle is not active".into());
+    }
+    let attacker = battle
+        .combatants
+        .get(actor.0)
+        .ok_or_else(|| "Actor is not present in the active battle".to_string())?;
+    if attacker.affiliation != Affiliation::Party || !attacker.is_alive() {
+        return Err("Actor is not a living party combatant".into());
+    }
+    if !attacker.is_atb_full() {
+        return Err("Actor ATB gauge is not full".into());
+    }
+
+    match action {
+        Action::Attack { target } => {
+            let target_index = target.0;
+            let target_ref = battle
+                .combatants
+                .get(target_index)
+                .ok_or_else(|| "Target is not present in the active battle".to_string())?;
+            if target_ref.affiliation != Affiliation::Enemy || !target_ref.is_alive() {
+                return Err("Attack target must be a living enemy".into());
+            }
+            let damage = battle::damage::compute_damage(
+                crate::fx::Fx::from_int(1),
+                &battle.combatants[actor.0],
+                &battle.combatants[target_index],
+                &mut rng,
+            )
+            .mitigated;
+            battle::damage::apply_damage(&mut battle.combatants[target_index], damage);
+        }
+        Action::Guard => {}
+        Action::Flee => {
+            battle.state = BattleState::Fleeing;
+        }
+        Action::Tech { .. } | Action::Item { .. } => {
+            return Err("This battle action requires an authored ability or item resolver".into())
+        }
+    }
+
+    battle.combatants[actor.0].atb.reset();
+    battle.check_end_conditions();
+    world.rng = rng;
+    Ok(())
 }
 
 #[cfg(test)]

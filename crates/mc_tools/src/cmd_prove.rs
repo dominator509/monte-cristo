@@ -400,11 +400,12 @@ fn prove_epilogue() -> bool {
 }
 
 fn prove_if_calendar(months: u32, faria_at: u32, min_rank3: u32) -> bool {
-    use mc_core::calendar::{CalendarAction, IfCalendar};
-    use mc_core::curriculum::{Curriculum, Discipline};
+    use mc_core::calendar::CalendarAction;
+    use mc_core::curriculum::Discipline;
+    use mc_core::world::{Act, World};
 
-    let mut calendar = IfCalendar::new();
-    let mut curriculum = Curriculum::new();
+    let mut world = World::new(42);
+    world.set_act(Act::ActIIIf);
 
     let disciplines = [
         Discipline::Fencing,
@@ -416,21 +417,27 @@ fn prove_if_calendar(months: u32, faria_at: u32, min_rank3: u32) -> bool {
         Discipline::Economics,
     ];
 
-    let mut faria_joined = false;
-
     for m in 0..months {
-        if calendar.is_complete() {
+        if world
+            .calendar
+            .as_ref()
+            .is_some_and(|calendar| calendar.is_complete())
+        {
             break;
         }
-        if m >= faria_at && !faria_joined {
-            faria_joined = true;
-        }
         let disc = disciplines[(m as usize) % 7];
-        let action = CalendarAction::Study(disc);
-        curriculum.add_months(disc, 1);
-        calendar.advance(action, &mut curriculum);
+        let _ = mc_core::command::apply_commands(
+            &mut world,
+            &[mc_core::command::Command::CalendarAct(
+                CalendarAction::Study(disc),
+            )],
+        );
     }
 
+    let faria_joined = world
+        .calendar
+        .as_ref()
+        .is_some_and(|calendar| calendar.faria_joined && calendar.month >= faria_at);
     if !faria_joined {
         eprintln!(
             "if-calendar: FAIL - Faria did not join by month {}",
@@ -441,7 +448,7 @@ fn prove_if_calendar(months: u32, faria_at: u32, min_rank3: u32) -> bool {
 
     let mut count_rank3 = 0u32;
     for disc in &disciplines {
-        if curriculum.rank(*disc) >= 3 {
+        if world.curriculum.rank(*disc) >= 3 {
             count_rank3 += 1;
         }
     }
@@ -492,30 +499,52 @@ fn prove_field_encounter(_region: &str, _expect_victory: bool) -> bool {
         statuses: StatusList::new(),
     };
 
-    let mut battle = Battle::new(vec![edmond], vec![bandit]);
+    let mut world = mc_core::world::World::new(42);
+    world.battle = Some(Battle::new(vec![edmond], vec![bandit]));
 
     for _ in 0..1000 {
-        battle.check_end_conditions();
-        if !matches!(battle.state, mc_core::battle::BattleState::Active) {
+        world.step();
+        if !matches!(
+            world.battle.as_ref().map(|battle| &battle.state),
+            Some(mc_core::battle::BattleState::Active)
+        ) {
             break;
         }
-        for c in &mut battle.combatants {
-            let _full = c.atb.tick();
+        let action = world.battle.as_ref().and_then(|battle| {
+            let actor = battle.next_ready_combatant()?;
+            if battle.combatants[actor].affiliation != Affiliation::Party {
+                return None;
+            }
+            let target = battle.first_enemy_index()?;
+            Some((actor, target))
+        });
+        if let Some((actor, target)) = action {
+            let _ = mc_core::command::apply_commands(
+                &mut world,
+                &[mc_core::command::Command::SelectAction(
+                    mc_core::command::ActorId(actor),
+                    mc_core::command::Action::Attack {
+                        target: mc_core::command::TargetId(target),
+                    },
+                )],
+            );
         }
     }
 
-    battle.check_end_conditions();
-    match battle.state {
-        mc_core::battle::BattleState::Victory => {
+    match world.battle.as_ref().map(|battle| &battle.state) {
+        Some(mc_core::battle::BattleState::Victory) => {
             println!("field-encounter: ok (victory)");
             true
         }
-        mc_core::battle::BattleState::Defeat => {
+        Some(mc_core::battle::BattleState::Defeat) => {
             eprintln!("field-encounter: FAIL - party defeated");
             false
         }
         _ => {
-            let (party_alive, _enemy_alive) = battle.count_alive();
+            let (party_alive, _enemy_alive) = world
+                .battle
+                .as_ref()
+                .map_or((0, 0), |battle| battle.count_alive());
             if party_alive > 0 {
                 println!("field-encounter: ok (party alive)");
                 true

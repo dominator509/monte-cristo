@@ -8,6 +8,10 @@ use crate::fx::Fx;
 use crate::ids::{CharId, RegionId};
 use crate::rng::Rng;
 use crate::step;
+use crate::{
+    battle::Battle, calendar::IfCalendar, curriculum::Curriculum, scene::SceneState,
+    season::SeasonClock,
+};
 use serde::{Deserialize, Serialize};
 
 /// The campaign act.
@@ -97,13 +101,8 @@ impl Inventory {
     }
 }
 
-/// An encounter budget for a region/chapter pair.
-/// Tracks spent encounters for the anti-grind system.
-#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct EncounterBudget {
-    pub pool: u32,
-    pub spent: u32,
-}
+/// The authored encounter-budget implementation is shared with the world map.
+pub use crate::budget::EncounterBudget;
 
 /// The World — the entire game state.
 ///
@@ -118,9 +117,14 @@ pub struct World {
     pub flags: FlagSet,
     pub trust: std::collections::BTreeMap<CharId, i16>,
     pub mask: i16,
-    // curriculum, inventory, budgets, battle, scene, calendar, season
-    // declared as Option/placeholder for now — populated in later milestones
+    pub curriculum: Curriculum,
     pub inventory: Inventory,
+    /// Encounter budgets keyed by region and authored chapter stage.
+    pub budgets: std::collections::BTreeMap<(RegionId, u32), EncounterBudget>,
+    pub battle: Option<Battle>,
+    pub scene: Option<SceneState>,
+    pub calendar: Option<IfCalendar>,
+    pub season: Option<SeasonClock>,
     pub rng: Rng,
 }
 
@@ -146,9 +150,24 @@ impl World {
             flags: FlagSet::new(),
             trust: std::collections::BTreeMap::new(),
             mask: 100,
+            curriculum: Curriculum::new(),
             inventory: Inventory::new(),
+            budgets: std::collections::BTreeMap::new(),
+            battle: None,
+            scene: None,
+            calendar: None,
+            season: None,
             rng,
         }
+    }
+
+    /// Move the campaign into an authored act and initialise its act-local
+    /// calendar/season state. This is the only supported way for adapters and
+    /// tests to change acts without leaving stale clocks behind.
+    pub fn set_act(&mut self, act: Act) {
+        self.act = act;
+        self.calendar = (act == Act::ActIIIf).then(IfCalendar::new);
+        self.season = (act == Act::ActVIParis).then(|| SeasonClock::new(Vec::new()));
     }
 
     /// Advance the world by one tick.
@@ -156,19 +175,57 @@ impl World {
     pub fn step(&mut self) {
         for &system in step::ORDER {
             match system {
-                "scene_advance" => { /* EP-002 M9 */ }
-                "calendar_advance" => { /* EP-002 M7 */ }
-                "season_advance" => { /* EP-002 M7 */ }
-                "field_movement" => { /* EP-005 */ }
-                "spawn_resolution" => { /* EP-002 M5 */ }
-                "encounter_contact" => { /* EP-002 M6 */ }
-                "battle_atb" => { /* EP-002 M6 */ }
-                "battle_action_resolve" => { /* EP-002 M6 */ }
-                "status_tick" => { /* EP-002 M6 */ }
-                "poison_tick" => { /* EP-002 M8 */ }
-                "budget_decay" => { /* EP-002 M5 */ }
-                "flag_reactions" => { /* EP-002 M9 */ }
-                "event_flush" => { /* EP-002 M4 */ }
+                "scene_advance"
+                | "calendar_advance"
+                | "season_advance"
+                | "field_movement"
+                | "spawn_resolution"
+                | "encounter_contact"
+                | "battle_action_resolve"
+                | "poison_tick"
+                | "budget_decay"
+                | "flag_reactions"
+                | "event_flush" => {}
+                "battle_atb" => {
+                    if let Some(battle) = self.battle.as_mut() {
+                        if battle.state == crate::battle::BattleState::Active {
+                            let mut party_gauges = Vec::new();
+                            let mut enemy_gauges = Vec::new();
+                            for combatant in &mut battle.combatants {
+                                match combatant.affiliation {
+                                    crate::battle::Affiliation::Party => {
+                                        party_gauges.push(&mut combatant.atb)
+                                    }
+                                    crate::battle::Affiliation::Enemy => {
+                                        enemy_gauges.push(&mut combatant.atb)
+                                    }
+                                }
+                            }
+                            if battle.wait_mode {
+                                for gauge in enemy_gauges {
+                                    gauge.tick();
+                                }
+                            } else {
+                                for gauge in party_gauges.into_iter().chain(enemy_gauges) {
+                                    gauge.tick();
+                                }
+                            }
+                        }
+                    }
+                }
+                "status_tick" => {
+                    if let Some(battle) = self.battle.as_mut() {
+                        if battle.state == crate::battle::BattleState::Active {
+                            for combatant in &mut battle.combatants {
+                                combatant.statuses.tick();
+                                let damage =
+                                    combatant.statuses.apply_tick_effects(combatant.max_hp);
+                                combatant.hp = combatant.hp.saturating_sub(damage);
+                            }
+                            battle.check_end_conditions();
+                        }
+                    }
+                }
                 _ => {}
             }
         }

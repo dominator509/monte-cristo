@@ -8,13 +8,71 @@
 use std::fs;
 use std::path::Path;
 
-use mc_core::world::World;
+use mc_core::flags::FlagSet;
+use mc_core::ids::{CharId, RegionId};
+use mc_core::rng::Rng;
+use mc_core::world::{Act, Inventory, Party, World};
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 use crate::error::SaveError;
 use crate::save::{Save, CURRENT_SCHEMA_VERSION};
 
 /// The schema version recognised by the v1 parser.
 const V1_SCHEMA_VERSION: u16 = 1;
+
+/// The v1 World layout, retained solely for decoding old save files. New
+/// fields are initialised explicitly by `into_current`; they are never
+/// guessed from bytes that did not exist in schema v1.
+#[derive(Deserialize, Serialize)]
+struct LegacyWorld {
+    seed: u128,
+    tick: u64,
+    act: Act,
+    region: RegionId,
+    party: Party,
+    flags: FlagSet,
+    trust: BTreeMap<CharId, i16>,
+    mask: i16,
+    inventory: Inventory,
+    rng: Rng,
+}
+
+impl LegacyWorld {
+    fn into_current(self) -> World {
+        let mut world = World::new(self.seed);
+        world.tick = self.tick;
+        world.act = self.act;
+        world.region = self.region;
+        world.party = self.party;
+        world.flags = self.flags;
+        world.trust = self.trust;
+        world.mask = self.mask;
+        world.inventory = self.inventory;
+        world.rng = self.rng;
+        world.calendar = (self.act == Act::ActIIIf).then(mc_core::calendar::IfCalendar::new);
+        world.season =
+            (self.act == Act::ActVIParis).then(|| mc_core::season::SeasonClock::new(Vec::new()));
+        world
+    }
+}
+
+impl From<&World> for LegacyWorld {
+    fn from(world: &World) -> Self {
+        LegacyWorld {
+            seed: world.seed,
+            tick: world.tick,
+            act: world.act,
+            region: world.region,
+            party: world.party.clone(),
+            flags: world.flags,
+            trust: world.trust.clone(),
+            mask: world.mask,
+            inventory: world.inventory.clone(),
+            rng: world.rng,
+        }
+    }
+}
 
 /// Migrate a v1 save blob into the current format.
 ///
@@ -25,9 +83,24 @@ const V1_SCHEMA_VERSION: u16 = 1;
 /// No trailing integrity digest existed in v1.
 pub fn migrate_save(data: &[u8]) -> Result<Vec<u8>, SaveError> {
     // Decode v1 format
-    let (schema_version, product_version, content_digest, world): (u16, String, [u8; 32], World) =
-        postcard::from_bytes(data)
-            .map_err(|e| SaveError::Deserialize(format!("v1 decode failed: {e}")))?;
+    let decoded_legacy: Result<(u16, String, [u8; 32], LegacyWorld), _> =
+        postcard::take_from_bytes(data).and_then(|(value, remainder)| {
+            if remainder.is_empty() {
+                Ok(value)
+            } else {
+                Err(postcard::Error::DeserializeBadEncoding)
+            }
+        });
+    let (schema_version, product_version, content_digest, world) = match decoded_legacy {
+        Ok((version, product, digest, world)) => (version, product, digest, world.into_current()),
+        Err(legacy_error) => {
+            // A few early development saves used the then-current World
+            // struct while still declaring schema v1. Accept those bytes
+            // verbatim so migration remains one-shot and lossless.
+            postcard::from_bytes::<(u16, String, [u8; 32], World)>(data)
+                .map_err(|_| SaveError::Deserialize(format!("v1 decode failed: {legacy_error}")))?
+        }
+    };
 
     if schema_version != V1_SCHEMA_VERSION {
         return Err(SaveError::Deserialize(format!(
@@ -90,8 +163,13 @@ mod tests {
 
         let world = World::new(42);
 
-        postcard::to_stdvec(&(V1_SCHEMA_VERSION, "0.1.0", content_digest, &world))
-            .expect("v1 serialization should not fail")
+        postcard::to_stdvec(&(
+            V1_SCHEMA_VERSION,
+            "0.1.0",
+            content_digest,
+            LegacyWorld::from(&world),
+        ))
+        .expect("v1 serialization should not fail")
     }
 
     #[test]

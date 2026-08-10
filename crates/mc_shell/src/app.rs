@@ -8,6 +8,7 @@ use crate::config::ValidatedConfig;
 use crate::render::palette::{scene_palette, sky_gradient};
 use crate::render::target::{ShellRenderTarget, INTERNAL_HEIGHT, INTERNAL_WIDTH};
 use crate::render::tilemap::{Tilemap, TILES_X, TILES_Y};
+use crate::ui::advisory::draw_advisory_screen;
 use crate::ui::{battle::draw_battle_interface, menu::draw_field_hud, menu::draw_menu_screen};
 use macroquad::prelude::*;
 use mc_core::command::{Command, StateView};
@@ -51,6 +52,8 @@ pub struct App {
     pub audio: crate::audio::AudioState,
     /// The current screen overlay state.
     pub screen_state: ScreenState,
+    /// Whether the first-run content advisory is currently blocking gameplay.
+    pub advisory_pending: bool,
 }
 
 impl App {
@@ -58,6 +61,7 @@ impl App {
     pub fn new(seed: u128, config: ValidatedConfig, headless: bool) -> Self {
         let world = World::new(seed);
         let audio_enabled = !headless;
+        let advisory_pending = !config.advisory_acknowledged && !headless;
         // Build an initial tilemap with a simple test pattern
         let mut tilemap = Tilemap::new();
         // Fill layer0 with a checkerboard pattern
@@ -80,6 +84,7 @@ impl App {
             tilemap,
             audio: crate::audio::AudioState::new(audio_enabled),
             screen_state: ScreenState::Field,
+            advisory_pending,
         }
     }
 
@@ -118,8 +123,14 @@ impl App {
 
     /// Run one windowed frame. Called from macroquad's render loop.
     pub fn windowed_frame(&mut self) {
+        if self.advisory_pending {
+            self.draw_advisory_frame();
+            return;
+        }
+
         // Process input and advance simulation
-        self.process_input_and_step();
+        let commands = self.process_input_and_step();
+        self.apply_screen_commands(&commands);
 
         // Update audio with current state
         self.audio.update(self.world.tick, self.world.act);
@@ -160,10 +171,45 @@ impl App {
         );
     }
 
+    /// Render and acknowledge the first-run advisory before any gameplay input
+    /// can reach the authoritative world.
+    fn draw_advisory_frame(&mut self) {
+        let mut rt = self
+            .render_target
+            .take()
+            .expect("render target not initialised");
+        rt.handle_resize();
+        rt.set_camera();
+        let acknowledged = draw_advisory_screen(self.world.tick);
+        set_default_camera();
+        rt.blit();
+        self.render_target = Some(rt);
+
+        if acknowledged {
+            self.config.advisory_acknowledged = true;
+            self.config.save();
+            self.advisory_pending = false;
+        }
+    }
+
+    /// Apply presentation-only screen transitions from the same command batch
+    /// that was sent to `mc_core`.
+    fn apply_screen_commands(&mut self, commands: &[Command]) {
+        self.screen_state = screen_state_after(self.screen_state, commands);
+    }
+
     /// Poll input and translate to commands.
     fn poll_input(&self) -> Vec<Command> {
         // Use the remappable input system when available
-        crate::input::poll_commands(&self.config.input_map)
+        let commands = crate::input::poll_commands(&self.config.input_map);
+        commands
+            .into_iter()
+            .map(|command| match (self.screen_state, command) {
+                (ScreenState::Menu, Command::CancelSelection) => Command::CloseMenu,
+                (ScreenState::Menu, Command::OpenMenu) => Command::CloseMenu,
+                (_, command) => command,
+            })
+            .collect()
     }
 
     /// Draw the tilemap layers (layer0, layer1, overlay).
@@ -313,4 +359,19 @@ impl App {
             }
         }
     }
+}
+
+/// Pure screen transition function used by the window loop and unit tests.
+pub fn screen_state_after(current: ScreenState, commands: &[Command]) -> ScreenState {
+    let mut state = current;
+    for command in commands {
+        match command {
+            Command::OpenMenu if state == ScreenState::Field => state = ScreenState::Menu,
+            Command::CloseMenu | Command::CancelSelection if state == ScreenState::Menu => {
+                state = ScreenState::Field
+            }
+            _ => {}
+        }
+    }
+    state
 }

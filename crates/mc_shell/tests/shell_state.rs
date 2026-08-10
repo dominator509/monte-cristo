@@ -1,5 +1,6 @@
 use macroquad::prelude::KeyCode;
-use mc_shell::app::{App, ScreenState, FIXED_DT};
+use mc_core::command::Command as CoreCommand;
+use mc_shell::app::{screen_state_after, App, ScreenState, FIXED_DT};
 use mc_shell::audio::{AudioState, CHANNELS, TRACKS};
 use mc_shell::config::{
     default_input_map, InputAction, ShellConfig, TextSpeed as ConfigTextSpeed, ValidatedConfig,
@@ -37,6 +38,10 @@ fn headless_app_advances_the_authoritative_world_without_rendering() {
     assert!(app.render_target.is_none());
     assert!(!app.audio.enabled);
     assert_eq!(app.screen_state, ScreenState::Field);
+    assert!(
+        !app.advisory_pending,
+        "headless mode must not block on UI advisory"
+    );
     assert_eq!(app.tilemap.layer0.get_tile(0, 0), 0);
     assert_eq!(app.tilemap.layer0.get_tile(1, 0), 1);
     assert_eq!(app.tilemap.layer1.get_tile(0, 0), 2);
@@ -97,7 +102,16 @@ fn input_audio_and_render_state_enforce_their_public_contracts() {
     audio.update(1, mc_core::world::Act::ActIMarseille);
     assert!(audio.enabled);
     assert_eq!(audio.volume, 80);
-    assert_eq!(audio.current_track, None);
+    assert_eq!(audio.current_track, Some(0));
+    audio.update_with_scene(2, mc_core::world::Act::ActVIParis, Some(35));
+    assert_eq!(
+        audio.current_track,
+        Some(1),
+        "scene slots wrap to the authored soundtrack"
+    );
+    let mut muted = AudioState::new(false);
+    muted.update(1, mc_core::world::Act::ActIMarseille);
+    assert_eq!(muted.current_track, None);
     assert_eq!(CHANNELS, 8);
     assert_eq!(TRACKS, 34);
     assert!(AudioState::default().enabled);
@@ -143,6 +157,22 @@ fn input_audio_and_render_state_enforce_their_public_contracts() {
     assert!(text_speed_delay(TextSpeed::Slow) > text_speed_delay(TextSpeed::Normal));
     assert!(text_speed_delay(TextSpeed::Normal) > text_speed_delay(TextSpeed::Fast));
     assert_eq!(text_speed_delay(TextSpeed::Instant), 0.0);
+}
+
+#[test]
+fn menu_commands_reach_and_leave_the_menu_overlay() {
+    assert_eq!(
+        screen_state_after(ScreenState::Field, &[CoreCommand::OpenMenu]),
+        ScreenState::Menu
+    );
+    assert_eq!(
+        screen_state_after(ScreenState::Menu, &[CoreCommand::CancelSelection]),
+        ScreenState::Field
+    );
+    assert_eq!(
+        screen_state_after(ScreenState::Menu, &[CoreCommand::CloseMenu]),
+        ScreenState::Field
+    );
 }
 
 #[test]

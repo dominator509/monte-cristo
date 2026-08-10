@@ -4,11 +4,15 @@
 //! panicking. The validation table below enumerates every invalid
 //! combination the current domain knows about.
 
+use mc_core::battle::atb::AtbGauge;
+use mc_core::battle::status::StatusList;
+use mc_core::battle::{Affiliation, Battle, Combatant, CombatantKind};
 use mc_core::command::{
     apply_commands, Action, CampaignAction, CampaignId, ChoiceIdx, Command, CoreEvent, Dir,
     PersonaId, SaveSlot, TargetId,
 };
-use mc_core::ids::{FlagId, RegionId};
+use mc_core::fx::Fx;
+use mc_core::ids::{CharId, EnemyId, FlagId, RegionId};
 use mc_core::world::{Act, World};
 
 /// Every Command variant should be accepted in its valid context.
@@ -51,9 +55,7 @@ fn scene_commands_accepted() {
 }
 
 #[test]
-fn battle_commands_accepted_even_outside_battle() {
-    // Per SPEC-003, rejected commands return Rejected — but for now battle
-    // commands are accepted as no-ops until EP-005 bridges the battle system.
+fn battle_commands_rejected_outside_battle() {
     let mut world = World::new(42);
     let events = apply_commands(
         &mut world,
@@ -64,15 +66,61 @@ fn battle_commands_accepted_even_outside_battle() {
             },
         )],
     );
+    assert_rejected(&events[0]);
+}
+
+#[test]
+fn attack_command_resolves_against_the_authoritative_battle() {
+    let mut world = World::new(42);
+    let mut party = Combatant {
+        kind: CombatantKind::PartyMember(CharId::CHR_EDMOND),
+        affiliation: Affiliation::Party,
+        name: "Edmond".into(),
+        atb: AtbGauge::new(Fx::from_int(12)),
+        hp: Fx::from_int(100),
+        max_hp: Fx::from_int(100),
+        attack: Fx::from_int(10),
+        defense: Fx::from_int(8),
+        speed: Fx::from_int(12),
+        level: 1,
+        statuses: StatusList::new(),
+    };
+    let enemy = Combatant {
+        kind: CombatantKind::Enemy(EnemyId::ENM_BANDIT),
+        affiliation: Affiliation::Enemy,
+        name: "Bandit".into(),
+        atb: AtbGauge::new(Fx::from_int(8)),
+        hp: Fx::from_int(30),
+        max_hp: Fx::from_int(30),
+        attack: Fx::from_int(6),
+        defense: Fx::from_int(4),
+        speed: Fx::from_int(8),
+        level: 1,
+        statuses: StatusList::new(),
+    };
+    party.atb.force_full();
+    world.battle = Some(Battle::new(vec![party], vec![enemy]));
+    let events = apply_commands(
+        &mut world,
+        &[Command::SelectAction(
+            mc_core::command::ActorId(0),
+            Action::Attack {
+                target: TargetId(1),
+            },
+        )],
+    );
     assert_valid(
         &events[0],
         &Command::SelectAction(
             mc_core::command::ActorId(0),
             Action::Attack {
-                target: TargetId(0),
+                target: TargetId(1),
             },
         ),
     );
+    let battle = world.battle.as_ref().unwrap();
+    assert!(battle.combatants[1].hp < Fx::from_int(30));
+    assert!(!battle.combatants[0].atb.is_full());
 }
 
 #[test]
@@ -127,6 +175,50 @@ fn fast_travel_valid_region_accepted() {
         &[Command::FastTravel(RegionId::R02_CHATEAU_DIF)],
     );
     assert_valid(&events[0], &Command::FastTravel(RegionId::R02_CHATEAU_DIF));
+    assert_eq!(world.region, RegionId::R02_CHATEAU_DIF);
+}
+
+#[test]
+fn calendar_action_updates_world_curriculum() {
+    let mut world = World::new(42);
+    world.set_act(Act::ActIIIf);
+    let events = apply_commands(
+        &mut world,
+        &[Command::CalendarAct(
+            mc_core::calendar::CalendarAction::Study(mc_core::curriculum::Discipline::Fencing),
+        )],
+    );
+    assert_valid(
+        &events[0],
+        &Command::CalendarAct(mc_core::calendar::CalendarAction::Study(
+            mc_core::curriculum::Discipline::Fencing,
+        )),
+    );
+    assert_eq!(world.calendar.as_ref().unwrap().month, 1);
+    assert_eq!(
+        world
+            .curriculum
+            .months_for(mc_core::curriculum::Discipline::Fencing),
+        1
+    );
+}
+
+#[test]
+fn season_action_advances_the_act_vi_clock() {
+    let mut world = World::new(42);
+    world.set_act(Act::ActVIParis);
+    let events = apply_commands(
+        &mut world,
+        &[Command::SeasonAct(
+            CampaignId("paris".into()),
+            CampaignAction::Advance,
+        )],
+    );
+    assert_valid(
+        &events[0],
+        &Command::SeasonAct(CampaignId("paris".into()), CampaignAction::Advance),
+    );
+    assert_eq!(world.season.as_ref().unwrap().fortnight, 1);
 }
 
 /// SwapPersona accepted.

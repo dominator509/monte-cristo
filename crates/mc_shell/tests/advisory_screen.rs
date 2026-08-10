@@ -4,6 +4,7 @@
 //! and is re-readable from settings.
 
 use mc_shell::config::ValidatedConfig;
+use mc_shell::ui::advisory::ADVISORY_LINES;
 use std::path::PathBuf;
 
 fn tmp_cfg_dir(name: &str) -> PathBuf {
@@ -52,4 +53,13 @@ fn advisory_not_shown_after_acknowledge() {
         loaded.advisory_acknowledged,
         "advisory must not be shown after acknowledgement"
     );
+}
+
+#[test]
+fn advisory_copy_contains_the_required_warnings_and_acknowledgement_prompt() {
+    let copy = ADVISORY_LINES.join(" ");
+    assert!(copy.contains("suicide"));
+    assert!(copy.contains("death of a child"));
+    assert!(copy.contains("faithfully"));
+    assert!(copy.contains("Z / ENTER / SPACE"));
 }
