@@ -69,6 +69,43 @@ fn report_bestiary(input: &str) -> bool {
     println!("Items:        {}", pack.items.len());
     println!("Flags:        {}", pack.flags.len());
     println!("Strings:      {}", pack.strings.len());
+
+    // SPEC-002 names these authoring domains explicitly.  Pack currently
+    // carries only the schemas it can load, so report their presence here
+    // instead of allowing a missing directory to look like an empty, valid
+    // release surface.
+    let required_domains = [
+        "maps",
+        "bestiary",
+        "encounters",
+        "spawn_tables",
+        "items",
+        "abilities",
+        "techs",
+        "scenes",
+        "strings/en",
+        "party.ron",
+        "curriculum.ron",
+        "poisons.ron",
+    ];
+    let missing_domains: Vec<_> = required_domains
+        .iter()
+        .copied()
+        .filter(|domain| !content_dir.join(domain).exists())
+        .collect();
+    println!();
+    println!("--- Required Content Domains (SPEC-002) ---");
+    if missing_domains.is_empty() {
+        println!("  all required domains present");
+    } else {
+        for domain in &missing_domains {
+            println!("  MISSING {domain}");
+        }
+        println!(
+            "  report bestiary: warning - {} required domain(s) missing; this is not ship-ready content",
+            missing_domains.len()
+        );
+    }
     println!();
     println!("--- Enemies by Family ---");
     let mut fams: Vec<_> = family_counts.into_iter().collect();
