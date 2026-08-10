@@ -3,9 +3,9 @@
 //! Each sub-verb runs a deterministic simulation and asserts a result.
 //! Prints one line: "sub-verb: ok" or "sub-verb: FAIL - reason".
 
-use mc_core::scene::{SceneAdvance, SceneEffect};
+use mc_core::command::{apply_commands_with_catalog, ChoiceIdx, Command, CoreEvent};
+use mc_core::ids::FlagId;
 use mc_core::world::World;
-use mc_core::{flags::FlagExpr, ids::FlagId};
 use std::path::Path;
 use std::process::ExitCode;
 
@@ -185,30 +185,47 @@ fn prove_act1_arrest() -> bool {
         return false;
     }
 
+    let catalog = match pack.scene_catalog() {
+        Ok(catalog) => catalog,
+        Err(e) => {
+            eprintln!("act1-arrest: FAIL - authored scene catalog rejected content: {e}");
+            return false;
+        }
+    };
+
     let mut world = World::new(42);
     if world.flags.is_set(FlagId::FLG_ARRESTED) {
         eprintln!("act1-arrest: FAIL - FLG_ARRESTED already set at game start");
         return false;
     }
 
-    let mut state = mc_core::scene::SceneState::new(mc_core::ids::SceneId::SCN_ARREST);
-    let advance = SceneAdvance {
-        from: mc_core::ids::SceneId::SCN_ARREST,
-        to: mc_core::ids::SceneId::SCN_FARIA_MEETING,
-        condition: FlagExpr::Always,
-        effects: vec![SceneEffect::SetFlag(FlagId::FLG_ARRESTED)],
-    };
-
-    if !advance.is_available(&world.flags) {
-        eprintln!("act1-arrest: FAIL - arrest scene advance is not available");
+    if let Err(e) = catalog.begin(&mut world, "SCN_ARREST") {
+        eprintln!("act1-arrest: FAIL - authored arrest scene could not begin: {e}");
         return false;
     }
 
-    let dest = advance.traverse(&mut state, &mut world);
-    if dest != mc_core::ids::SceneId::SCN_FARIA_MEETING {
+    // Traverse the authored choice graph, not a reconstructed SceneAdvance.
+    // The final SceneAdvance applies the scene's real on_exit effects.
+    for choice in [0, 0] {
+        let events = apply_commands_with_catalog(
+            &mut world,
+            &[Command::SceneChoose(ChoiceIdx(choice))],
+            Some(&catalog),
+        );
+        if !matches!(events.first(), Some(CoreEvent::Applied { .. })) {
+            eprintln!(
+                "act1-arrest: FAIL - authored scene choice {} was rejected: {:?}",
+                choice, events
+            );
+            return false;
+        }
+    }
+
+    let events = apply_commands_with_catalog(&mut world, &[Command::SceneAdvance], Some(&catalog));
+    if !matches!(events.first(), Some(CoreEvent::Applied { .. })) {
         eprintln!(
-            "act1-arrest: FAIL - unexpected destination after arrest: {:?}",
-            dest
+            "act1-arrest: FAIL - authored arrest scene exit was rejected: {:?}",
+            events
         );
         return false;
     }
@@ -218,9 +235,14 @@ fn prove_act1_arrest() -> bool {
         return false;
     }
 
+    if world.scene.is_some() {
+        eprintln!("act1-arrest: FAIL - authored arrest scene remained active after exit");
+        return false;
+    }
+
     println!("act1-arrest: ok");
     println!("  content: SCN_ARREST found with on_exit set_flags including FLG_ARRESTED");
-    println!("  runtime: SceneAdvance traverse set FLG_ARRESTED in World");
+    println!("  runtime: authored choices and SceneAdvance set FLG_ARRESTED in World");
     true
 }
 
