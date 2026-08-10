@@ -358,17 +358,19 @@ impl App {
             return;
         }
 
+        let Some(mut rt) = self.render_target.take() else {
+            tracing::error!("windowed frame skipped because render target is not initialised");
+            crate::obs::record_frame(frame_started.elapsed());
+            return;
+        };
+
         // Process input and advance simulation
         self.process_input_and_step();
 
         // Update audio with current state
         self.audio.update(self.world.tick, self.world.act);
 
-        // Take the render target out to avoid borrow conflicts
-        let mut rt = self
-            .render_target
-            .take()
-            .expect("render target not initialised");
+        // The render target was taken before simulation to avoid borrow conflicts.
         rt.handle_resize();
 
         let view = StateView::from_world(&self.world, &[]);
@@ -404,10 +406,10 @@ impl App {
     /// Render and acknowledge the first-run advisory before any gameplay input
     /// can reach the authoritative world.
     fn draw_advisory_frame(&mut self) {
-        let mut rt = self
-            .render_target
-            .take()
-            .expect("render target not initialised");
+        let Some(mut rt) = self.render_target.take() else {
+            tracing::error!("advisory frame skipped because render target is not initialised");
+            return;
+        };
         rt.handle_resize();
         rt.set_camera();
         let acknowledged = draw_advisory_screen(self.world.tick);

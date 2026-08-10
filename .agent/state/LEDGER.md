@@ -242,3 +242,4 @@
 2026-08-10T11:01:32Z | codex-root | - | AUDIT_NATIVE_RUN | run 31381450997 success on f40d394; Linux and macOS archives verified with native replay; Windows rebuilt locally
 2026-08-10T11:09:23Z | codex-root | - | AUDIT_FIX | startup and bake paths now propagate catalog/content errors instead of panicking; focused mc_tools and mc_shell suites pass
 2026-08-10T11:10:24Z | codex-root | - | AUDIT_FIX | save-identity proof now reports serialization failures instead of panicking; mc_tools suite remains green
+2026-08-10T11:11:49Z | codex-root | - | AUDIT_FIX | windowed and advisory frames now skip cleanly when no render target is configured; mc_shell suite remains green
