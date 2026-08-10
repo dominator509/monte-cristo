@@ -388,6 +388,27 @@ const HISTOGRAM_BUCKETS: [u64; 18] = [
     u64::MAX,
 ];
 
+const MEMORY_BUCKETS: [u64; 18] = [
+    1 << 20,
+    2 << 20,
+    4 << 20,
+    8 << 20,
+    16 << 20,
+    32 << 20,
+    64 << 20,
+    128 << 20,
+    256 << 20,
+    512 << 20,
+    1 << 30,
+    2 << 30,
+    4 << 30,
+    8 << 30,
+    16 << 30,
+    32 << 30,
+    64 << 30,
+    u64::MAX,
+];
+
 /// A bounded local histogram. Values are recorded in the metric's declared
 /// unit (microseconds, milliseconds, or ticks).
 #[derive(Debug, Clone)]
@@ -396,17 +417,29 @@ pub struct MetricHistogram {
     sum: u64,
     max: u64,
     buckets: [u64; HISTOGRAM_BUCKETS.len()],
+    bounds: &'static [u64],
 }
 
 impl MetricHistogram {
+    fn with_bounds(bounds: &'static [u64]) -> Self {
+        MetricHistogram {
+            count: 0,
+            sum: 0,
+            max: 0,
+            buckets: [0; HISTOGRAM_BUCKETS.len()],
+            bounds,
+        }
+    }
+
     fn record(&mut self, value: u64) {
         self.count = self.count.saturating_add(1);
         self.sum = self.sum.saturating_add(value);
         self.max = self.max.max(value);
-        let bucket = HISTOGRAM_BUCKETS
+        let bucket = self
+            .bounds
             .iter()
             .position(|bound| value <= *bound)
-            .unwrap_or(HISTOGRAM_BUCKETS.len() - 1);
+            .unwrap_or(self.bounds.len() - 1);
         self.buckets[bucket] = self.buckets[bucket].saturating_add(1);
     }
 
@@ -416,10 +449,10 @@ impl MetricHistogram {
         }
         let rank = ((self.count.saturating_mul(percentile)).saturating_add(99)) / 100;
         let mut cumulative = 0u64;
-        for (index, count) in self.buckets.iter().enumerate() {
+        for (index, count) in self.buckets.iter().take(self.bounds.len()).enumerate() {
             cumulative = cumulative.saturating_add(*count);
             if cumulative >= rank.max(1) {
-                return HISTOGRAM_BUCKETS[index];
+                return self.bounds[index];
             }
         }
         self.max
@@ -428,12 +461,7 @@ impl MetricHistogram {
 
 impl Default for MetricHistogram {
     fn default() -> Self {
-        Self {
-            count: 0,
-            sum: 0,
-            max: 0,
-            buckets: [0; HISTOGRAM_BUCKETS.len()],
-        }
+        Self::with_bounds(&HISTOGRAM_BUCKETS)
     }
 }
 
@@ -626,7 +654,7 @@ impl SessionMetrics {
             startup_to_title_duration: MetricHistogram::default(),
             save_write_duration: MetricHistogram::default(),
             save_load_duration: MetricHistogram::default(),
-            memory_resident_peak: MetricHistogram::default(),
+            memory_resident_peak: MetricHistogram::with_bounds(&MEMORY_BUCKETS),
             encounter_resolve_ticks: MetricHistogram::default(),
         }
     }
@@ -973,6 +1001,14 @@ mod tests {
             "json should contain session field: {}",
             json
         );
+    }
+
+    #[test]
+    fn memory_metric_uses_byte_scale_buckets() {
+        let mut metric = MetricHistogram::with_bounds(&MEMORY_BUCKETS);
+        metric.record(64 << 20);
+        let json = serde_json::to_string(&metric).expect("serialize memory metric");
+        assert!(json.contains("\"p50\":67108864"), "json: {json}");
     }
 
     #[test]
