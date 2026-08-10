@@ -285,6 +285,10 @@ and will not alter the deterministic core or release gates.
   the process environment. Preflight correctly rejected it before graph execution; the
   native archives were moved outside `target` and the `.env` artifact root was set to the
   portable `C:/tmp/mc-0.1.1-artifacts` spelling before retrying.
+- The next retry showed that the release tar step receives the Windows-style `C:/...` value
+  with an escaped drive prefix under this shell bridge. The fallback is the existing ignored
+  `.local-data` root with a relative artifact path, which is accepted by both preflight and
+  the tar implementation and survives `cargo clean`.
 
 ## 13. Decision Log
 
