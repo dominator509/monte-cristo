@@ -42,7 +42,7 @@ fn report_bestiary(input: &str) -> bool {
     };
 
     // Count enemies by family
-    use std::collections::HashMap;
+    use std::collections::{BTreeSet, HashMap};
     let mut family_counts: HashMap<String, usize> = HashMap::new();
     for enemy in &pack.enemies {
         let family = format!("{:?}", enemy.family);
@@ -80,6 +80,36 @@ fn report_bestiary(input: &str) -> bool {
     println!("Items:        {}", pack.items.len());
     println!("Flags:        {}", pack.flags.len());
     println!("Strings:      {}", pack.strings.len());
+
+    let expected_region_ids: BTreeSet<&str> = [
+        "R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09", "R10", "R11", "R12", "R13",
+        "R14", "R15",
+    ]
+    .into_iter()
+    .collect();
+    let actual_region_ids: BTreeSet<&str> = pack
+        .regions
+        .iter()
+        .map(|region| region.id.as_str())
+        .collect();
+    let missing_region_ids: Vec<_> = expected_region_ids
+        .difference(&actual_region_ids)
+        .copied()
+        .collect();
+    let unexpected_region_ids: Vec<_> = actual_region_ids
+        .difference(&expected_region_ids)
+        .copied()
+        .collect();
+    let region_vocab_match = missing_region_ids.is_empty() && unexpected_region_ids.is_empty();
+
+    println!();
+    println!("--- Locked Region Vocabulary (SPEC-009) ---");
+    if region_vocab_match {
+        println!("  region IDs: locked R01-R15 vocabulary");
+    } else {
+        println!("  missing region IDs: {missing_region_ids:?}");
+        println!("  unexpected region IDs: {unexpected_region_ids:?}");
+    }
 
     // SPEC-002 names these authoring domains explicitly.  Pack currently
     // carries only the schemas it can load, so report their presence here
@@ -127,7 +157,8 @@ fn report_bestiary(input: &str) -> bool {
     ];
     let counts_match = expected_counts
         .iter()
-        .all(|(_, expected, actual)| expected == actual);
+        .all(|(_, expected, actual)| expected == actual)
+        && region_vocab_match;
     println!();
     println!("--- Locked Count Checks (SPEC-002 / SPEC-009) ---");
     for (label, expected, actual) in expected_counts {
