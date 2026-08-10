@@ -246,3 +246,4 @@
 2026-08-10T11:13:06Z | codex-root | - | AUDIT_FIX | production-readiness-check now consumes the fail-closed locked-content report instead of certifying incomplete content
 2026-08-10T11:31:00Z | codex-root | - | AUDIT_FIX | act1-arrest proof now begins SCN_ARREST and traverses authored choices through the catalog; no reconstructed SceneAdvance effect remains; focused mc_tools tests and prove act1-arrest pass
 2026-08-10T11:42:00Z | codex-root | - | AUDIT_FIX | locked-content report now counts and gates the SPEC-002 map corpus at exactly 118 RON files; current report proves 0 maps plus 6 missing domains and 138/102 enemies
+2026-08-10T12:00:00Z | codex-root | - | AUDIT_VERIFY | sh scripts/verify.sh printed verify: ok on 53a3822 with preflight/install/lint/format/typecheck/tests/build/security/dependency/reality/smoke/live-fire sentinels; production-readiness-check independently fails on locked content
