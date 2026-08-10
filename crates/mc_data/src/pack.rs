@@ -35,7 +35,7 @@ impl Pack {
     pub fn from_content(root: &Path) -> Result<Pack, ContentError> {
         let bestiary_dir = root.join("bestiary");
         let regions_dir = root.join("regions");
-        let scenes_dir = root.join("scenes").join("act1");
+        let scenes_dir = root.join("scenes");
         let spawn_dir = root.join("spawn_tables");
         let items_dir = root.join("items");
         let encounter_dir = root.join("encounters");
@@ -44,7 +44,7 @@ impl Pack {
 
         let enemies = load_ron_dir::<Enemy>(&bestiary_dir)?;
         let regions = load_ron_dir::<Region>(&regions_dir)?;
-        let scenes = load_ron_dir::<Scene>(&scenes_dir)?;
+        let scenes = load_ron_tree::<Scene>(&scenes_dir)?;
         let spawn_tables = load_ron_dir::<SpawnTable>(&spawn_dir)?;
         let items = load_ron_dir::<Item>(&items_dir)?;
         let encounters = if encounter_dir.exists() {
@@ -181,6 +181,45 @@ fn load_ron_dir<T: serde::de::DeserializeOwned>(dir: &Path) -> Result<Vec<T>, Co
         }
     }
     Ok(items)
+}
+
+/// Load all RON files below a directory in canonical path order.
+///
+/// Scene content is partitioned by act subdirectories, so a flat directory
+/// loader would silently omit authored scenes after Act I.
+fn load_ron_tree<T: serde::de::DeserializeOwned>(dir: &Path) -> Result<Vec<T>, ContentError> {
+    let mut paths = Vec::new();
+    collect_ron_paths(dir, &mut paths)?;
+    paths.sort();
+
+    paths
+        .into_iter()
+        .map(|path| {
+            let data = fs::read_to_string(&path)
+                .map_err(|e| ContentError::new(format!("cannot read {}: {e}", path.display())))?;
+            ron::from_str(&data)
+                .map_err(|e| ContentError::new(format!("cannot parse {}: {e}", path.display())))
+        })
+        .collect()
+}
+
+fn collect_ron_paths(dir: &Path, paths: &mut Vec<std::path::PathBuf>) -> Result<(), ContentError> {
+    if !dir.exists() {
+        return Ok(());
+    }
+    let entries =
+        fs::read_dir(dir).map_err(|e| ContentError::new(format!("cannot read {dir:?}: {e}")))?;
+    for entry in entries {
+        let path = entry
+            .map_err(|e| ContentError::new(format!("cannot read entry in {dir:?}: {e}")))?
+            .path();
+        if path.is_dir() {
+            collect_ron_paths(&path, paths)?;
+        } else if path.extension().map_or(false, |e| e == "ron") {
+            paths.push(path);
+        }
+    }
+    Ok(())
 }
 
 /// Verify all cross-file references within a pack.

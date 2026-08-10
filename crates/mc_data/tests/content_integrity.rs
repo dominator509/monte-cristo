@@ -39,6 +39,30 @@ fn build_pack() -> Pack {
     Pack::from_content(&content_root()).expect("should build pack from clean content")
 }
 
+#[test]
+fn pack_includes_every_authored_scene_act() {
+    let pack = build_pack();
+    let scenes_root = content_root().join("scenes");
+    let expected = fs::read_dir(&scenes_root)
+        .unwrap()
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_dir())
+        .map(|act| {
+            fs::read_dir(act.path())
+                .unwrap()
+                .filter_map(Result::ok)
+                .filter(|entry| entry.path().extension().is_some_and(|ext| ext == "ron"))
+                .count()
+        })
+        .sum::<usize>();
+
+    assert_eq!(pack.scenes.len(), expected);
+    assert!(pack
+        .scenes
+        .iter()
+        .any(|scene| scene.id == "SCN_CONFIDENCE_CF45"));
+}
+
 /// Deterministic: two builds produce identical bytes.
 #[test]
 fn bake_pack_is_deterministic() {
