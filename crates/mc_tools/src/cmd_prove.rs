@@ -511,12 +511,19 @@ fn prove_if_calendar(months: u32, faria_at: u32, min_rank3: u32) -> bool {
             break;
         }
         let disc = disciplines[(m as usize) % 7];
-        let _ = mc_core::command::apply_commands(
+        let events = mc_core::command::apply_commands(
             &mut world,
             &[mc_core::command::Command::CalendarAct(
                 CalendarAction::Study(disc),
             )],
         );
+        if !matches!(
+            events.first(),
+            Some(mc_core::command::CoreEvent::Applied { .. })
+        ) {
+            eprintln!("if-calendar: FAIL - study command was rejected");
+            return false;
+        }
     }
 
     let faria_joined = world
@@ -788,7 +795,11 @@ fn prove_encounter_budget(reentries: u32) -> bool {
     use mc_core::budget::EncounterBudget;
     use mc_core::fx::Fx;
 
-    let mut budget = EncounterBudget::new(reentries as u16);
+    let Ok(pool) = u16::try_from(reentries) else {
+        eprintln!("encounter-budget: FAIL - reentries exceed the authored u16 budget bound");
+        return false;
+    };
+    let mut budget = EncounterBudget::new(pool);
     let base_xp = Fx::from_int(50);
     let mut last_xp: Option<i32> = None;
 
@@ -805,9 +816,18 @@ fn prove_encounter_budget(reentries: u32) -> bool {
             }
         }
         last_xp = Some(xp_int);
-        budget.advance();
+        if !budget.advance() {
+            eprintln!(
+                "encounter-budget: FAIL - budget exhausted before all reentries were cleared"
+            );
+            return false;
+        }
     }
 
+    if !budget.is_exhausted() {
+        eprintln!("encounter-budget: FAIL - budget did not exhaust after all requested reentries");
+        return false;
+    }
     let final_xp = budget.experience_awarded(base_xp).to_int_floor();
     println!("encounter-budget: ok (final: {})", final_xp);
     true
