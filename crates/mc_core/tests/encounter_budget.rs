@@ -123,7 +123,7 @@ fn zero_pool_budget() {
 /// With custom 1/1 decay (no decay), experience never decreases.
 #[test]
 fn custom_no_decay_budget() {
-    let mut budget = EncounterBudget::with_decay(10, 1, 1);
+    let mut budget = EncounterBudget::with_decay(10, 1, 1).expect("valid decay ratio");
     let base = Fx::from_int(100);
     for _ in 0..10 {
         assert_eq!(budget.experience_awarded(base), base);

@@ -8,6 +8,14 @@
 use crate::fx::Fx;
 use serde::{Deserialize, Serialize};
 
+/// Errors returned when constructing an encounter budget.
+#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
+pub enum BudgetError {
+    /// A decay ratio cannot have a zero denominator.
+    #[error("encounter budget decay denominator cannot be zero")]
+    ZeroDecayDenominator,
+}
+
 /// Anti-grind encounter budget (SPEC-001 section 11, INV-12).
 ///
 /// # Fields
@@ -43,14 +51,16 @@ impl EncounterBudget {
     }
 
     /// Create a budget with a custom decay ratio.
-    pub fn with_decay(pool: u16, decay_num: u16, decay_den: u16) -> Self {
-        assert!(decay_den != 0, "EncounterBudget: decay_den cannot be zero");
-        EncounterBudget {
+    pub fn with_decay(pool: u16, decay_num: u16, decay_den: u16) -> Result<Self, BudgetError> {
+        if decay_den == 0 {
+            return Err(BudgetError::ZeroDecayDenominator);
+        }
+        Ok(EncounterBudget {
             pool,
             spent: 0,
             decay_num,
             decay_den,
-        }
+        })
     }
 
     /// The decay multiplier as an `Fx` value: `(decay_num/decay_den)^spent`.
@@ -242,7 +252,7 @@ mod tests {
     #[test]
     fn custom_decay_ratio() {
         // Using 1/2 decay: each encounter halves XP
-        let mut b = EncounterBudget::with_decay(10, 1, 2);
+        let mut b = EncounterBudget::with_decay(10, 1, 2).expect("valid decay ratio");
         assert_eq!(b.decay_factor(), Fx::ONE);
         b.advance();
         assert_eq!(b.decay_factor(), Fx::HALF);
@@ -250,6 +260,14 @@ mod tests {
         assert_eq!(
             b.decay_factor(),
             Fx::from_int(1).saturating_div(Fx::from_int(4))
+        );
+    }
+
+    #[test]
+    fn zero_decay_denominator_is_rejected() {
+        assert_eq!(
+            EncounterBudget::with_decay(10, 1, 0),
+            Err(BudgetError::ZeroDecayDenominator)
         );
     }
 }
