@@ -88,6 +88,12 @@ jobs:
             --replay "$GITHUB_WORKSPACE/tapes/golden-full.tape" --assert-hash
           test "$(tar tzf "$archive" | grep -c 'THIRD-PARTY-LICENSES.txt')" -eq 1
 
+      - name: Verify locked content corpus
+        run: |
+          set -eu
+          cargo run --locked --quiet -p mc_tools -- report \
+            --input "$GITHUB_WORKSPACE/content" bestiary
+
       - name: Upload verified native artifact
         uses: actions/upload-artifact@v6
         with:
