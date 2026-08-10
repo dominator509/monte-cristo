@@ -2,6 +2,7 @@
 //!
 //! Each sub-verb loads the content pack and prints summary statistics.
 
+use std::fs;
 use std::path::Path;
 
 #[derive(clap::Subcommand, Debug)]
@@ -62,7 +63,17 @@ fn report_bestiary(input: &str) -> bool {
     }
 
     println!("=== Bestiary Report ===");
+    let map_count = match count_ron_files(&content_dir.join("maps")) {
+        Ok(count) => count,
+        Err(_) if !content_dir.join("maps").exists() => 0,
+        Err(error) => {
+            eprintln!("report bestiary: FAIL - could not inspect maps domain: {error}");
+            return false;
+        }
+    };
+
     println!("Regions:      {}", pack.regions.len());
+    println!("Maps:         {map_count}");
     println!("Enemies:      {}", pack.enemies.len());
     println!("Encounters:   {}", pack.encounters.len());
     println!("Spawn Tables: {}", pack.spawn_tables.len());
@@ -109,6 +120,7 @@ fn report_bestiary(input: &str) -> bool {
 
     let expected_counts = [
         ("regions", 15usize, pack.regions.len()),
+        ("maps", 118usize, map_count),
         ("enemies", 102usize, pack.enemies.len()),
         ("encounters", 180usize, pack.encounters.len()),
         ("spawn_tables", 45usize, pack.spawn_tables.len()),
@@ -155,4 +167,20 @@ fn report_bestiary(input: &str) -> bool {
         println!("report bestiary: FAIL - locked content requirements are not met");
         false
     }
+}
+
+fn count_ron_files(path: &Path) -> Result<usize, std::io::Error> {
+    let mut count = 0;
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        if entry.file_type()?.is_file()
+            && entry
+                .path()
+                .extension()
+                .is_some_and(|extension| extension == "ron")
+        {
+            count += 1;
+        }
+    }
+    Ok(count)
 }
