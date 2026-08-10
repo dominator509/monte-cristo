@@ -106,7 +106,7 @@ fn pack_rejects_mismatched_locked_party_table() {
     let tmp = tmp_dir("bad-party");
     let _ = fs::remove_dir_all(&tmp);
     fs::create_dir_all(&tmp).unwrap();
-    fs::write(&tmp.join("party.ron"), "[\"CHR_EDMOND\"]\n").unwrap();
+    fs::write(tmp.join("party.ron"), "[\"CHR_EDMOND\"]\n").unwrap();
 
     let error = Pack::from_content(&tmp).expect_err("mismatched party table must fail");
     assert!(error.to_string().contains("party.ron"));
@@ -120,7 +120,7 @@ fn pack_rejects_mismatched_locked_curriculum_table() {
     let _ = fs::remove_dir_all(&tmp);
     fs::create_dir_all(&tmp).unwrap();
     fs::write(
-        &tmp.join("curriculum.ron"),
+        tmp.join("curriculum.ron"),
         "[(\"FENCING\", [\"ABL_LUNGE\"]) ]\n",
     )
     .unwrap();

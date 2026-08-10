@@ -298,3 +298,8 @@
 2026-08-10T14:21:03Z | codex-root | EP-010 | AUDIT_VERIFY | post-M49 complete workspace tests: 614 passed across 73 suites; direct live-fire LF-01 through LF-09 passed and LF-10 failed locked content corpus
 2026-08-10T14:26:14Z | codex-root | EP-010 | AUDIT_FIX | added exact SPEC-009 party.ron and curriculum.ron tables; Pack loads and validates them, and mc_tools validate now loads Pack before content: ok
 2026-08-10T14:26:14Z | codex-root | EP-010 | AUDIT_VERIFY | content validate: ok; mc_tools tests 3 passed; content_integrity suite 18 passed including party/curriculum tamper rejection; locked report now has only maps, abilities, techs missing
+2026-08-10T14:28:10Z | codex-root | EP-010 | SIG | cargo test workspace failed at Windows link.exe LNK1000 C0000006 in blake3 IMAGE::Pass2
+2026-08-10T14:44:31Z | codex-root | EP-010 | AUDIT_VERIFY | regenerated content.pack from authored content; focused mc_shell shell_state test passed
+2026-08-10T14:44:32Z | codex-root | EP-010 | AUDIT_FINDING | workspace test exposed stale truncated content.pack used by mc_shell headless integration test
+2026-08-10T15:55:01Z | codex-root | EP-010 | AUDIT_VERIFY | full locked workspace tests pass: 617 tests across 73 suites after regenerating content.pack
+2026-08-10T15:55:02Z | codex-root | EP-010 | AUDIT_FIX | removed needless borrows in party and curriculum tamper tests to satisfy clippy -D warnings
