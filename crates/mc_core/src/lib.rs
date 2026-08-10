@@ -12,6 +12,7 @@ pub mod flags;
 pub mod fx;
 pub mod hash;
 pub mod ids;
+pub mod item;
 pub mod poison;
 pub mod rng;
 pub mod scene;

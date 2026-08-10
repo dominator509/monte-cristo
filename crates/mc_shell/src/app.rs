@@ -15,7 +15,8 @@ use crate::ui::{
     menu::{draw_field_hud, draw_menu_screen},
 };
 use macroquad::prelude::*;
-use mc_core::command::{apply_commands_with_catalog, ChoiceIdx, Command, Dir, StateView};
+use mc_core::command::{apply_commands_with_catalogs, ChoiceIdx, Command, Dir, StateView};
+use mc_core::item::AuthoredItemCatalog;
 use mc_core::scene::AuthoredSceneCatalog;
 use mc_core::world::World;
 use tracing::info;
@@ -61,6 +62,8 @@ pub struct App {
     pub advisory_pending: bool,
     /// The loaded authored scene catalog used by the deterministic command bus.
     pub scene_catalog: AuthoredSceneCatalog,
+    /// The loaded authored item catalog used by deterministic battle actions.
+    pub item_catalog: AuthoredItemCatalog,
     /// Currently highlighted authored scene choice.
     pub scene_choice_index: usize,
 }
@@ -68,8 +71,14 @@ pub struct App {
 impl App {
     /// Create a new application from a seed and configuration.
     pub fn new(seed: u128, config: ValidatedConfig, headless: bool) -> Self {
-        Self::new_with_catalog(seed, config, headless, AuthoredSceneCatalog::default())
-            .expect("an empty authored scene catalog is always valid")
+        Self::new_with_catalog_and_items(
+            seed,
+            config,
+            headless,
+            AuthoredSceneCatalog::default(),
+            AuthoredItemCatalog::default(),
+        )
+        .expect("an empty authored scene catalog is always valid")
     }
 
     /// Create an application with a verified authored scene catalog.
@@ -78,6 +87,23 @@ impl App {
         config: ValidatedConfig,
         headless: bool,
         scene_catalog: AuthoredSceneCatalog,
+    ) -> Result<Self, String> {
+        Self::new_with_catalog_and_items(
+            seed,
+            config,
+            headless,
+            scene_catalog,
+            AuthoredItemCatalog::default(),
+        )
+    }
+
+    /// Create an application with verified authored scene and item catalogs.
+    pub fn new_with_catalog_and_items(
+        seed: u128,
+        config: ValidatedConfig,
+        headless: bool,
+        scene_catalog: AuthoredSceneCatalog,
+        item_catalog: AuthoredItemCatalog,
     ) -> Result<Self, String> {
         let world = World::new(seed);
         let audio_enabled = !headless;
@@ -95,6 +121,7 @@ impl App {
             screen_state: ScreenState::Field,
             advisory_pending,
             scene_catalog,
+            item_catalog,
             scene_choice_index: 0,
         };
         if app.scene_catalog.scene("SCN_ARREST").is_some() {
@@ -114,8 +141,12 @@ impl App {
             self.accum = MAX_ACCUM;
         }
         while self.accum >= FIXED_DT {
-            let _events =
-                apply_commands_with_catalog(&mut self.world, &commands, Some(&self.scene_catalog));
+            let _events = apply_commands_with_catalogs(
+                &mut self.world,
+                &commands,
+                Some(&self.scene_catalog),
+                Some(&self.item_catalog),
+            );
             self.world.step();
             crate::obs::CURRENT_TICK.store(self.world.tick, std::sync::atomic::Ordering::Relaxed);
             crate::obs::record_tick();
@@ -134,8 +165,12 @@ impl App {
             info!("accumulation cap hit, dropping frames");
         }
         while self.accum >= FIXED_DT {
-            let _events =
-                apply_commands_with_catalog(&mut self.world, &commands, Some(&self.scene_catalog));
+            let _events = apply_commands_with_catalogs(
+                &mut self.world,
+                &commands,
+                Some(&self.scene_catalog),
+                Some(&self.item_catalog),
+            );
             for _ in &commands {
                 crate::obs::record_command();
             }

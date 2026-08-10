@@ -14,6 +14,7 @@ use mc_core::command::{
 use mc_core::flags::FlagExpr;
 use mc_core::fx::Fx;
 use mc_core::ids::{CharId, EnemyId, FlagId, RegionId};
+use mc_core::item::{AuthoredItemCatalog, AuthoredItemDefinition, ItemKind};
 use mc_core::scene::{
     AuthoredChoiceDefinition, AuthoredNodeDefinition, AuthoredSceneCatalog,
     AuthoredSceneDefinition, SceneEffect,
@@ -176,6 +177,133 @@ fn attack_command_resolves_against_the_authoritative_battle() {
     let battle = world.battle.as_ref().unwrap();
     assert!(battle.combatants[1].hp < Fx::from_int(30));
     assert!(!battle.combatants[0].atb.is_full());
+}
+
+#[test]
+fn authored_potion_heals_and_consumes_inventory() {
+    let mut world = World::new(42);
+    let mut party = Combatant {
+        kind: CombatantKind::PartyMember(CharId::CHR_EDMOND),
+        affiliation: Affiliation::Party,
+        name: "Edmond".into(),
+        atb: AtbGauge::new(Fx::from_int(12)),
+        hp: Fx::from_int(40),
+        max_hp: Fx::from_int(100),
+        attack: Fx::from_int(10),
+        defense: Fx::from_int(8),
+        speed: Fx::from_int(12),
+        level: 1,
+        statuses: StatusList::new(),
+    };
+    party.atb.force_full();
+    let enemy = Combatant {
+        kind: CombatantKind::Enemy(EnemyId::ENM_BANDIT),
+        affiliation: Affiliation::Enemy,
+        name: "Bandit".into(),
+        atb: AtbGauge::new(Fx::from_int(8)),
+        hp: Fx::from_int(30),
+        max_hp: Fx::from_int(30),
+        attack: Fx::from_int(6),
+        defense: Fx::from_int(4),
+        speed: Fx::from_int(8),
+        level: 1,
+        statuses: StatusList::new(),
+    };
+    world.battle = Some(Battle::new(vec![party], vec![enemy]));
+    world
+        .inventory
+        .add_item(mc_core::ids::ItemId::ITM_POTION, 1);
+    let item_catalog = AuthoredItemCatalog::from_definitions(vec![AuthoredItemDefinition {
+        id: mc_core::ids::ItemId::ITM_POTION,
+        kind: ItemKind::Consumable,
+        heal_hp: Some(25),
+    }])
+    .expect("test item catalog should resolve");
+
+    let command = Command::SelectAction(
+        mc_core::command::ActorId(0),
+        Action::Item {
+            item_id: mc_core::ids::ItemId::ITM_POTION,
+            target: TargetId(0),
+        },
+    );
+    let events = mc_core::command::apply_commands_with_catalogs(
+        &mut world,
+        std::slice::from_ref(&command),
+        None,
+        Some(&item_catalog),
+    );
+    assert_valid(&events[0], &command);
+    assert_eq!(
+        world.battle.as_ref().unwrap().combatants[0].hp,
+        Fx::from_int(65)
+    );
+    assert!(world.inventory.items().is_empty());
+    assert!(!world.battle.as_ref().unwrap().combatants[0].atb.is_full());
+}
+
+#[test]
+fn authored_key_item_is_rejected_without_mutation() {
+    let mut world = World::new(42);
+    let mut party = Combatant {
+        kind: CombatantKind::PartyMember(CharId::CHR_EDMOND),
+        affiliation: Affiliation::Party,
+        name: "Edmond".into(),
+        atb: AtbGauge::new(Fx::from_int(12)),
+        hp: Fx::from_int(80),
+        max_hp: Fx::from_int(100),
+        attack: Fx::from_int(10),
+        defense: Fx::from_int(8),
+        speed: Fx::from_int(12),
+        level: 1,
+        statuses: StatusList::new(),
+    };
+    party.atb.force_full();
+    world.battle = Some(Battle::new(
+        vec![party],
+        vec![Combatant {
+            kind: CombatantKind::Enemy(EnemyId::ENM_BANDIT),
+            affiliation: Affiliation::Enemy,
+            name: "Bandit".into(),
+            atb: AtbGauge::new(Fx::from_int(8)),
+            hp: Fx::from_int(30),
+            max_hp: Fx::from_int(30),
+            attack: Fx::from_int(6),
+            defense: Fx::from_int(4),
+            speed: Fx::from_int(8),
+            level: 1,
+            statuses: StatusList::new(),
+        }],
+    ));
+    world
+        .inventory
+        .add_item(mc_core::ids::ItemId::ITM_TREASURE_MAP, 1);
+    let item_catalog = AuthoredItemCatalog::from_definitions(vec![AuthoredItemDefinition {
+        id: mc_core::ids::ItemId::ITM_TREASURE_MAP,
+        kind: ItemKind::Key,
+        heal_hp: None,
+    }])
+    .expect("test item catalog should resolve");
+
+    let events = mc_core::command::apply_commands_with_catalogs(
+        &mut world,
+        &[Command::SelectAction(
+            mc_core::command::ActorId(0),
+            Action::Item {
+                item_id: mc_core::ids::ItemId::ITM_TREASURE_MAP,
+                target: TargetId(0),
+            },
+        )],
+        None,
+        Some(&item_catalog),
+    );
+    assert_rejected(&events[0]);
+    assert_eq!(
+        world.battle.as_ref().unwrap().combatants[0].hp,
+        Fx::from_int(80)
+    );
+    assert_eq!(world.inventory.items().len(), 1);
+    assert!(world.battle.as_ref().unwrap().combatants[0].atb.is_full());
 }
 
 #[test]

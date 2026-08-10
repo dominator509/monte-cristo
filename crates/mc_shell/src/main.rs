@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::{fs, io::Write};
 
+use mc_core::item::AuthoredItemCatalog;
 use mc_core::scene::AuthoredSceneCatalog;
 use mc_shell::app::App;
 use mc_shell::config::ValidatedConfig;
@@ -28,9 +29,14 @@ fn data_dir() -> PathBuf {
 }
 
 /// Run the headless application (no window, no audio).
-fn run_headless(seed: u128, config: ValidatedConfig, scene_catalog: AuthoredSceneCatalog) {
+fn run_headless(
+    seed: u128,
+    config: ValidatedConfig,
+    scene_catalog: AuthoredSceneCatalog,
+    item_catalog: AuthoredItemCatalog,
+) {
     tracing::info!("starting headless mode");
-    let mut app = App::new_with_catalog(seed, config, true, scene_catalog)
+    let mut app = App::new_with_catalog_and_items(seed, config, true, scene_catalog, item_catalog)
         .expect("verified authored scene catalog should start");
     for _i in 0..60 {
         app.headless_update();
@@ -63,7 +69,7 @@ fn init_observability() {
 /// Release artifacts contain a verified `content.pack`; source checkouts may
 /// still run directly from the RON tree before a bake has occurred. Both paths
 /// feed the same core catalog and therefore the same deterministic behavior.
-fn load_runtime_catalog() -> Result<AuthoredSceneCatalog, String> {
+fn load_runtime_catalog() -> Result<(AuthoredSceneCatalog, AuthoredItemCatalog), String> {
     let mut candidates = Vec::new();
     let manifest_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     candidates.push(manifest_root.join("../.."));
@@ -98,9 +104,13 @@ fn load_runtime_catalog() -> Result<AuthoredSceneCatalog, String> {
             mc_data::pack::Pack::from_content(&confined)
                 .map_err(|error| format!("content source failed validation: {error}"))?
         };
-        return pack
+        let scene_catalog = pack
             .scene_catalog()
-            .map_err(|error| format!("authored scene catalog failed: {error}"));
+            .map_err(|error| format!("authored scene catalog failed: {error}"))?;
+        let item_catalog = pack
+            .item_catalog()
+            .map_err(|error| format!("authored item catalog failed: {error}"))?;
+        return Ok((scene_catalog, item_catalog));
     }
 
     Err(
@@ -292,7 +302,7 @@ fn main() -> ExitCode {
         );
     }
 
-    let scene_catalog = match load_runtime_catalog() {
+    let (scene_catalog, item_catalog) = match load_runtime_catalog() {
         Ok(catalog) => catalog,
         Err(error) => {
             eprintln!("Game startup failed: {error}");
@@ -307,21 +317,27 @@ fn main() -> ExitCode {
 
     // Headless mode: no window, no audio, pure simulation
     if std::env::var("MC_HEADLESS").is_ok() {
-        run_headless(seed, config, scene_catalog);
+        run_headless(seed, config, scene_catalog, item_catalog);
         return ExitCode::SUCCESS;
     }
 
     // Windowed mode: use macroquad
-    run_windowed(seed, config, scene_catalog);
+    run_windowed(seed, config, scene_catalog, item_catalog);
     ExitCode::SUCCESS
 }
 
 /// Run the windowed application via macroquad.
-fn run_windowed(seed: u128, config: ValidatedConfig, scene_catalog: AuthoredSceneCatalog) {
+fn run_windowed(
+    seed: u128,
+    config: ValidatedConfig,
+    scene_catalog: AuthoredSceneCatalog,
+    item_catalog: AuthoredItemCatalog,
+) {
     macroquad::Window::new("Monte Cristo", async move {
         tracing::info!("starting windowed mode: 256x224 internal resolution");
-        let mut app = App::new_with_catalog(seed, config, false, scene_catalog)
-            .expect("verified authored scene catalog should start");
+        let mut app =
+            App::new_with_catalog_and_items(seed, config, false, scene_catalog, item_catalog)
+                .expect("verified authored scene catalog should start");
         let render_target = mc_shell::render::target::ShellRenderTarget::new();
         app.render_target = Some(render_target);
 

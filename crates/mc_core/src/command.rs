@@ -6,6 +6,7 @@
 
 use crate::battle::{self, Affiliation, BattleState};
 use crate::ids::{ItemId, RegionId};
+use crate::item::{AuthoredItemCatalog, ItemKind};
 use crate::scene::AuthoredSceneCatalog;
 use crate::world::{Party, World};
 use serde::{Deserialize, Serialize};
@@ -225,10 +226,20 @@ pub fn apply_commands_with_catalog(
     commands: &[Command],
     catalog: Option<&AuthoredSceneCatalog>,
 ) -> Vec<CoreEvent> {
+    apply_commands_with_catalogs(world, commands, catalog, None)
+}
+
+/// Apply commands against authored scene and item catalogs.
+pub fn apply_commands_with_catalogs(
+    world: &mut World,
+    commands: &[Command],
+    catalog: Option<&AuthoredSceneCatalog>,
+    item_catalog: Option<&AuthoredItemCatalog>,
+) -> Vec<CoreEvent> {
     let mut events = Vec::with_capacity(commands.len());
 
     for cmd in commands {
-        let event = validate_and_apply_with_catalog(world, cmd, catalog);
+        let event = validate_and_apply_with_catalog(world, cmd, catalog, item_catalog);
         events.push(event);
     }
 
@@ -240,6 +251,7 @@ fn validate_and_apply_with_catalog(
     world: &mut World,
     cmd: &Command,
     catalog: Option<&AuthoredSceneCatalog>,
+    item_catalog: Option<&AuthoredItemCatalog>,
 ) -> CoreEvent {
     match cmd {
         // Navigation — always valid
@@ -260,7 +272,7 @@ fn validate_and_apply_with_catalog(
         // Battle commands — valid only during an active battle. The selected
         // attack is resolved immediately against the authoritative battle tree.
         Command::SelectAction(actor, action) => {
-            if let Err(reason) = resolve_battle_action(world, *actor, action) {
+            if let Err(reason) = resolve_battle_action(world, *actor, action, item_catalog) {
                 return CoreEvent::Rejected {
                     command: cmd.clone(),
                     reason,
@@ -522,7 +534,16 @@ fn validate_and_apply_with_catalog(
 }
 
 /// Resolve one player battle action against the live World battle.
-fn resolve_battle_action(world: &mut World, actor: ActorId, action: &Action) -> Result<(), String> {
+fn resolve_battle_action(
+    world: &mut World,
+    actor: ActorId,
+    action: &Action,
+    item_catalog: Option<&AuthoredItemCatalog>,
+) -> Result<(), String> {
+    if let Action::Item { item_id, target } = action {
+        return resolve_item_action(world, actor, *item_id, *target, item_catalog);
+    }
+
     let mut rng = world.rng;
     let battle = world
         .battle
@@ -563,8 +584,11 @@ fn resolve_battle_action(world: &mut World, actor: ActorId, action: &Action) -> 
         Action::Flee => {
             battle.state = BattleState::Fleeing;
         }
-        Action::Tech { .. } | Action::Item { .. } => {
+        Action::Tech { .. } => {
             return Err("This battle action requires an authored ability or item resolver".into())
+        }
+        Action::Item { .. } => {
+            return Err("Item action was not routed through the authored item resolver".into())
         }
     }
 
@@ -572,6 +596,77 @@ fn resolve_battle_action(world: &mut World, actor: ActorId, action: &Action) -> 
     battle.check_end_conditions();
     world.rng = rng;
     Ok(())
+}
+
+/// Resolve one authored consumable item against a living party combatant.
+fn resolve_item_action(
+    world: &mut World,
+    actor: ActorId,
+    item_id: ItemId,
+    target: TargetId,
+    item_catalog: Option<&AuthoredItemCatalog>,
+) -> Result<(), String> {
+    let catalog = item_catalog.ok_or_else(|| "No authored item catalog loaded".to_string())?;
+    let definition = catalog
+        .get(item_id)
+        .ok_or_else(|| format!("Item {:?} is not in the authored catalog", item_id))?;
+    if definition.kind != ItemKind::Consumable {
+        return Err("Only authored consumables can be used in battle".into());
+    }
+    let heal_hp = definition
+        .heal_hp
+        .ok_or_else(|| "Authored item has no battle effect".to_string())?;
+    let heal_hp = i32::try_from(heal_hp)
+        .map_err(|_| "Authored item healing amount exceeds fixed-point range".to_string())?;
+    if !world
+        .inventory
+        .items()
+        .iter()
+        .any(|(held_id, count)| *held_id == item_id && *count > 0)
+    {
+        return Err("Item is not present in the inventory".into());
+    }
+
+    let mut battle = world
+        .battle
+        .take()
+        .ok_or_else(|| "No active battle".to_string())?;
+    let result = (|| {
+        if battle.state != BattleState::Active {
+            return Err("Battle is not active".into());
+        }
+        let attacker = battle
+            .combatants
+            .get(actor.0)
+            .ok_or_else(|| "Actor is not present in the active battle".to_string())?;
+        if attacker.affiliation != Affiliation::Party || !attacker.is_alive() {
+            return Err("Actor is not a living party combatant".into());
+        }
+        if !attacker.is_atb_full() {
+            return Err("Actor ATB gauge is not full".into());
+        }
+        let target_ref = battle
+            .combatants
+            .get(target.0)
+            .ok_or_else(|| "Item target is not present in the active battle".to_string())?;
+        if target_ref.affiliation != Affiliation::Party || !target_ref.is_alive() {
+            return Err("Item target must be a living party combatant".into());
+        }
+
+        if !world.inventory.remove_item(item_id, 1) {
+            return Err("Item disappeared before use could be committed".into());
+        }
+        let target_combatant = &mut battle.combatants[target.0];
+        target_combatant.hp = target_combatant
+            .hp
+            .saturating_add(crate::fx::Fx::from_int(heal_hp))
+            .min(target_combatant.max_hp);
+        battle.combatants[actor.0].atb.reset();
+        battle.check_end_conditions();
+        Ok(())
+    })();
+    world.battle = Some(battle);
+    result
 }
 
 #[cfg(test)]

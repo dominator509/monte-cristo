@@ -15,6 +15,7 @@ use crate::schema::region::Region;
 use crate::schema::scene::Scene;
 use crate::schema::spawn_table::SpawnTable;
 use mc_core::ids::{CharId, FlagId, ItemId};
+use mc_core::item::{AuthoredItemCatalog, AuthoredItemDefinition, ItemKind};
 use mc_core::scene::{
     AuthoredChoiceDefinition, AuthoredNodeDefinition, AuthoredSceneCatalog,
     AuthoredSceneDefinition, SceneEffect,
@@ -195,6 +196,30 @@ impl Pack {
 
         AuthoredSceneCatalog::from_definitions(definitions)
             .map_err(|error| ContentError::new(format!("scene catalog: {error}")))
+    }
+
+    /// Convert authored item definitions into the deterministic core catalog.
+    pub fn item_catalog(&self) -> Result<AuthoredItemCatalog, ContentError> {
+        let definitions = self
+            .items
+            .iter()
+            .map(|item| {
+                let id = parse_item("item catalog", &item.id)?;
+                let kind = match item.item_type {
+                    crate::schema::item::ItemType::Consumable => ItemKind::Consumable,
+                    crate::schema::item::ItemType::Key => ItemKind::Key,
+                    crate::schema::item::ItemType::Quest => ItemKind::Quest,
+                    crate::schema::item::ItemType::Equipment => ItemKind::Equipment,
+                };
+                Ok(AuthoredItemDefinition {
+                    id,
+                    kind,
+                    heal_hp: item.heal_hp,
+                })
+            })
+            .collect::<Result<Vec<_>, ContentError>>()?;
+        AuthoredItemCatalog::from_definitions(definitions)
+            .map_err(|error| ContentError::new(format!("item catalog: {error}")))
     }
 }
 

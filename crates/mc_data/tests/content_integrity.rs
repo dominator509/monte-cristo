@@ -93,6 +93,29 @@ fn authored_arrest_scene_executes_through_core_catalog() {
     assert!(world.flags.is_set(FlagId::FLG_ARRESTED));
 }
 
+#[test]
+fn authored_item_catalog_preserves_consumable_and_key_semantics() {
+    let pack = build_pack();
+    let catalog = pack
+        .item_catalog()
+        .expect("authored items should convert to the core catalog");
+    assert_eq!(catalog.len(), pack.items.len());
+    assert_eq!(
+        catalog
+            .get(mc_core::ids::ItemId::ITM_POTION)
+            .expect("potion should be authored")
+            .heal_hp,
+        Some(25)
+    );
+    assert_eq!(
+        catalog
+            .get(mc_core::ids::ItemId::ITM_TREASURE_MAP)
+            .expect("treasure map should be authored")
+            .kind,
+        mc_core::item::ItemKind::Key
+    );
+}
+
 /// Deterministic: two builds produce identical bytes.
 #[test]
 fn bake_pack_is_deterministic() {
