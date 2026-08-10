@@ -296,3 +296,5 @@
 2026-08-10T14:17:16Z | codex-root | EP-010 | AUDIT_VERIFY | negative tolerance regression and full mc_core library suite pass: 205 tests
 2026-08-10T14:18:02Z | codex-root | EP-010 | AUDIT_VERIFY | post-tolerance-normalization mc_core integration/property suites pass: 386 tests
 2026-08-10T14:21:03Z | codex-root | EP-010 | AUDIT_VERIFY | post-M49 complete workspace tests: 614 passed across 73 suites; direct live-fire LF-01 through LF-09 passed and LF-10 failed locked content corpus
+2026-08-10T14:26:14Z | codex-root | EP-010 | AUDIT_FIX | added exact SPEC-009 party.ron and curriculum.ron tables; Pack loads and validates them, and mc_tools validate now loads Pack before content: ok
+2026-08-10T14:26:14Z | codex-root | EP-010 | AUDIT_VERIFY | content validate: ok; mc_tools tests 3 passed; content_integrity suite 18 passed including party/curriculum tamper rejection; locked report now has only maps, abilities, techs missing

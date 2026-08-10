@@ -1,0 +1,51 @@
+[
+    ("FENCING", [
+        "ABL_LUNGE",
+        "ABL_PARRY",
+        "TECH_FARIAS_PARRY",
+        "ABL_RIPOSTE",
+        "TECH_COUNTER_SCHOOL",
+    ]),
+    ("CHEMISTRY", [
+        "ABL_ANTIDOTE",
+        "ABL_IDENTIFY_POISON",
+        "ABL_LIME_BLIND",
+        "TECH_LIME_AND_LANTERN",
+        "ABL_SYNTHESIZE",
+    ]),
+    ("NATURAL_PHILOSOPHY", [
+        "ABL_PICK_LOCK",
+        "ABL_DISARM_TRAP",
+        "ABL_CHARGE_SET",
+        "ABL_MECHANISM",
+        "ABL_ESCAPE_PLAN",
+    ]),
+    ("MATHEMATICS", [
+        "ABL_STAT_PREVIEW",
+        "ABL_CRIT_TIMING",
+        "ABL_SEMAPHORE",
+        "ABL_BOURSE_READ",
+        "ABL_ODDS",
+    ]),
+    ("LANGUAGES", [
+        "ABL_ITALIAN",
+        "ABL_ENGLISH",
+        "ABL_GREEK",
+        "ABL_ARABIC",
+        "ABL_SPANISH",
+    ]),
+    ("HISTORY_POLITICS", [
+        "ABL_WEB_READ",
+        "ABL_PROCEDURE",
+        "ABL_PRECEDENT",
+        "ABL_TRUST_CEILING",
+        "ABL_CHAMBER",
+    ]),
+    ("ECONOMICS", [
+        "ABL_CREDIT",
+        "ABL_LEDGER",
+        "ABL_EXPENDITURE",
+        "ABL_INQUIRY",
+        "ABL_RUIN",
+    ]),
+]

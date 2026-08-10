@@ -100,8 +100,20 @@ fn main() -> ExitCode {
             let errors = mc_data::bake::bake(&input);
             match errors {
                 Ok(()) => {
-                    println!("content: ok");
-                    ExitCode::SUCCESS
+                    // The schema validators cover the directory tree, while
+                    // Pack::from_content covers root-level locked tables such
+                    // as party.ron, curriculum.ron, and poisons.ron. Run both
+                    // before reporting the authoritative content sentinel.
+                    match mc_data::pack::Pack::from_content(&input) {
+                        Ok(_) => {
+                            println!("content: ok");
+                            ExitCode::SUCCESS
+                        }
+                        Err(error) => {
+                            eprintln!("content: pack load failed: {error}");
+                            ExitCode::FAILURE
+                        }
+                    }
                 }
                 Err(errs) => {
                     for err in &errs {

@@ -73,6 +73,65 @@ fn pack_includes_the_locked_poison_table() {
 }
 
 #[test]
+fn pack_includes_the_locked_party_and_curriculum_tables() {
+    let pack = build_pack();
+    assert_eq!(
+        pack.party,
+        [
+            "CHR_EDMOND",
+            "CHR_FARIA",
+            "CHR_JACOPO",
+            "CHR_ALI",
+            "CHR_BERTUCCIO",
+            "CHR_HAYDEE",
+            "CHR_MAXIMILIEN",
+            "CHR_ALBERT",
+            "CHR_VAMPA",
+            "CHR_PEPPINO",
+            "CHR_SELIM",
+            "CHR_VALENTINE",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect::<Vec<_>>()
+    );
+    assert_eq!(pack.curriculum.len(), 7);
+    assert_eq!(pack.curriculum[0].0, "FENCING");
+    assert_eq!(pack.curriculum[0].1[0], "ABL_LUNGE");
+    assert_eq!(pack.curriculum[6].1[4], "ABL_RUIN");
+}
+
+#[test]
+fn pack_rejects_mismatched_locked_party_table() {
+    let tmp = tmp_dir("bad-party");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+    fs::write(&tmp.join("party.ron"), "[\"CHR_EDMOND\"]\n").unwrap();
+
+    let error = Pack::from_content(&tmp).expect_err("mismatched party table must fail");
+    assert!(error.to_string().contains("party.ron"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn pack_rejects_mismatched_locked_curriculum_table() {
+    let tmp = tmp_dir("bad-curriculum");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+    fs::write(
+        &tmp.join("curriculum.ron"),
+        "[(\"FENCING\", [\"ABL_LUNGE\"]) ]\n",
+    )
+    .unwrap();
+
+    let error = Pack::from_content(&tmp).expect_err("mismatched curriculum table must fail");
+    assert!(error.to_string().contains("curriculum.ron"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
 fn authored_arrest_scene_executes_through_core_catalog() {
     let pack = build_pack();
     let catalog = pack

@@ -23,6 +23,94 @@ use mc_core::scene::{
 };
 use serde::{Deserialize, Serialize};
 
+const LOCKED_PARTY_ROSTER: [&str; 12] = [
+    "CHR_EDMOND",
+    "CHR_FARIA",
+    "CHR_JACOPO",
+    "CHR_ALI",
+    "CHR_BERTUCCIO",
+    "CHR_HAYDEE",
+    "CHR_MAXIMILIEN",
+    "CHR_ALBERT",
+    "CHR_VAMPA",
+    "CHR_PEPPINO",
+    "CHR_SELIM",
+    "CHR_VALENTINE",
+];
+
+const LOCKED_CURRICULUM_GRANTS: [(&str, [&str; 5]); 7] = [
+    (
+        "FENCING",
+        [
+            "ABL_LUNGE",
+            "ABL_PARRY",
+            "TECH_FARIAS_PARRY",
+            "ABL_RIPOSTE",
+            "TECH_COUNTER_SCHOOL",
+        ],
+    ),
+    (
+        "CHEMISTRY",
+        [
+            "ABL_ANTIDOTE",
+            "ABL_IDENTIFY_POISON",
+            "ABL_LIME_BLIND",
+            "TECH_LIME_AND_LANTERN",
+            "ABL_SYNTHESIZE",
+        ],
+    ),
+    (
+        "NATURAL_PHILOSOPHY",
+        [
+            "ABL_PICK_LOCK",
+            "ABL_DISARM_TRAP",
+            "ABL_CHARGE_SET",
+            "ABL_MECHANISM",
+            "ABL_ESCAPE_PLAN",
+        ],
+    ),
+    (
+        "MATHEMATICS",
+        [
+            "ABL_STAT_PREVIEW",
+            "ABL_CRIT_TIMING",
+            "ABL_SEMAPHORE",
+            "ABL_BOURSE_READ",
+            "ABL_ODDS",
+        ],
+    ),
+    (
+        "LANGUAGES",
+        [
+            "ABL_ITALIAN",
+            "ABL_ENGLISH",
+            "ABL_GREEK",
+            "ABL_ARABIC",
+            "ABL_SPANISH",
+        ],
+    ),
+    (
+        "HISTORY_POLITICS",
+        [
+            "ABL_WEB_READ",
+            "ABL_PROCEDURE",
+            "ABL_PRECEDENT",
+            "ABL_TRUST_CEILING",
+            "ABL_CHAMBER",
+        ],
+    ),
+    (
+        "ECONOMICS",
+        [
+            "ABL_CREDIT",
+            "ABL_LEDGER",
+            "ABL_EXPENDITURE",
+            "ABL_INQUIRY",
+            "ABL_RUIN",
+        ],
+    ),
+];
+
 /// A content-addressed pack containing all authored game data.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Pack {
@@ -34,6 +122,12 @@ pub struct Pack {
     pub items: Vec<Item>,
     /// The five SPEC-009 poison compounds, in PoisonId order.
     pub poisons: Vec<PoisonDef>,
+    /// The exact SPEC-009 party roster, when authored by the content pack.
+    #[serde(default)]
+    pub party: Vec<String>,
+    /// The exact SPEC-009 discipline/rank grant table, when authored by the content pack.
+    #[serde(default)]
+    pub curriculum: Vec<(String, Vec<String>)>,
     pub flags: Vec<String>,
     /// Localised string key-value pairs.
     pub strings: Vec<(String, String)>,
@@ -50,6 +144,8 @@ impl Pack {
         let encounter_dir = root.join("encounters");
         let flags_file = root.join("flags.ron");
         let poisons_file = root.join("poisons.ron");
+        let party_file = root.join("party.ron");
+        let curriculum_file = root.join("curriculum.ron");
         let strings_dir = root.join("strings").join("en");
 
         let enemies = load_ron_dir::<Enemy>(&bestiary_dir)?;
@@ -71,6 +167,8 @@ impl Pack {
         } else {
             Vec::new()
         };
+        let party = load_locked_party(&party_file)?;
+        let curriculum = load_locked_curriculum(&curriculum_file)?;
         let encounters = if encounter_dir.exists() {
             load_ron_dir::<Encounter>(&encounter_dir)?
         } else {
@@ -100,6 +198,8 @@ impl Pack {
             spawn_tables,
             items,
             poisons,
+            party,
+            curriculum,
             flags,
             strings,
         })
@@ -241,6 +341,51 @@ impl Pack {
         AuthoredItemCatalog::from_definitions(definitions)
             .map_err(|error| ContentError::new(format!("item catalog: {error}")))
     }
+}
+
+fn load_locked_party(path: &Path) -> Result<Vec<String>, ContentError> {
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    let data = fs::read_to_string(path)
+        .map_err(|e| ContentError::new(format!("cannot read {path:?}: {e}")))?;
+    let parsed: Vec<String> = ron::from_str(&data)
+        .map_err(|e| ContentError::new(format!("cannot parse {path:?}: {e}")))?;
+    let expected: Vec<String> = LOCKED_PARTY_ROSTER
+        .iter()
+        .map(|id| (*id).to_string())
+        .collect();
+    if parsed != expected {
+        return Err(ContentError::new(
+            "party.ron does not match the locked SPEC-009 party roster",
+        ));
+    }
+    Ok(parsed)
+}
+
+fn load_locked_curriculum(path: &Path) -> Result<Vec<(String, Vec<String>)>, ContentError> {
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    let data = fs::read_to_string(path)
+        .map_err(|e| ContentError::new(format!("cannot read {path:?}: {e}")))?;
+    let parsed: Vec<(String, Vec<String>)> = ron::from_str(&data)
+        .map_err(|e| ContentError::new(format!("cannot parse {path:?}: {e}")))?;
+    let expected: Vec<(String, Vec<String>)> = LOCKED_CURRICULUM_GRANTS
+        .iter()
+        .map(|(discipline, grants)| {
+            (
+                (*discipline).to_string(),
+                grants.iter().map(|grant| (*grant).to_string()).collect(),
+            )
+        })
+        .collect();
+    if parsed != expected {
+        return Err(ContentError::new(
+            "curriculum.ron does not match the locked SPEC-009 curriculum grants",
+        ));
+    }
+    Ok(parsed)
 }
 
 fn localize(strings: &[(String, String)], key: &str) -> String {
