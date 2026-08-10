@@ -29,7 +29,7 @@ pub fn resolve_spawn(
     if pool.is_empty() {
         return None;
     }
-    let idx = rng.next_range(0, pool.len() as u32 - 1);
+    let idx = rng.next_range(0, pool.len() as u32 - 1).ok()?;
     Some(pool[idx as usize])
 }
 
@@ -50,7 +50,13 @@ pub fn resolve_spawns(
     }
     let mut result = Vec::with_capacity(count.min(pool.len()));
     while result.len() < count && !pool.is_empty() {
-        let idx = rng.next_range(0, pool.len() as u32 - 1) as usize;
+        let Some(idx) = rng
+            .next_range(0, pool.len() as u32 - 1)
+            .ok()
+            .map(|index| index as usize)
+        else {
+            break;
+        };
         result.push(pool[idx]);
         pool.swap_remove(idx);
     }

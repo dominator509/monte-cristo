@@ -592,7 +592,7 @@ fn prove_spawn_gating(rolls: u32, all_regions: bool) -> bool {
 
     for _region in &test_regions {
         for _ in 0..rolls {
-            let roll = rng.next_range(0, 100);
+            let roll = rng.next_range(0, 100).unwrap_or(0);
             if roll > 100 {
                 eprintln!("spawn-gating: FAIL - roll {}", roll);
                 return false;

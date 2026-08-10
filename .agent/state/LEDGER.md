@@ -237,3 +237,4 @@
 2026-08-10T10:28:42Z | codex-root | - | AUDIT_FINDING | SPEC-002 domains missing: maps abilities techs party.ron curriculum.ron poisons.ron; report bestiary now warns
 2026-08-10T10:28:42Z | codex-root | - | AUDIT_FINDING | SPEC-003 map projection and authored field movement remain absent; World step still dispatches declared field encounter systems as no-ops
 2026-08-10T10:28:42Z | codex-root | - | AUDIT_NATIVE_RUN | run 31378976606 success on 2b488c1; linux and macOS archives verified and golden replay passed
+2026-08-10T10:37:58Z | codex-root | - | AUDIT_FIX | M46 RNG range and weighted-pick panic paths now return typed errors or None; 201 core unit/integration tests pass

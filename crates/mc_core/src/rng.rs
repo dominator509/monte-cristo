@@ -5,6 +5,13 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Errors returned when a caller supplies an invalid RNG range.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, thiserror::Error)]
+pub enum RngError {
+    #[error("random range lower bound {lo} exceeds upper bound {hi}")]
+    InvalidRange { lo: u32, hi: u32 },
+}
+
 /// A PCG64 random number generator with 128-bit state.
 ///
 /// Based on the PCG family: `state = state * 6364136223846793005 + inc`
@@ -40,44 +47,51 @@ impl Rng {
     }
 
     /// Generate a `u32` in `[lo, hi]` (inclusive) by rejection sampling.
-    /// Panics if `lo > hi`.
-    pub fn next_range(&mut self, lo: u32, hi: u32) -> u32 {
-        assert!(lo <= hi, "Rng::next_range: lo > hi");
+    pub fn next_range(&mut self, lo: u32, hi: u32) -> Result<u32, RngError> {
+        if lo > hi {
+            return Err(RngError::InvalidRange { lo, hi });
+        }
         let range = hi.wrapping_sub(lo).wrapping_add(1);
         if range == 0 {
-            return self.next_u32(); // full range
+            return Ok(self.next_u32()); // full range
         }
         // Rejection sampling to avoid modulo bias
         let threshold = range.wrapping_neg() % range;
         loop {
             let val = self.next_u32();
             if val >= threshold {
-                return lo + (val % range);
+                return Ok(lo + (val % range));
             }
         }
     }
 
-    /// Pick a weighted item from a map. Panics on an empty map.
+    /// Pick a weighted item from a map.
+    ///
+    /// Returns `None` for an empty map. Zero-weight maps are sampled uniformly.
     pub fn weighted_pick<I: Copy + Ord>(
         &mut self,
         weights: &std::collections::BTreeMap<I, u32>,
-    ) -> I {
-        assert!(!weights.is_empty(), "Rng::weighted_pick: empty map");
+    ) -> Option<I> {
+        if weights.is_empty() {
+            return None;
+        }
         let total: u32 = weights.values().copied().sum();
         if total == 0 {
             // All weights are zero; pick uniformly.
-            let idx = self.next_range(0, weights.len() as u32 - 1);
-            return *weights.keys().nth(idx as usize).unwrap();
+            let idx = self
+                .next_range(0, weights.len() as u32 - 1)
+                .ok()?;
+            return weights.keys().nth(idx as usize).copied();
         }
-        let mut roll = self.next_range(1, total);
+        let mut roll = self.next_range(1, total).ok()?;
         for (id, w) in weights.iter() {
             if *w >= roll {
-                return *id;
+                return Some(*id);
             }
             roll -= *w;
         }
         // Fallback (shouldn't happen due to total check)
-        *weights.last_key_value().unwrap().0
+        weights.last_key_value().map(|(id, _)| *id)
     }
 }
 
@@ -107,7 +121,7 @@ mod tests {
     fn next_range_bounds() {
         let mut rng = Rng::new(999);
         for _ in 0..10_000 {
-            let v = rng.next_range(3, 7);
+            let v = rng.next_range(3, 7).expect("valid range");
             assert!((3..=7).contains(&v), "value {v} out of range [3,7]");
         }
     }
@@ -116,7 +130,7 @@ mod tests {
     fn next_range_single_value() {
         let mut rng = Rng::new(0);
         for _ in 0..100 {
-            assert_eq!(rng.next_range(5, 5), 5);
+            assert_eq!(rng.next_range(5, 5).expect("valid range"), 5);
         }
     }
 
@@ -128,7 +142,7 @@ mod tests {
         weights.insert("b", 0u32);
         for _ in 0..100 {
             // Should always pick "a" since "b" has weight 0
-            assert_eq!(rng.weighted_pick(&weights), "a");
+            assert_eq!(rng.weighted_pick(&weights), Some("a"));
         }
     }
 
@@ -142,8 +156,8 @@ mod tests {
         let mut y_count = 0u32;
         for _ in 0..10_000 {
             match rng.weighted_pick(&weights) {
-                "x" => x_count += 1,
-                "y" => y_count += 1,
+                Some("x") => x_count += 1,
+                Some("y") => y_count += 1,
                 _ => unreachable!(),
             }
         }
@@ -153,10 +167,18 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "empty map")]
     fn weighted_pick_empty() {
         let mut rng = Rng::new(0);
         let empty: BTreeMap<&str, u32> = BTreeMap::new();
-        rng.weighted_pick(&empty);
+        assert_eq!(rng.weighted_pick(&empty), None);
+    }
+
+    #[test]
+    fn next_range_rejects_inverted_bounds_without_panicking() {
+        let mut rng = Rng::new(0);
+        assert_eq!(
+            rng.next_range(9, 3),
+            Err(RngError::InvalidRange { lo: 9, hi: 3 })
+        );
     }
 }

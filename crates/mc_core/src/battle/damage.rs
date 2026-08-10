@@ -89,7 +89,9 @@ pub fn roll_critical(level: u16, rng: &mut Rng) -> (bool, Fx) {
     };
     // Convert to u32 range for RNG roll
     let threshold = (crit_chance * Fx::from_int(100)).to_int_floor().max(0) as u32;
-    let roll = rng.next_range(0, 99);
+    // These constant bounds are valid by construction; the fallback keeps
+    // this public API's typed error contract from becoming a combat panic.
+    let roll = rng.next_range(0, 99).unwrap_or(0);
     if roll < threshold {
         (true, Fx::from_int(2))
     } else {
