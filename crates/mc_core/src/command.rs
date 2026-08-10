@@ -4,9 +4,11 @@
 //! are append-only. `apply_commands` never panics; invalid commands produce a
 //! `CoreEvent::Rejected` instead.
 
+use crate::battle::status::StatusKind;
 use crate::battle::{self, Affiliation, BattleState};
-use crate::ids::{ItemId, RegionId};
+use crate::ids::{ItemId, RegionId, TechId};
 use crate::item::{AuthoredItemCatalog, ItemKind};
+use crate::rng::Rng;
 use crate::scene::AuthoredSceneCatalog;
 use crate::world::{Party, World};
 use serde::{Deserialize, Serialize};
@@ -588,8 +590,8 @@ fn resolve_battle_action(
         Action::Flee => {
             battle.state = BattleState::Fleeing;
         }
-        Action::Tech { .. } => {
-            return Err("This battle action requires an authored ability or item resolver".into())
+        Action::Tech { tech_id, target } => {
+            resolve_tech_action(battle, actor.0, *tech_id, target.0, &mut rng)?;
         }
         Action::Item { .. } => {
             return Err("Item action was not routed through the authored item resolver".into())
@@ -603,6 +605,67 @@ fn resolve_battle_action(
     battle.combatants[actor.0].atb.reset();
     battle.check_end_conditions();
     world.rng = rng;
+    Ok(())
+}
+
+/// Resolve the deterministic single-target techniques currently expressible
+/// by the locked core vocabulary. These effects are deliberately implemented
+/// at the command boundary so every accepted technique mutates authoritative
+/// battle state and advances the actor's ATB exactly once (INV-04).
+///
+/// The remaining technique identifiers are rejected explicitly until their
+/// authored effect is specified; accepting them as ordinary attacks would
+/// fabricate combat semantics and violate the content-first design.
+fn resolve_tech_action(
+    battle: &mut battle::Battle,
+    actor: usize,
+    tech_id: TechId,
+    target: usize,
+    rng: &mut Rng,
+) -> Result<(), String> {
+    let attacker = battle
+        .combatants
+        .get(actor)
+        .ok_or_else(|| "Actor is not present in the active battle".to_string())?;
+    if attacker.affiliation != Affiliation::Party || !attacker.is_alive() {
+        return Err("Actor is not a living party combatant".into());
+    }
+
+    match tech_id {
+        TechId::TEC_ATTACK => {
+            let target_ref = battle
+                .combatants
+                .get(target)
+                .ok_or_else(|| "Target is not present in the active battle".to_string())?;
+            if target_ref.affiliation != Affiliation::Enemy || !target_ref.is_alive() {
+                return Err("Attack target must be a living enemy".into());
+            }
+            let attacker = battle.combatants[actor].clone();
+            let defender = battle.combatants[target].clone();
+            let damage = battle::damage::compute_damage(attacker.attack, &attacker, &defender, rng)
+                .mitigated;
+            battle::damage::apply_damage(&mut battle.combatants[target], damage);
+        }
+        TechId::TEC_ANTIDOTE => {
+            let target_ref = battle
+                .combatants
+                .get_mut(target)
+                .ok_or_else(|| "Target is not present in the active battle".to_string())?;
+            if target_ref.affiliation != Affiliation::Party || !target_ref.is_alive() {
+                return Err("Antidote target must be a living party combatant".into());
+            }
+            if !target_ref.statuses.remove(StatusKind::Poisoned) {
+                return Err("Antidote target has no active poison".into());
+            }
+        }
+        _ => {
+            return Err(format!(
+                "Technique {:?} has no authored battle resolver",
+                tech_id
+            ));
+        }
+    }
+
     Ok(())
 }
 

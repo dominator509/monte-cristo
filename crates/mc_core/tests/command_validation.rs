@@ -5,7 +5,7 @@
 //! combination the current domain knows about.
 
 use mc_core::battle::atb::AtbGauge;
-use mc_core::battle::status::StatusList;
+use mc_core::battle::status::{StatusEffect, StatusKind, StatusList};
 use mc_core::battle::{Affiliation, Battle, Combatant, CombatantKind};
 use mc_core::command::{
     apply_commands, apply_commands_with_catalog, Action, CampaignAction, CampaignId, ChoiceIdx,
@@ -13,7 +13,7 @@ use mc_core::command::{
 };
 use mc_core::flags::FlagExpr;
 use mc_core::fx::Fx;
-use mc_core::ids::{CharId, EnemyId, FlagId, RegionId};
+use mc_core::ids::{CharId, EnemyId, FlagId, PoisonId, RegionId, TechId};
 use mc_core::item::{AuthoredItemCatalog, AuthoredItemDefinition, ItemKind};
 use mc_core::scene::{
     AuthoredChoiceDefinition, AuthoredNodeDefinition, AuthoredSceneCatalog,
@@ -177,6 +177,94 @@ fn attack_command_resolves_against_the_authoritative_battle() {
     let battle = world.battle.as_ref().unwrap();
     assert!(battle.combatants[1].hp < Fx::from_int(30));
     assert!(!battle.combatants[0].atb.is_full());
+}
+
+#[test]
+fn authored_antidote_tech_removes_poison_from_party_target() {
+    let mut world = World::new(42);
+    let mut party = test_combatant(
+        CombatantKind::PartyMember(CharId::CHR_EDMOND),
+        Affiliation::Party,
+        100,
+    );
+    party.atb.force_full();
+    party.statuses.add(StatusEffect::Poisoned {
+        poison_id: PoisonId::PSN_BRUCINE,
+        duration: 10,
+    });
+    let enemy = test_combatant(
+        CombatantKind::Enemy(EnemyId::ENM_BANDIT),
+        Affiliation::Enemy,
+        30,
+    );
+    world.battle = Some(Battle::new(vec![party], vec![enemy]));
+
+    let command = Command::SelectAction(
+        mc_core::command::ActorId(0),
+        Action::Tech {
+            tech_id: TechId::TEC_ANTIDOTE,
+            target: TargetId(0),
+        },
+    );
+    assert_valid(
+        &apply_commands(&mut world, std::slice::from_ref(&command))[0],
+        &command,
+    );
+
+    let battle = world.battle.as_ref().unwrap();
+    assert!(!battle.combatants[0].statuses.has(StatusKind::Poisoned));
+    assert!(!battle.combatants[0].atb.is_full());
+}
+
+#[test]
+fn unsupported_tech_is_rejected_without_mutating_battle() {
+    let mut world = World::new(42);
+    let mut party = test_combatant(
+        CombatantKind::PartyMember(CharId::CHR_EDMOND),
+        Affiliation::Party,
+        100,
+    );
+    party.atb.force_full();
+    let enemy = test_combatant(
+        CombatantKind::Enemy(EnemyId::ENM_BANDIT),
+        Affiliation::Enemy,
+        30,
+    );
+    world.battle = Some(Battle::new(vec![party], vec![enemy]));
+    let before = world.battle.clone();
+    let events = apply_commands(
+        &mut world,
+        &[Command::SelectAction(
+            mc_core::command::ActorId(0),
+            Action::Tech {
+                tech_id: TechId::TEC_ANALYZE,
+                target: TargetId(1),
+            },
+        )],
+    );
+    match &events[0] {
+        CoreEvent::Rejected { reason, .. } => {
+            assert!(reason.contains("no authored battle resolver"));
+        }
+        other => panic!("expected explicit technique rejection, got {other:?}"),
+    }
+    assert_eq!(world.battle, before);
+}
+
+fn test_combatant(kind: CombatantKind, affiliation: Affiliation, hp: i32) -> Combatant {
+    Combatant {
+        name: format!("{kind:?}"),
+        kind,
+        affiliation,
+        atb: AtbGauge::new(Fx::from_int(12)),
+        hp: Fx::from_int(hp),
+        max_hp: Fx::from_int(hp),
+        attack: Fx::from_int(10),
+        defense: Fx::from_int(8),
+        speed: Fx::from_int(12),
+        level: 1,
+        statuses: StatusList::new(),
+    }
 }
 
 #[test]
