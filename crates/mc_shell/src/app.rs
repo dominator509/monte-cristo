@@ -15,7 +15,9 @@ use crate::ui::{
     menu::{draw_field_hud, draw_menu_screen},
 };
 use macroquad::prelude::*;
-use mc_core::command::{apply_commands_with_catalogs, ChoiceIdx, Command, Dir, StateView};
+use mc_core::command::{
+    apply_commands_with_catalogs, ChoiceIdx, Command, CoreEvent, Dir, SaveSlot, StateView,
+};
 use mc_core::item::AuthoredItemCatalog;
 use mc_core::scene::AuthoredSceneCatalog;
 use mc_core::world::World;
@@ -64,6 +66,8 @@ pub struct App {
     pub scene_catalog: AuthoredSceneCatalog,
     /// The loaded authored item catalog used by deterministic battle actions.
     pub item_catalog: AuthoredItemCatalog,
+    /// Confined save-slot persistence for the loaded content pack.
+    pub slot_store: Option<crate::persistence::SlotStore>,
     /// Currently highlighted authored scene choice.
     pub scene_choice_index: usize,
 }
@@ -105,6 +109,25 @@ impl App {
         scene_catalog: AuthoredSceneCatalog,
         item_catalog: AuthoredItemCatalog,
     ) -> Result<Self, String> {
+        Self::new_with_catalog_and_items_and_store(
+            seed,
+            config,
+            headless,
+            scene_catalog,
+            item_catalog,
+            None,
+        )
+    }
+
+    /// Create an application with authored catalogs and a confined save store.
+    pub fn new_with_catalog_and_items_and_store(
+        seed: u128,
+        config: ValidatedConfig,
+        headless: bool,
+        scene_catalog: AuthoredSceneCatalog,
+        item_catalog: AuthoredItemCatalog,
+        slot_store: Option<crate::persistence::SlotStore>,
+    ) -> Result<Self, String> {
         let world = World::new(seed);
         let audio_enabled = !headless;
         let advisory_pending = !config.advisory_acknowledged && !headless;
@@ -122,6 +145,7 @@ impl App {
             advisory_pending,
             scene_catalog,
             item_catalog,
+            slot_store,
             scene_choice_index: 0,
         };
         if app.scene_catalog.scene("SCN_ARREST").is_some() {
@@ -141,12 +165,7 @@ impl App {
             self.accum = MAX_ACCUM;
         }
         while self.accum >= FIXED_DT {
-            let _events = apply_commands_with_catalogs(
-                &mut self.world,
-                &commands,
-                Some(&self.scene_catalog),
-                Some(&self.item_catalog),
-            );
+            let _events = self.apply_commands(&commands);
             self.world.step();
             crate::obs::CURRENT_TICK.store(self.world.tick, std::sync::atomic::Ordering::Relaxed);
             crate::obs::record_tick();
@@ -165,12 +184,7 @@ impl App {
             info!("accumulation cap hit, dropping frames");
         }
         while self.accum >= FIXED_DT {
-            let _events = apply_commands_with_catalogs(
-                &mut self.world,
-                &commands,
-                Some(&self.scene_catalog),
-                Some(&self.item_catalog),
-            );
+            let _events = self.apply_commands(&commands);
             for _ in &commands {
                 crate::obs::record_command();
             }
@@ -181,6 +195,60 @@ impl App {
         }
         self.alpha = (self.accum / FIXED_DT) as f32;
         commands
+    }
+
+    /// Apply one command batch and perform shell-owned save/load side effects.
+    ///
+    /// Core remains the authority for command validation. Persistence is
+    /// handled only after the core event is produced, and a failed slot
+    /// operation is surfaced as a rejected event without mutating the world.
+    pub fn apply_commands(&mut self, commands: &[Command]) -> Vec<CoreEvent> {
+        let mut events = apply_commands_with_catalogs(
+            &mut self.world,
+            commands,
+            Some(&self.scene_catalog),
+            Some(&self.item_catalog),
+        );
+        for (index, command) in commands.iter().enumerate() {
+            let result = match command {
+                Command::Save(slot) => self.save_slot(*slot),
+                Command::Load(slot) => self.load_slot(*slot),
+                _ => continue,
+            };
+            if let Err(error) = result {
+                events[index] = CoreEvent::Rejected {
+                    command: command.clone(),
+                    reason: error.to_string(),
+                };
+                tracing::error!(command = ?command, error = %error, "save-slot command failed");
+            }
+        }
+        events
+    }
+
+    fn save_slot(&self, slot: SaveSlot) -> Result<(), crate::persistence::SlotError> {
+        let store = self.slot_store.as_ref().ok_or_else(|| {
+            crate::persistence::SlotError::Io(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "save store is not configured",
+            ))
+        })?;
+        store.save(slot, &self.world)
+    }
+
+    fn load_slot(&mut self, slot: SaveSlot) -> Result<(), crate::persistence::SlotError> {
+        let store = self.slot_store.as_ref().ok_or_else(|| {
+            crate::persistence::SlotError::Io(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "save store is not configured",
+            ))
+        })?;
+        let save = store.load(slot)?;
+        self.world = save.world;
+        self.tilemap = Tilemap::for_scene(self.world.act, self.world.region);
+        self.scene_choice_index = 0;
+        self.screen_state = ScreenState::Field;
+        Ok(())
     }
 
     /// Run one windowed frame. Called from macroquad's render loop.

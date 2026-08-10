@@ -12,5 +12,6 @@ pub mod input;
 pub mod obs;
 #[cfg(feature = "debug-overlay")]
 pub mod overlay;
+pub mod persistence;
 pub mod render;
 pub mod ui;

@@ -237,6 +237,20 @@ pub fn read(root: Root, relative: &Path) -> Result<Vec<u8>, FsError> {
     fs::read(&path).map_err(|e| FsError::ResolveError(format!("cannot read {path:?}: {e}")))
 }
 
+/// Confine and read a file below an explicit root path.
+///
+/// This is the explicit-root counterpart to [`read`], used by components that
+/// already hold a validated data directory rather than resolving an
+/// environment variable for every operation.
+pub fn read_confined_to_path(
+    root_path: &Path,
+    root: Root,
+    relative: &Path,
+) -> Result<Vec<u8>, FsError> {
+    let path = confine_to_path(root_path, root, relative)?;
+    fs::read(&path).map_err(|e| FsError::ResolveError(format!("cannot read {path:?}: {e}")))
+}
+
 /// Confine and read a file to a String.
 pub fn read_to_string(root: Root, relative: &Path) -> Result<String, FsError> {
     let path = confine(root, relative)?;

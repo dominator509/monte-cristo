@@ -13,6 +13,7 @@ use mc_core::scene::AuthoredSceneCatalog;
 use mc_shell::app::App;
 use mc_shell::config::ValidatedConfig;
 use mc_shell::fsroot::{self, Root};
+use mc_shell::persistence::SlotStore;
 
 /// Get the data directory for settings and saves.
 fn data_dir() -> PathBuf {
@@ -34,10 +35,18 @@ fn run_headless(
     config: ValidatedConfig,
     scene_catalog: AuthoredSceneCatalog,
     item_catalog: AuthoredItemCatalog,
+    slot_store: SlotStore,
 ) {
     tracing::info!("starting headless mode");
-    let mut app = App::new_with_catalog_and_items(seed, config, true, scene_catalog, item_catalog)
-        .expect("verified authored scene catalog should start");
+    let mut app = App::new_with_catalog_and_items_and_store(
+        seed,
+        config,
+        true,
+        scene_catalog,
+        item_catalog,
+        Some(slot_store),
+    )
+    .expect("verified authored scene catalog should start");
     for _i in 0..60 {
         app.headless_update();
     }
@@ -69,7 +78,7 @@ fn init_observability() {
 /// Release artifacts contain a verified `content.pack`; source checkouts may
 /// still run directly from the RON tree before a bake has occurred. Both paths
 /// feed the same core catalog and therefore the same deterministic behavior.
-fn load_runtime_catalog() -> Result<(AuthoredSceneCatalog, AuthoredItemCatalog), String> {
+fn load_runtime_catalog() -> Result<(AuthoredSceneCatalog, AuthoredItemCatalog, [u8; 32]), String> {
     let mut candidates = Vec::new();
     let manifest_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     candidates.push(manifest_root.join("../.."));
@@ -104,13 +113,16 @@ fn load_runtime_catalog() -> Result<(AuthoredSceneCatalog, AuthoredItemCatalog),
             mc_data::pack::Pack::from_content(&confined)
                 .map_err(|error| format!("content source failed validation: {error}"))?
         };
+        let content_digest = pack
+            .digest()
+            .map_err(|error| format!("content digest failed: {error}"))?;
         let scene_catalog = pack
             .scene_catalog()
             .map_err(|error| format!("authored scene catalog failed: {error}"))?;
         let item_catalog = pack
             .item_catalog()
             .map_err(|error| format!("authored item catalog failed: {error}"))?;
-        return Ok((scene_catalog, item_catalog));
+        return Ok((scene_catalog, item_catalog, *content_digest.as_bytes()));
     }
 
     Err(
@@ -302,7 +314,7 @@ fn main() -> ExitCode {
         );
     }
 
-    let (scene_catalog, item_catalog) = match load_runtime_catalog() {
+    let (scene_catalog, item_catalog, content_digest) = match load_runtime_catalog() {
         Ok(catalog) => catalog,
         Err(error) => {
             eprintln!("Game startup failed: {error}");
@@ -313,16 +325,17 @@ fn main() -> ExitCode {
     let seed: u128 = 42;
     let dd = data_dir();
     init_observability();
-    let config = ValidatedConfig::load_or_default(dd);
+    let config = ValidatedConfig::load_or_default(dd.clone());
+    let slot_store = SlotStore::new(dd, content_digest);
 
     // Headless mode: no window, no audio, pure simulation
     if std::env::var("MC_HEADLESS").is_ok() {
-        run_headless(seed, config, scene_catalog, item_catalog);
+        run_headless(seed, config, scene_catalog, item_catalog, slot_store);
         return ExitCode::SUCCESS;
     }
 
     // Windowed mode: use macroquad
-    run_windowed(seed, config, scene_catalog, item_catalog);
+    run_windowed(seed, config, scene_catalog, item_catalog, slot_store);
     ExitCode::SUCCESS
 }
 
@@ -332,12 +345,19 @@ fn run_windowed(
     config: ValidatedConfig,
     scene_catalog: AuthoredSceneCatalog,
     item_catalog: AuthoredItemCatalog,
+    slot_store: SlotStore,
 ) {
     macroquad::Window::new("Monte Cristo", async move {
         tracing::info!("starting windowed mode: 256x224 internal resolution");
-        let mut app =
-            App::new_with_catalog_and_items(seed, config, false, scene_catalog, item_catalog)
-                .expect("verified authored scene catalog should start");
+        let mut app = App::new_with_catalog_and_items_and_store(
+            seed,
+            config,
+            false,
+            scene_catalog,
+            item_catalog,
+            Some(slot_store),
+        )
+        .expect("verified authored scene catalog should start");
         let render_target = mc_shell::render::target::ShellRenderTarget::new();
         app.render_target = Some(render_target);
 
