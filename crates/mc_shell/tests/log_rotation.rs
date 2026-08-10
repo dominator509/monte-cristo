@@ -55,7 +55,8 @@ fn rotation_retains_only_max_generations() {
         base.clone(),
         10,      // rotate after 10 bytes
         MAX_GEN, // keep 4 generations
-    );
+    )
+    .expect("test log path");
 
     // Write data that triggers enough rotations to exceed the retention limit.
     // Each write is "XXXXXXXXXX\n" (11 bytes) which exceeds 10 bytes.
@@ -115,7 +116,8 @@ fn log_rotation_seven_file_retention() {
         current.clone(),
         10, // rotate on 10 bytes
         7,  // keep 7 generations
-    );
+    )
+    .expect("test log path");
 
     // Write 15 lines to trigger at least 8 more rotations
     // (the current file already has data, so first write may trigger rotation).
@@ -148,7 +150,8 @@ fn rotation_triggers_on_size_exceeded() {
         path.clone(),
         10, // rotate at 10 bytes
         3,  // keep 3 generations
-    );
+    )
+    .expect("test log path");
 
     // Write a line that exceeds the max_bytes threshold.
     let data = b"0123456789X\n";
@@ -170,5 +173,19 @@ fn rotation_triggers_on_size_exceeded() {
     assert!(path.exists(), "current file should exist");
 
     // Cleanup
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn log_writer_open_failure_returns_error() {
+    let dir = temp_dir("log_open_error");
+    let error = match mc_shell::obs::RotatingFileWriter::new(dir.clone(), 10) {
+        Ok(_) => panic!("a directory cannot be opened as a log file"),
+        Err(error) => error,
+    };
+    assert!(matches!(
+        error.kind(),
+        std::io::ErrorKind::IsADirectory | std::io::ErrorKind::PermissionDenied
+    ));
     let _ = std::fs::remove_dir_all(&dir);
 }

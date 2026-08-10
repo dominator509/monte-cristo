@@ -43,7 +43,8 @@ fn log_writer_produces_jsonl() {
 
     let path = dir.join("test.jsonl");
     let max_bytes: u64 = 10 * 1024 * 1024;
-    let mut writer = mc_shell::obs::RotatingFileWriter::new(path.clone(), max_bytes);
+    let mut writer =
+        mc_shell::obs::RotatingFileWriter::new(path.clone(), max_bytes).expect("test log path");
 
     let entry = serde_json::json!({
         "ts": "2026-07-29T00:00:00Z",

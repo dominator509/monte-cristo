@@ -149,43 +149,46 @@ impl RotatingFileWriter {
     ///
     /// `max_generations` controls how many rotated files are retained.
     /// The current file + `max_generations - 1` rotated files are kept.
-    pub fn new(base: PathBuf, max_bytes: u64) -> Self {
+    pub fn new(base: PathBuf, max_bytes: u64) -> std::io::Result<Self> {
         Self::with_retention(base, max_bytes, 7)
     }
 
     /// Create a new rotating file writer with explicit retention count.
-    pub fn with_retention(base: PathBuf, max_bytes: u64, max_generations: u32) -> Self {
+    pub fn with_retention(
+        base: PathBuf,
+        max_bytes: u64,
+        max_generations: u32,
+    ) -> std::io::Result<Self> {
         let current = std::fs::OpenOptions::new()
             .create(true)
             .append(true)
-            .open(&base)
-            .expect("open log file");
+            .open(&base)?;
         let current_size = std::fs::metadata(&base).map(|m| m.len()).unwrap_or(0);
-        RotatingFileWriter {
+        Ok(RotatingFileWriter {
             base,
             max_bytes,
             max_generations,
             current,
             current_size,
             generation: 0,
-        }
+        })
     }
 
-    fn rotate(&mut self) {
+    fn rotate(&mut self) -> std::io::Result<()> {
         self.generation += 1;
         let rotated = self
             .base
             .with_extension(format!("jsonl.{}", self.generation));
-        let _ = std::fs::rename(&self.base, &rotated);
+        std::fs::rename(&self.base, &rotated)?;
         self.current = std::fs::OpenOptions::new()
             .create(true)
             .append(true)
-            .open(&self.base)
-            .expect("reopen log file");
+            .open(&self.base)?;
         self.current_size = 0;
 
         // Enforce retention limit: delete files older than max_generations.
         self.cleanup_old_files();
+        Ok(())
     }
 
     /// Remove rotated files whose generation number is beyond the
@@ -211,7 +214,7 @@ impl std::io::Write for RotatingFileWriter {
         let written = self.current.write(buf)?;
         self.current_size += written as u64;
         if self.current_size >= self.max_bytes {
-            self.rotate();
+            self.rotate()?;
         }
         Ok(written)
     }
@@ -236,7 +239,7 @@ pub fn init_logging() -> Result<(), Box<dyn std::error::Error>> {
     let base_path = dir.join(format!("monte-cristo-{}.jsonl", date));
 
     let max_bytes: u64 = 10 * 1024 * 1024;
-    let writer = RotatingFileWriter::new(base_path, max_bytes);
+    let writer = RotatingFileWriter::new(base_path, max_bytes)?;
 
     let layer = tracing_subscriber::fmt::layer()
         .json()
@@ -521,7 +524,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("test.jsonl");
-        let mut writer = RotatingFileWriter::new(path.clone(), 100);
+        let mut writer = RotatingFileWriter::new(path.clone(), 100).expect("test log path");
         let _ = writer.write(b"hello world\n");
         assert!(path.exists());
         let _ = std::fs::remove_dir_all(&dir);
@@ -533,7 +536,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("rotate.jsonl");
-        let mut writer = RotatingFileWriter::new(path.clone(), 10);
+        let mut writer = RotatingFileWriter::new(path.clone(), 10).expect("test log path");
         let data = b"this is a long line that exceeds the max bytes\n";
         let _ = writer.write(data);
         assert!(
