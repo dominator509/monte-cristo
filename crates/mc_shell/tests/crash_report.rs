@@ -9,6 +9,7 @@ fn crash_report_has_all_fields() {
         build: "test-build".into(),
         timestamp: "2026-07-29T00-00-00Z".into(),
         tick: 12345,
+        state_hash: "00".repeat(32),
         panic_message: "test panic: something went wrong".into(),
         backtrace: "stack frame 1\nstack frame 2\n".into(),
     };
@@ -20,6 +21,11 @@ fn crash_report_has_all_fields() {
         json
     );
     assert!(json.contains("12345"), "json should contain tick: {}", json);
+    assert!(
+        json.contains("state_hash"),
+        "json should contain state_hash: {}",
+        json
+    );
     assert!(
         json.contains("panic_message"),
         "json should contain panic_message: {}",
@@ -57,6 +63,7 @@ fn crash_report_writes_to_disk() {
         build: "test-build".into(),
         timestamp: "2026-07-29T00-00-00Z".into(),
         tick: 42,
+        state_hash: "11".repeat(32),
         panic_message: "deliberate crash test".into(),
         backtrace: "backtrace here".into(),
     };

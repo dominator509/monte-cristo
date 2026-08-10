@@ -129,6 +129,7 @@ impl App {
         slot_store: Option<crate::persistence::SlotStore>,
     ) -> Result<Self, String> {
         let world = World::new(seed);
+        crate::obs::record_state_hash(*world.state_hash().as_bytes());
         let audio_enabled = !headless;
         let advisory_pending = !config.advisory_acknowledged && !headless;
         let tilemap = Tilemap::for_scene(world.act, world.region);
@@ -168,6 +169,7 @@ impl App {
             let _events = self.apply_commands(&commands);
             self.world.step();
             crate::obs::CURRENT_TICK.store(self.world.tick, std::sync::atomic::Ordering::Relaxed);
+            crate::obs::record_state_hash(*self.world.state_hash().as_bytes());
             crate::obs::record_tick();
             self.accum -= FIXED_DT;
         }
@@ -190,6 +192,7 @@ impl App {
             }
             self.world.step();
             crate::obs::CURRENT_TICK.store(self.world.tick, std::sync::atomic::Ordering::Relaxed);
+            crate::obs::record_state_hash(*self.world.state_hash().as_bytes());
             crate::obs::record_tick();
             self.accum -= FIXED_DT;
         }

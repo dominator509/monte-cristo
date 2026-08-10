@@ -30,6 +30,23 @@ static SESSION_ID: LazyLock<String> = LazyLock::new(|| {
 /// Tick counter, written by the main loop each frame.
 pub static CURRENT_TICK: AtomicU64 = AtomicU64::new(0);
 
+/// Most recently observed authoritative state hash for crash reproduction.
+static CURRENT_STATE_HASH: LazyLock<Mutex<String>> = LazyLock::new(|| Mutex::new(String::new()));
+
+/// Record the authoritative state hash alongside the current tick.
+pub fn record_state_hash(hash: [u8; 32]) {
+    if let Ok(mut current) = CURRENT_STATE_HASH.lock() {
+        *current = blake3::Hash::from(hash).to_hex().to_string();
+    }
+}
+
+fn current_state_hash() -> String {
+    CURRENT_STATE_HASH
+        .lock()
+        .map(|hash| hash.clone())
+        .unwrap_or_else(|_| "unavailable".into())
+}
+
 /// Build version from env var or fallback.
 fn build_version() -> String {
     std::env::var("MC_BUILD").unwrap_or_else(|_| "dev".into())
@@ -224,6 +241,82 @@ impl std::io::Write for RotatingFileWriter {
     }
 }
 
+/// Adapt tracing-subscriber JSON to the repository's stable observability
+/// field names and inject process context into every record.
+pub struct CanonicalJsonWriter {
+    inner: RotatingFileWriter,
+    pending: Vec<u8>,
+}
+
+impl CanonicalJsonWriter {
+    pub fn new(base: PathBuf, max_bytes: u64) -> std::io::Result<Self> {
+        Ok(Self {
+            inner: RotatingFileWriter::new(base, max_bytes)?,
+            pending: Vec::new(),
+        })
+    }
+
+    fn normalize_line(line: &[u8]) -> Vec<u8> {
+        let Ok(mut value) = serde_json::from_slice::<serde_json::Value>(line) else {
+            return line.to_vec();
+        };
+        let Some(object) = value.as_object_mut() else {
+            return line.to_vec();
+        };
+
+        if let Some(timestamp) = object.remove("timestamp") {
+            object.entry("ts").or_insert(timestamp);
+        }
+        if let Some(message) = object.remove("message") {
+            object.entry("msg").or_insert(message);
+        }
+        if !object.contains_key("msg") {
+            if let Some(fields) = object
+                .get_mut("fields")
+                .and_then(|fields| fields.as_object_mut())
+            {
+                if let Some(message) = fields.remove("message") {
+                    object.insert("msg".into(), message);
+                }
+            }
+        }
+        object
+            .entry("session")
+            .or_insert_with(|| serde_json::Value::String(SESSION_ID.clone()));
+        object
+            .entry("build")
+            .or_insert_with(|| serde_json::Value::String(build_version()));
+        object.entry("tick").or_insert_with(|| {
+            serde_json::Value::Number(CURRENT_TICK.load(Ordering::Relaxed).into())
+        });
+
+        let mut output = serde_json::to_vec(&value).unwrap_or_else(|_| line.to_vec());
+        output.push(b'\n');
+        output
+    }
+}
+
+impl std::io::Write for CanonicalJsonWriter {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.pending.extend_from_slice(buf);
+        while let Some(index) = self.pending.iter().position(|byte| *byte == b'\n') {
+            let line: Vec<u8> = self.pending.drain(..=index).collect();
+            let normalized = Self::normalize_line(&line);
+            std::io::Write::write_all(&mut self.inner, &normalized)?;
+        }
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        if !self.pending.is_empty() {
+            let pending = std::mem::take(&mut self.pending);
+            let normalized = Self::normalize_line(&pending);
+            std::io::Write::write_all(&mut self.inner, &normalized)?;
+        }
+        self.inner.flush()
+    }
+}
+
 // ── JSON logging init ─────────────────────────────────────────────────────────
 
 /// Initialise structured JSON logging to file.
@@ -239,7 +332,7 @@ pub fn init_logging() -> Result<(), Box<dyn std::error::Error>> {
     let base_path = dir.join(format!("monte-cristo-{}.jsonl", date));
 
     let max_bytes: u64 = 10 * 1024 * 1024;
-    let writer = RotatingFileWriter::new(base_path, max_bytes)?;
+    let writer = CanonicalJsonWriter::new(base_path, max_bytes)?;
 
     let layer = tracing_subscriber::fmt::layer()
         .json()
@@ -249,7 +342,7 @@ pub fn init_logging() -> Result<(), Box<dyn std::error::Error>> {
         .with_file(false)
         .with_line_number(false)
         .with_current_span(false)
-        .flatten_event(false)
+        .flatten_event(true)
         .with_span_list(false);
 
     let filter = tracing_subscriber::EnvFilter::new("info,mc_shell=debug,mc_core=warn");
@@ -373,6 +466,7 @@ pub struct CrashReport {
     pub build: String,
     pub timestamp: String,
     pub tick: u64,
+    pub state_hash: String,
     pub panic_message: String,
     pub backtrace: String,
 }
@@ -394,6 +488,7 @@ pub fn install_crash_hook() {
             build: build_version(),
             timestamp: fmt_date(now),
             tick,
+            state_hash: current_state_hash(),
             panic_message: panic_msg,
             backtrace: bt_str,
         };
@@ -583,6 +678,7 @@ mod tests {
             build: "test-build".into(),
             timestamp: "2020-01-15".into(),
             tick: 1234,
+            state_hash: "00".repeat(32),
             panic_message: "test panic".into(),
             backtrace: "stack trace".into(),
         };

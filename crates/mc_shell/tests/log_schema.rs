@@ -67,3 +67,38 @@ fn log_writer_produces_jsonl() {
 
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+#[test]
+fn production_writer_emits_canonical_context_fields() {
+    let dir = std::env::temp_dir().join("mc_test_log_schema_canonical");
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+
+    let path = dir.join("test.jsonl");
+    let mut writer = mc_shell::obs::CanonicalJsonWriter::new(path.clone(), 10 * 1024 * 1024)
+        .expect("test log path");
+    writeln!(
+        writer,
+        "{}",
+        serde_json::json!({
+            "timestamp": "2026-07-29T00:00:00Z",
+            "level": "INFO",
+            "target": "mc_shell::test",
+            "message": "hello"
+        })
+    )
+    .expect("write canonical log line");
+    writer.flush().expect("flush canonical log line");
+
+    let line = std::fs::read_to_string(path).expect("read canonical log file");
+    let parsed: serde_json::Value = serde_json::from_str(line.trim()).expect("valid JSON line");
+    assert!(parsed.get("ts").is_some());
+    assert!(parsed.get("msg").is_some());
+    assert!(parsed.get("session").is_some());
+    assert!(parsed.get("build").is_some());
+    assert!(parsed.get("tick").is_some());
+    assert!(parsed.get("timestamp").is_none());
+    assert!(parsed.get("message").is_none());
+
+    let _ = std::fs::remove_dir_all(dir);
+}
