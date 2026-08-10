@@ -126,9 +126,41 @@ fn attack_command_resolves_against_the_authoritative_battle() {
 #[test]
 fn set_wait_mode_accepted() {
     let mut world = World::new(42);
+    let rejected = apply_commands(&mut world, &[Command::SetWaitMode(true)]);
+    assert_rejected(&rejected[0]);
+
+    let party = Combatant {
+        kind: CombatantKind::PartyMember(CharId::CHR_EDMOND),
+        affiliation: Affiliation::Party,
+        name: "Edmond".into(),
+        atb: AtbGauge::new(Fx::from_int(12)),
+        hp: Fx::from_int(100),
+        max_hp: Fx::from_int(100),
+        attack: Fx::from_int(10),
+        defense: Fx::from_int(8),
+        speed: Fx::from_int(12),
+        level: 1,
+        statuses: StatusList::new(),
+    };
+    let enemy = Combatant {
+        kind: CombatantKind::Enemy(EnemyId::ENM_BANDIT),
+        affiliation: Affiliation::Enemy,
+        name: "Bandit".into(),
+        atb: AtbGauge::new(Fx::from_int(8)),
+        hp: Fx::from_int(30),
+        max_hp: Fx::from_int(30),
+        attack: Fx::from_int(6),
+        defense: Fx::from_int(4),
+        speed: Fx::from_int(8),
+        level: 1,
+        statuses: StatusList::new(),
+    };
+    world.battle = Some(Battle::new(vec![party], vec![enemy]));
     for wait in &[true, false] {
-        let events = apply_commands(&mut world, &[Command::SetWaitMode(*wait)]);
-        assert_valid(&events[0], &Command::SetWaitMode(*wait));
+        let command = Command::SetWaitMode(*wait);
+        let events = apply_commands(&mut world, &[command.clone()]);
+        assert_valid(&events[0], &command);
+        assert_eq!(world.battle.as_ref().unwrap().wait_mode, *wait);
     }
 }
 

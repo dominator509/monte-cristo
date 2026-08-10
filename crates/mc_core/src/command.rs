@@ -278,9 +278,19 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
             command: cmd.clone(),
         },
         Command::SetWaitMode(wait) => {
-            if let Some(battle) = world.battle.as_mut() {
-                battle.wait_mode = *wait;
+            let Some(battle) = world.battle.as_mut() else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Wait mode is only available during an active battle".into(),
+                };
+            };
+            if battle.state != BattleState::Active {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Wait mode is only available during an active battle".into(),
+                };
             }
+            battle.wait_mode = *wait;
             CoreEvent::Applied {
                 command: cmd.clone(),
             }
