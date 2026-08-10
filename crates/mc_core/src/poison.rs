@@ -162,7 +162,13 @@ impl PoisonState {
     pub fn tolerance_for(&self, char_id: CharId, poison_id: PoisonId) -> Fx {
         self.tolerance
             .get(&(char_id.raw(), poison_id.raw()))
-            .map_or(Fx::ZERO, |s| s.value)
+            .map_or(Fx::ZERO, |s| {
+                if s.value < Fx::ZERO {
+                    Fx::ZERO
+                } else {
+                    s.value
+                }
+            })
     }
 
     /// Administer a dose of a compound to a character.
@@ -439,5 +445,28 @@ mod tests {
             state.tolerance_for(CharId::CHR_VALENTINE, PoisonId::PSN_BRUCINE),
             before
         );
+    }
+
+    #[test]
+    fn negative_serialized_tolerance_cannot_lower_lethal_threshold() {
+        let mut state = PoisonState::new();
+        state.tolerance.insert(
+            (CharId::CHR_VALENTINE.raw(), PoisonId::PSN_BRUCINE.raw()),
+            ToleranceState {
+                value: Fx::from_int(-100),
+                last_tick: 0,
+            },
+        );
+
+        assert_eq!(
+            state.tolerance_for(CharId::CHR_VALENTINE, PoisonId::PSN_BRUCINE),
+            Fx::ZERO
+        );
+        assert!(!state.administer(
+            CharId::CHR_VALENTINE,
+            PoisonId::PSN_BRUCINE,
+            Fx::from_int(3),
+            1,
+        ));
     }
 }

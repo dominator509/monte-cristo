@@ -292,3 +292,5 @@
 2026-08-10T14:15:51Z | codex-root | EP-010 | AUDIT_FIX | PoisonState clamps malformed negative decay_rate to zero so corrupted state cannot increase tolerance
 2026-08-10T14:15:52Z | codex-root | EP-010 | AUDIT_VERIFY | poison negative-rate regression and full mc_core library suite pass: 204 tests
 2026-08-10T14:16:26Z | codex-root | EP-010 | AUDIT_VERIFY | post-poison-clamp mc_core integration/property suites pass: 385 tests
+2026-08-10T14:17:16Z | codex-root | EP-010 | AUDIT_FIX | PoisonState tolerance reads now clamp malformed negative serialized values to zero, preserving the locked lethal threshold
+2026-08-10T14:17:16Z | codex-root | EP-010 | AUDIT_VERIFY | negative tolerance regression and full mc_core library suite pass: 205 tests
