@@ -6,6 +6,7 @@
 
 use crate::battle::{self, Affiliation, BattleState};
 use crate::ids::{ItemId, RegionId};
+use crate::scene::AuthoredSceneCatalog;
 use crate::world::{Party, World};
 use serde::{Deserialize, Serialize};
 
@@ -211,18 +212,35 @@ impl<'a> StateView<'a> {
 /// FLG_MORCERF_YANINA_DOSSIER, FLG_MORCERF_ALBERT_WITHDRAWN, and
 /// FLG_MERCEDES_RECOGNITION are all set (INV-14).
 pub fn apply_commands(world: &mut World, commands: &[Command]) -> Vec<CoreEvent> {
+    apply_commands_with_catalog(world, commands, None)
+}
+
+/// Apply commands against a loaded authored scene catalog.
+///
+/// The catalog is static content, not mutable game state. It is supplied at
+/// the command boundary so scene traversal remains deterministic while the
+/// serialized `World` continues to contain only its scene cursor.
+pub fn apply_commands_with_catalog(
+    world: &mut World,
+    commands: &[Command],
+    catalog: Option<&AuthoredSceneCatalog>,
+) -> Vec<CoreEvent> {
     let mut events = Vec::with_capacity(commands.len());
 
     for cmd in commands {
-        let event = validate_and_apply(world, cmd);
+        let event = validate_and_apply_with_catalog(world, cmd, catalog);
         events.push(event);
     }
 
     events
 }
 
-/// Validate a single command and apply it if valid, returning a CoreEvent.
-fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
+/// Validate a command with optional authored scene content.
+fn validate_and_apply_with_catalog(
+    world: &mut World,
+    cmd: &Command,
+    catalog: Option<&AuthoredSceneCatalog>,
+) -> CoreEvent {
     match cmd {
         // Navigation — always valid
         Command::Move(_) => CoreEvent::Applied {
@@ -296,10 +314,106 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
             }
         }
 
-        // Scene commands — always valid
-        Command::SceneAdvance | Command::SceneChoose(_) => CoreEvent::Applied {
-            command: cmd.clone(),
-        },
+        // Scene commands — require a loaded authored catalog and active scene.
+        Command::SceneAdvance => {
+            let Some(catalog) = catalog else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "No authored scene catalog loaded".into(),
+                };
+            };
+            let Some(state) = world.scene.as_ref() else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "No active authored scene".into(),
+                };
+            };
+            let Some(scene) = catalog.scene_for_node(state.current) else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Current scene node is not in the authored catalog".into(),
+                };
+            };
+            let Some(node) = catalog.node(state.current) else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Current scene node is not in the authored catalog".into(),
+                };
+            };
+            if !world.flags.satisfies(&scene.requires) {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Active authored scene is no longer available".into(),
+                };
+            }
+            if !node.choices.is_empty() {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Current scene node requires a choice".into(),
+                };
+            }
+            for effect in &scene.on_exit {
+                effect.apply(world);
+            }
+            world.scene = None;
+            CoreEvent::Applied {
+                command: cmd.clone(),
+            }
+        }
+        Command::SceneChoose(choice) => {
+            let Some(catalog) = catalog else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "No authored scene catalog loaded".into(),
+                };
+            };
+            let Some(state) = world.scene.as_ref() else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "No active authored scene".into(),
+                };
+            };
+            let current = state.current;
+            let Some(scene) = catalog.scene_for_node(current) else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Current scene node is not in the authored catalog".into(),
+                };
+            };
+            if !world.flags.satisfies(&scene.requires) {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Active authored scene is no longer available".into(),
+                };
+            }
+            let Some(node) = catalog.node(current) else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Current scene node is not in the authored catalog".into(),
+                };
+            };
+            let Some(selected) = node.choices.get(choice.0 as usize) else {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Scene choice index is out of range".into(),
+                };
+            };
+            if !world.flags.satisfies(&selected.condition) {
+                return CoreEvent::Rejected {
+                    command: cmd.clone(),
+                    reason: "Scene choice is not available".into(),
+                };
+            }
+            for effect in &selected.effects {
+                effect.apply(world);
+            }
+            if let Some(state) = world.scene.as_mut() {
+                state.current = selected.to;
+            }
+            CoreEvent::Applied {
+                command: cmd.clone(),
+            }
+        }
 
         // Calendar — valid only during Act II
         Command::CalendarAct(action) => {

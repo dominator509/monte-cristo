@@ -7,6 +7,9 @@
 //! - All cross-file references resolve
 //! - Corrupted digests are detected
 
+use mc_core::command::{apply_commands_with_catalog, ChoiceIdx, Command, CoreEvent};
+use mc_core::ids::FlagId;
+use mc_core::world::World;
 use mc_data::pack::Pack;
 use std::fs;
 use std::path::PathBuf;
@@ -61,6 +64,33 @@ fn pack_includes_every_authored_scene_act() {
         .scenes
         .iter()
         .any(|scene| scene.id == "SCN_CONFIDENCE_CF45"));
+}
+
+#[test]
+fn authored_arrest_scene_executes_through_core_catalog() {
+    let pack = build_pack();
+    let catalog = pack
+        .scene_catalog()
+        .expect("authored scenes should convert to the core catalog");
+    assert_eq!(catalog.scene_count(), pack.scenes.len());
+    assert!(catalog.node_count() >= catalog.scene_count());
+
+    let mut world = World::new(42);
+    catalog
+        .begin(&mut world, "SCN_ARREST")
+        .expect("arrest scene should be available at new game");
+    for choice in [0, 0] {
+        let events = apply_commands_with_catalog(
+            &mut world,
+            &[Command::SceneChoose(ChoiceIdx(choice))],
+            Some(&catalog),
+        );
+        assert!(matches!(events[0], CoreEvent::Applied { .. }));
+    }
+    let events = apply_commands_with_catalog(&mut world, &[Command::SceneAdvance], Some(&catalog));
+    assert!(matches!(events[0], CoreEvent::Applied { .. }));
+    assert!(world.scene.is_none());
+    assert!(world.flags.is_set(FlagId::FLG_ARRESTED));
 }
 
 /// Deterministic: two builds produce identical bytes.

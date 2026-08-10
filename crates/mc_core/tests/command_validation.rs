@@ -8,14 +8,19 @@ use mc_core::battle::atb::AtbGauge;
 use mc_core::battle::status::StatusList;
 use mc_core::battle::{Affiliation, Battle, Combatant, CombatantKind};
 use mc_core::command::{
-    apply_commands, Action, CampaignAction, CampaignId, ChoiceIdx, Command, CoreEvent, Dir,
-    PersonaId, SaveSlot, TargetId,
+    apply_commands, apply_commands_with_catalog, Action, CampaignAction, CampaignId, ChoiceIdx,
+    Command, CoreEvent, Dir, PersonaId, SaveSlot, TargetId,
 };
+use mc_core::flags::FlagExpr;
 use mc_core::fx::Fx;
 use mc_core::ids::{CharId, EnemyId, FlagId, RegionId};
+use mc_core::scene::{
+    AuthoredChoiceDefinition, AuthoredNodeDefinition, AuthoredSceneCatalog,
+    AuthoredSceneDefinition, SceneEffect,
+};
 use mc_core::world::{Act, World};
 
-/// Every Command variant should be accepted in its valid context.
+/// Navigation remains valid without an authored map resolver.
 #[test]
 fn move_accepts_all_directions() {
     let mut world = World::new(42);
@@ -42,7 +47,7 @@ fn menu_commands_accepted() {
 }
 
 #[test]
-fn scene_commands_accepted() {
+fn scene_commands_require_authored_catalog() {
     let mut world = World::new(42);
     for cmd in &[
         Command::SceneAdvance,
@@ -50,8 +55,58 @@ fn scene_commands_accepted() {
         Command::SceneChoose(ChoiceIdx(99)),
     ] {
         let events = apply_commands(&mut world, &[cmd.clone()]);
-        assert_valid(&events[0], cmd);
+        assert_rejected(&events[0]);
     }
+}
+
+fn authored_test_catalog() -> AuthoredSceneCatalog {
+    AuthoredSceneCatalog::from_definitions(vec![AuthoredSceneDefinition {
+        id: "SCN_TEST".into(),
+        requires: FlagExpr::Always,
+        nodes: vec![
+            AuthoredNodeDefinition {
+                id: "n0".into(),
+                text_key: "scene.test.n0".into(),
+                choices: vec![AuthoredChoiceDefinition {
+                    label: "Continue".into(),
+                    to: "n1".into(),
+                    condition: FlagExpr::Always,
+                    effects: vec![SceneEffect::SetFlag(FlagId::FLG_ARRESTED)],
+                }],
+            },
+            AuthoredNodeDefinition {
+                id: "n1".into(),
+                text_key: "scene.test.n1".into(),
+                choices: vec![],
+            },
+        ],
+        on_exit: vec![SceneEffect::SetFlag(FlagId::FLG_FARIA_MET)],
+        terminal: false,
+    }])
+    .expect("test catalog should resolve")
+}
+
+#[test]
+fn authored_scene_commands_apply_effects_and_exit() {
+    let catalog = authored_test_catalog();
+    let mut world = World::new(42);
+    catalog
+        .begin(&mut world, "SCN_TEST")
+        .expect("test scene should begin");
+
+    let choice_event = apply_commands_with_catalog(
+        &mut world,
+        &[Command::SceneChoose(ChoiceIdx(0))],
+        Some(&catalog),
+    );
+    assert!(matches!(choice_event[0], CoreEvent::Applied { .. }));
+    assert!(world.flags.is_set(FlagId::FLG_ARRESTED));
+
+    let exit_event =
+        apply_commands_with_catalog(&mut world, &[Command::SceneAdvance], Some(&catalog));
+    assert!(matches!(exit_event[0], CoreEvent::Applied { .. }));
+    assert!(world.flags.is_set(FlagId::FLG_FARIA_MET));
+    assert!(world.scene.is_none());
 }
 
 #[test]
@@ -338,7 +393,10 @@ fn multiple_commands_all_applied() {
     let events = apply_commands(&mut world, &cmds);
     assert_eq!(events.len(), cmds.len());
     for ev in &events {
-        assert!(matches!(ev, CoreEvent::Applied { .. }));
+        assert!(
+            matches!(ev, CoreEvent::Applied { command } if matches!(command, Command::Interact | Command::OpenMenu | Command::CloseMenu | Command::Move(_)))
+                || matches!(ev, CoreEvent::Rejected { command, .. } if matches!(command, Command::SceneAdvance))
+        );
     }
 }
 

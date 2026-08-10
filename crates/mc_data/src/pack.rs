@@ -14,6 +14,11 @@ use crate::schema::item::Item;
 use crate::schema::region::Region;
 use crate::schema::scene::Scene;
 use crate::schema::spawn_table::SpawnTable;
+use mc_core::ids::{CharId, FlagId, ItemId};
+use mc_core::scene::{
+    AuthoredChoiceDefinition, AuthoredNodeDefinition, AuthoredSceneCatalog,
+    AuthoredSceneDefinition, SceneEffect,
+};
 use serde::{Deserialize, Serialize};
 
 /// A content-addressed pack containing all authored game data.
@@ -146,6 +151,200 @@ impl Pack {
             flags: self.flags.len(),
         }
     }
+
+    /// Convert authored RON scenes into the deterministic core runtime catalog.
+    pub fn scene_catalog(&self) -> Result<AuthoredSceneCatalog, ContentError> {
+        let mut definitions = Vec::with_capacity(self.scenes.len());
+        for scene in &self.scenes {
+            let mut nodes = Vec::with_capacity(scene.nodes.len());
+            for node in &scene.nodes {
+                let mut choices = Vec::with_capacity(node.choices.len());
+                for choice in &node.choices {
+                    let effects = choice
+                        .trust
+                        .as_ref()
+                        .map(|trust| {
+                            trust
+                                .iter()
+                                .map(|effect| trust_effect(&scene.id, effect))
+                                .collect::<Result<Vec<_>, _>>()
+                        })
+                        .transpose()?
+                        .unwrap_or_default();
+                    choices.push(AuthoredChoiceDefinition {
+                        label: localize(&self.strings, &choice.text_key),
+                        to: choice.to.clone(),
+                        condition: choice.requires.clone().unwrap_or_default(),
+                        effects,
+                    });
+                }
+                nodes.push(AuthoredNodeDefinition {
+                    id: node.id.clone(),
+                    text_key: localize(&self.strings, &node.text_key),
+                    choices,
+                });
+            }
+            definitions.push(AuthoredSceneDefinition {
+                id: scene.id.clone(),
+                requires: scene.requires.clone(),
+                nodes,
+                on_exit: scene_effects(&scene.id, scene.on_exit.as_ref())?,
+                terminal: scene.terminal,
+            });
+        }
+
+        AuthoredSceneCatalog::from_definitions(definitions)
+            .map_err(|error| ContentError::new(format!("scene catalog: {error}")))
+    }
+}
+
+fn localize(strings: &[(String, String)], key: &str) -> String {
+    strings
+        .iter()
+        .find(|(candidate, _)| candidate == key)
+        .map_or_else(|| key.to_string(), |(_, value)| value.clone())
+}
+
+fn scene_effects(
+    scene_id: &str,
+    effects: Option<&crate::schema::scene::Effects>,
+) -> Result<Vec<SceneEffect>, ContentError> {
+    let Some(effects) = effects else {
+        return Ok(Vec::new());
+    };
+    let mut resolved = Vec::new();
+    for id in &effects.set_flags {
+        resolved.push(SceneEffect::SetFlag(parse_flag(scene_id, id)?));
+    }
+    for id in &effects.clear_flags {
+        resolved.push(SceneEffect::ClearFlag(parse_flag(scene_id, id)?));
+    }
+    for id in &effects.consume {
+        resolved.push(SceneEffect::ConsumeItem(parse_item(scene_id, id)?, 1));
+    }
+    for id in &effects.grant {
+        resolved.push(SceneEffect::GrantItem(parse_item(scene_id, id)?, 1));
+    }
+    if let Some(trust) = &effects.trust {
+        for effect in trust {
+            resolved.push(trust_effect(scene_id, effect)?);
+        }
+    }
+    if let Some(mask) = effects.mask {
+        let value = i16::try_from(mask).map_err(|_| {
+            ContentError::in_field(
+                format!("mask adjustment {mask} does not fit i16"),
+                scene_id,
+                "on_exit.mask",
+            )
+        })?;
+        if value >= 0 {
+            resolved.push(SceneEffect::AddMask(value));
+        } else {
+            resolved.push(SceneEffect::SubMask(value.saturating_abs()));
+        }
+    }
+    Ok(resolved)
+}
+
+fn trust_effect(
+    scene_id: &str,
+    effect: &crate::schema::scene::TrustEffect,
+) -> Result<SceneEffect, ContentError> {
+    let character = parse_char(scene_id, &effect.0)?;
+    let value = i16::try_from(effect.1).map_err(|_| {
+        ContentError::in_field(
+            format!("trust adjustment {} does not fit i16", effect.1),
+            scene_id,
+            "trust",
+        )
+    })?;
+    if value >= 0 {
+        Ok(SceneEffect::AddTrust(character, value))
+    } else {
+        Ok(SceneEffect::SubTrust(character, value.saturating_abs()))
+    }
+}
+
+fn parse_flag(scene_id: &str, id: &str) -> Result<FlagId, ContentError> {
+    let flag = match id {
+        "FLG_ARRESTED" => FlagId::FLG_ARRESTED,
+        "FLG_FARIA_MET" => FlagId::FLG_FARIA_MET,
+        "FLG_TREASURE_KNOWN" => FlagId::FLG_TREASURE_KNOWN,
+        "FLG_ESCAPED" => FlagId::FLG_ESCAPED,
+        "FLG_COMTE_IDENTITY" => FlagId::FLG_COMTE_IDENTITY,
+        "FLG_SINDBAD_VISITED" => FlagId::FLG_SINDBAD_VISITED,
+        "FLG_MORCERF_DOSSIER" => FlagId::FLG_MORCERF_DOSSIER,
+        "FLG_MORCERF_YANINA_DOSSIER" => FlagId::FLG_MORCERF_YANINA_DOSSIER,
+        "FLG_MORCERF_ALBERT_WITHDRAWN" => FlagId::FLG_MORCERF_ALBERT_WITHDRAWN,
+        "FLG_DANGLARS_LETTER" => FlagId::FLG_DANGLARS_LETTER,
+        "FLG_VILLEFORT_DOSSIER" => FlagId::FLG_VILLEFORT_DOSSIER,
+        "FLG_HELOISE_POISONING" => FlagId::FLG_HELOISE_POISONING,
+        "FLG_VALENTINE_SAFE" => FlagId::FLG_VALENTINE_SAFE,
+        "FLG_MERCEDES_RECOGNITION" => FlagId::FLG_MERCEDES_RECOGNITION,
+        "FLG_EDOUARD_TRUTH" => FlagId::FLG_EDOUARD_TRUTH,
+        "FLG_FERNAND_CONFRONTED" => FlagId::FLG_FERNAND_CONFRONTED,
+        "FLG_DANGLARS_CONFRONTED" => FlagId::FLG_DANGLARS_CONFRONTED,
+        "FLG_VILLEFORT_CONFRONTED" => FlagId::FLG_VILLEFORT_CONFRONTED,
+        "FLG_MERCEDES_FORGIVEN" => FlagId::FLG_MERCEDES_FORGIVEN,
+        "FLG_FINAL_PHASE1" => FlagId::FLG_FINAL_PHASE1,
+        "FLG_FINAL_PHASE2" => FlagId::FLG_FINAL_PHASE2,
+        "FLG_FINAL_PHASE3" => FlagId::FLG_FINAL_PHASE3,
+        _ => {
+            return Err(ContentError::in_field(
+                format!("unknown flag {id}"),
+                scene_id,
+                "flags",
+            ))
+        }
+    };
+    Ok(flag)
+}
+
+fn parse_item(scene_id: &str, id: &str) -> Result<ItemId, ContentError> {
+    let item = match id {
+        "ITM_POTION" => ItemId::ITM_POTION,
+        "ITM_HI_POTION" => ItemId::ITM_HI_POTION,
+        "ITM_ANTIDOTE" => ItemId::ITM_ANTIDOTE,
+        "ITM_PANACEA" => ItemId::ITM_PANACEA,
+        "ITM_SMOKE_BOMB" => ItemId::ITM_SMOKE_BOMB,
+        "ITM_PHIAL_BRUCINE" => ItemId::ITM_PHIAL_BRUCINE,
+        "ITM_TREASURE_MAP" => ItemId::ITM_TREASURE_MAP,
+        "ITM_EDOUARD_LOCKET" => ItemId::ITM_EDOUARD_LOCKET,
+        _ => {
+            return Err(ContentError::in_field(
+                format!("unknown item {id}"),
+                scene_id,
+                "items",
+            ))
+        }
+    };
+    Ok(item)
+}
+
+fn parse_char(scene_id: &str, id: &str) -> Result<CharId, ContentError> {
+    let character = match id {
+        "CHR_EDMOND" => CharId::CHR_EDMOND,
+        "CHR_ABBE_FARIA" => CharId::CHR_ABBE_FARIA,
+        "CHR_HAYDEE" => CharId::CHR_HAYDEE,
+        "CHR_MERCEDES" => CharId::CHR_MERCEDES,
+        "CHR_ALBERT" => CharId::CHR_ALBERT,
+        "CHR_FERNAND" => CharId::CHR_FERNAND,
+        "CHR_DANGLARS" => CharId::CHR_DANGLARS,
+        "CHR_VILLEFORT" => CharId::CHR_VILLEFORT,
+        "CHR_VALENTINE" => CharId::CHR_VALENTINE,
+        "CHR_NOIRTIER" => CharId::CHR_NOIRTIER,
+        "CHR_BERTUCCIO" => CharId::CHR_BERTUCCIO,
+        "CHR_HELOISE" => CharId::CHR_HELOISE,
+        _ => {
+            return Err(ContentError::in_field(
+                format!("unknown character {id}"),
+                scene_id,
+                "trust",
+            ))
+        }
+    };
+    Ok(character)
 }
 
 /// Human-readable summary of pack contents.

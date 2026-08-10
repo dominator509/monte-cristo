@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::{fs, io::Write};
 
+use mc_core::scene::AuthoredSceneCatalog;
 use mc_shell::app::App;
 use mc_shell::config::ValidatedConfig;
 use mc_shell::fsroot::{self, Root};
@@ -27,9 +28,10 @@ fn data_dir() -> PathBuf {
 }
 
 /// Run the headless application (no window, no audio).
-fn run_headless(seed: u128, config: ValidatedConfig) {
+fn run_headless(seed: u128, config: ValidatedConfig, scene_catalog: AuthoredSceneCatalog) {
     tracing::info!("starting headless mode");
-    let mut app = App::new(seed, config, true);
+    let mut app = App::new_with_catalog(seed, config, true, scene_catalog)
+        .expect("verified authored scene catalog should start");
     for _i in 0..60 {
         app.headless_update();
     }
@@ -40,13 +42,64 @@ fn run_headless(seed: u128, config: ValidatedConfig) {
     );
 }
 
+/// Load the authored catalog for the real game loop.
+///
+/// Release artifacts contain a verified `content.pack`; source checkouts may
+/// still run directly from the RON tree before a bake has occurred. Both paths
+/// feed the same core catalog and therefore the same deterministic behavior.
+fn load_runtime_catalog() -> Result<AuthoredSceneCatalog, String> {
+    let mut candidates = Vec::new();
+    let manifest_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    candidates.push(manifest_root.join("../.."));
+    if let Ok(value) = std::env::var(Root::Content.env_var()) {
+        if !value.trim().is_empty() {
+            candidates.push(PathBuf::from(value));
+        }
+    }
+    if let Ok(current) = std::env::current_dir() {
+        candidates.push(current.clone());
+        candidates.push(current.join("content"));
+    }
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(parent) = executable.parent() {
+            candidates.push(parent.to_path_buf());
+        }
+    }
+
+    for candidate in candidates {
+        let pack_path = candidate.join("content.pack");
+        let source_path = candidate.join("scenes");
+        if !pack_path.is_file() && !source_path.is_dir() {
+            continue;
+        }
+        std::env::set_var(Root::Content.env_var(), &candidate);
+        let confined = fsroot::confine(Root::Content, Path::new(""))
+            .map_err(|error| format!("content root is not available: {error}"))?;
+        let pack = if pack_path.is_file() {
+            mc_data::pack::Pack::load_from_dir(&confined)
+                .map_err(|error| format!("content pack failed integrity verification: {error}"))?
+        } else {
+            mc_data::pack::Pack::from_content(&confined)
+                .map_err(|error| format!("content source failed validation: {error}"))?
+        };
+        return pack
+            .scene_catalog()
+            .map_err(|error| format!("authored scene catalog failed: {error}"));
+    }
+
+    Err(
+        "No content.pack or authored content tree is available; restore the game content and retry"
+            .into(),
+    )
+}
+
 /// Real main — checks MC_HEADLESS before any window creation.
 fn verify_content() -> ExitCode {
     let content_dir = match fsroot::confine(Root::Content, Path::new("")) {
         Ok(path) => path,
         Err(error) => {
             eprintln!(
-                "Content verification failed: {} is not a valid confined root: {error}",
+                "Content verification failed for content.pack: {} is not a valid confined root: {error}",
                 Root::Content.env_var()
             );
             return ExitCode::FAILURE;
@@ -226,26 +279,35 @@ fn main() -> ExitCode {
         );
     }
 
+    let scene_catalog = match load_runtime_catalog() {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            eprintln!("Game startup failed: {error}");
+            return ExitCode::FAILURE;
+        }
+    };
+
     let seed: u128 = 42;
     let dd = data_dir();
     let config = ValidatedConfig::load_or_default(dd);
 
     // Headless mode: no window, no audio, pure simulation
     if std::env::var("MC_HEADLESS").is_ok() {
-        run_headless(seed, config);
+        run_headless(seed, config, scene_catalog);
         return ExitCode::SUCCESS;
     }
 
     // Windowed mode: use macroquad
-    run_windowed(seed, config);
+    run_windowed(seed, config, scene_catalog);
     ExitCode::SUCCESS
 }
 
 /// Run the windowed application via macroquad.
-fn run_windowed(seed: u128, config: ValidatedConfig) {
+fn run_windowed(seed: u128, config: ValidatedConfig, scene_catalog: AuthoredSceneCatalog) {
     macroquad::Window::new("Monte Cristo", async move {
         tracing::info!("starting windowed mode: 256x224 internal resolution");
-        let mut app = App::new(seed, config, false);
+        let mut app = App::new_with_catalog(seed, config, false, scene_catalog)
+            .expect("verified authored scene catalog should start");
         let render_target = mc_shell::render::target::ShellRenderTarget::new();
         app.render_target = Some(render_target);
 

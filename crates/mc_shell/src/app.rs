@@ -9,9 +9,14 @@ use crate::render::palette::{scene_palette, sky_gradient};
 use crate::render::target::{ShellRenderTarget, INTERNAL_HEIGHT, INTERNAL_WIDTH};
 use crate::render::tilemap::Tilemap;
 use crate::ui::advisory::draw_advisory_screen;
-use crate::ui::{battle::draw_battle_interface, menu::draw_field_hud, menu::draw_menu_screen};
+use crate::ui::{
+    battle::draw_battle_interface,
+    confidence::draw_confidence_scene,
+    menu::{draw_field_hud, draw_menu_screen},
+};
 use macroquad::prelude::*;
-use mc_core::command::{Command, StateView};
+use mc_core::command::{apply_commands_with_catalog, ChoiceIdx, Command, Dir, StateView};
+use mc_core::scene::AuthoredSceneCatalog;
 use mc_core::world::World;
 use tracing::info;
 
@@ -54,16 +59,31 @@ pub struct App {
     pub screen_state: ScreenState,
     /// Whether the first-run content advisory is currently blocking gameplay.
     pub advisory_pending: bool,
+    /// The loaded authored scene catalog used by the deterministic command bus.
+    pub scene_catalog: AuthoredSceneCatalog,
+    /// Currently highlighted authored scene choice.
+    pub scene_choice_index: usize,
 }
 
 impl App {
     /// Create a new application from a seed and configuration.
     pub fn new(seed: u128, config: ValidatedConfig, headless: bool) -> Self {
+        Self::new_with_catalog(seed, config, headless, AuthoredSceneCatalog::default())
+            .expect("an empty authored scene catalog is always valid")
+    }
+
+    /// Create an application with a verified authored scene catalog.
+    pub fn new_with_catalog(
+        seed: u128,
+        config: ValidatedConfig,
+        headless: bool,
+        scene_catalog: AuthoredSceneCatalog,
+    ) -> Result<Self, String> {
         let world = World::new(seed);
         let audio_enabled = !headless;
         let advisory_pending = !config.advisory_acknowledged && !headless;
         let tilemap = Tilemap::for_scene(world.act, world.region);
-        App {
+        let mut app = App {
             world,
             config,
             headless,
@@ -74,7 +94,15 @@ impl App {
             audio: crate::audio::AudioState::new(audio_enabled),
             screen_state: ScreenState::Field,
             advisory_pending,
+            scene_catalog,
+            scene_choice_index: 0,
+        };
+        if app.scene_catalog.scene("SCN_ARREST").is_some() {
+            app.scene_catalog
+                .begin(&mut app.world, "SCN_ARREST")
+                .map_err(|error| format!("failed to start SCN_ARREST: {error}"))?;
         }
+        Ok(app)
     }
 
     /// Advance the simulation by one frame's worth of fixed ticks.
@@ -86,7 +114,8 @@ impl App {
             self.accum = MAX_ACCUM;
         }
         while self.accum >= FIXED_DT {
-            let _events = mc_core::command::apply_commands(&mut self.world, &commands);
+            let _events =
+                apply_commands_with_catalog(&mut self.world, &commands, Some(&self.scene_catalog));
             self.world.step();
             self.accum -= FIXED_DT;
         }
@@ -95,14 +124,16 @@ impl App {
 
     /// Process real input and advance the simulation.
     fn process_input_and_step(&mut self) -> Vec<Command> {
-        let commands = self.poll_input();
+        let raw_commands = self.poll_input();
+        let commands = self.translate_scene_input(raw_commands);
         self.accum += get_frame_time() as f64;
         if self.accum > MAX_ACCUM {
             self.accum = MAX_ACCUM;
             info!("accumulation cap hit, dropping frames");
         }
         while self.accum >= FIXED_DT {
-            let _events = mc_core::command::apply_commands(&mut self.world, &commands);
+            let _events =
+                apply_commands_with_catalog(&mut self.world, &commands, Some(&self.scene_catalog));
             self.world.step();
             self.accum -= FIXED_DT;
         }
@@ -199,6 +230,51 @@ impl App {
                 (_, command) => command,
             })
             .collect()
+    }
+
+    /// Translate the existing remappable field controls into authored scene
+    /// traversal without introducing a second input channel.
+    fn translate_scene_input(&mut self, commands: Vec<Command>) -> Vec<Command> {
+        let Some(state) = self.world.scene.as_ref() else {
+            return commands;
+        };
+        let Some(node) = self.scene_catalog.node(state.current) else {
+            return commands;
+        };
+        if node.choices.is_empty() {
+            return commands
+                .into_iter()
+                .map(|command| {
+                    if matches!(command, Command::Interact) {
+                        Command::SceneAdvance
+                    } else {
+                        command
+                    }
+                })
+                .collect();
+        }
+
+        self.scene_choice_index = self
+            .scene_choice_index
+            .min(node.choices.len().saturating_sub(1));
+        let mut translated = Vec::with_capacity(commands.len());
+        for command in commands {
+            match command {
+                Command::Move(Dir::North) => {
+                    self.scene_choice_index = self.scene_choice_index.saturating_sub(1);
+                }
+                Command::Move(Dir::South) => {
+                    self.scene_choice_index = (self.scene_choice_index + 1) % node.choices.len();
+                }
+                Command::Interact => {
+                    translated.push(Command::SceneChoose(ChoiceIdx(
+                        self.scene_choice_index as u32,
+                    )));
+                }
+                other => translated.push(other),
+            }
+        }
+        translated
     }
 
     /// Draw the tilemap layers (layer0, layer1, overlay).
@@ -338,7 +414,20 @@ impl App {
         // Draw screen overlays conditionally based on current screen state
         match self.screen_state {
             ScreenState::Field => {
-                draw_field_hud(view, self.config.high_contrast);
+                if let Some(state) = view.scene {
+                    if let Some(node) = self.scene_catalog.node(state.current) {
+                        draw_confidence_scene(
+                            view.tick,
+                            &node.text_key,
+                            &node.choices,
+                            self.scene_choice_index,
+                        );
+                    } else {
+                        draw_field_hud(view, self.config.high_contrast);
+                    }
+                } else {
+                    draw_field_hud(view, self.config.high_contrast);
+                }
             }
             ScreenState::Battle => {
                 draw_battle_interface(self.world.tick);
