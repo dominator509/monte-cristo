@@ -13,6 +13,10 @@ fn metrics_serializes_correctly() {
         "metrics json should contain build"
     );
     assert!(
+        json.contains("\"reference_machine\""),
+        "metrics json should contain reference_machine"
+    );
+    assert!(
         json.contains("\"start_time\""),
         "metrics json should contain start_time"
     );

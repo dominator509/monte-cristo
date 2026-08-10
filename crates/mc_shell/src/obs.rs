@@ -277,6 +277,7 @@ pub fn init_logging() -> Result<(), Box<dyn std::error::Error>> {
 pub struct SessionMetrics {
     pub session: String,
     pub build: String,
+    pub reference_machine: String,
     pub start_time: String,
     pub end_time: String,
     pub ticks_elapsed: u64,
@@ -290,6 +291,8 @@ impl SessionMetrics {
         SessionMetrics {
             session: SESSION_ID.clone(),
             build: build_version(),
+            reference_machine: std::env::var("MC_REFERENCE_MACHINE")
+                .unwrap_or_else(|_| "unknown".into()),
             start_time: fmt_date(SystemTime::now()),
             end_time: String::new(),
             ticks_elapsed: 0,
@@ -353,7 +356,11 @@ pub fn write_metrics() -> Result<(), Box<dyn std::error::Error>> {
     let json = serde_json::to_string_pretty(&*metrics)?;
     std::fs::write(&path, json.as_bytes())?;
 
-    tracing::info!(metrics_file = %path.display(), "metrics written");
+    let file_name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("metrics.json");
+    tracing::info!(metrics_file = %file_name, "metrics written");
     Ok(())
 }
 
@@ -396,7 +403,11 @@ pub fn install_crash_hook() {
         let path = dir.join(format!("crash-{}.json", ts));
         if let Ok(json) = serde_json::to_string_pretty(&report) {
             let _ = std::fs::write(&path, json.as_bytes());
-            eprintln!("crash report written to {}", path.display());
+            let file_name = path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("crash.json");
+            eprintln!("crash report written: {file_name}");
         }
 
         tracing::error!(tick, panic = %info, "FATAL: crash detected");

@@ -40,6 +40,22 @@ fn run_headless(seed: u128, config: ValidatedConfig, scene_catalog: AuthoredScen
         app.world.tick,
         app.world.state_hash()
     );
+    if let Err(error) = mc_shell::obs::write_metrics() {
+        eprintln!("Metrics write failed: {error}");
+    }
+}
+
+/// Initialise local-only observability after the data root has been resolved.
+///
+/// A logging failure is reported to stderr and falls back to a console
+/// subscriber so the game remains playable when the data directory is
+/// read-only. Crash reports still use the same confined root when available.
+fn init_observability() {
+    if let Err(error) = mc_shell::obs::init_logging() {
+        eprintln!("Logging initialization failed: {error}");
+        let _ = tracing_subscriber::fmt().with_target(false).try_init();
+    }
+    mc_shell::obs::install_crash_hook();
 }
 
 /// Load the authored catalog for the real game loop.
@@ -245,9 +261,6 @@ fn replay_tape(path: &Path, assert_hash: bool) -> ExitCode {
 }
 
 fn main() -> ExitCode {
-    // Initialize tracing
-    tracing_subscriber::fmt().with_target(false).init();
-
     // Parse command-line arguments
     let args: Vec<String> = std::env::args().collect();
     let print_version = args.iter().any(|a| a == "--version" || a == "-V");
@@ -289,6 +302,7 @@ fn main() -> ExitCode {
 
     let seed: u128 = 42;
     let dd = data_dir();
+    init_observability();
     let config = ValidatedConfig::load_or_default(dd);
 
     // Headless mode: no window, no audio, pure simulation

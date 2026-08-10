@@ -285,6 +285,25 @@ fn real_shell_entry_point_supports_version_and_headless_execution() {
         String::from_utf8_lossy(&headless.stderr)
     );
     assert!(dir.exists());
+    let log_dir = dir.join("logs");
+    let log_file = std::fs::read_dir(&log_dir)
+        .expect("headless shell should create a log directory")
+        .filter_map(|entry| entry.ok())
+        .find(|entry| entry.file_name().to_string_lossy().ends_with(".jsonl"))
+        .expect("headless shell should create a JSONL log");
+    let log = std::fs::read_to_string(log_file.path()).expect("read headless shell log");
+    assert!(log.contains("logging initialised"));
+    assert!(log.contains("metrics-"));
+    assert!(!log.contains("C:\\Users\\"));
+    assert!(!log.contains("/home/"));
+    assert!(!log.contains("/Users/"));
+    let metrics_file = std::fs::read_dir(&log_dir)
+        .expect("read metrics directory")
+        .filter_map(|entry| entry.ok())
+        .find(|entry| entry.file_name().to_string_lossy().starts_with("metrics-"))
+        .expect("headless shell should write clean-exit metrics");
+    let metrics = std::fs::read_to_string(metrics_file.path()).expect("read headless metrics");
+    assert!(metrics.contains("\"reference_machine\""));
 
     let missing_content_dir = temp_dir("missing-content");
     let verify_content = Command::new(binary)
