@@ -304,6 +304,14 @@ fn validate_and_apply(world: &mut World, cmd: &Command) -> CoreEvent {
                 .calendar
                 .get_or_insert_with(crate::calendar::IfCalendar::new);
             calendar.advance(*action, &mut world.curriculum);
+            if matches!(action, crate::calendar::CalendarAction::Endure) {
+                for member in &mut world.party.active {
+                    member.hp = member.max_hp;
+                }
+                for member in &mut world.party.roster {
+                    member.hp = member.max_hp;
+                }
+            }
             CoreEvent::Applied {
                 command: cmd.clone(),
             }

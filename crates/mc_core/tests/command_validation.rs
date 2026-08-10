@@ -204,6 +204,22 @@ fn calendar_action_updates_world_curriculum() {
 }
 
 #[test]
+fn calendar_endure_restores_party_wounds() {
+    let mut world = World::new(42);
+    world.set_act(Act::ActIIIf);
+    world.party.active[0].hp = Fx::from_int(23);
+    world.party.roster[0].hp = Fx::from_int(23);
+
+    let command = Command::CalendarAct(mc_core::calendar::CalendarAction::Endure);
+    let events = apply_commands(&mut world, &[command.clone()]);
+
+    assert_valid(&events[0], &command);
+    assert_eq!(world.party.active[0].hp, world.party.active[0].max_hp);
+    assert_eq!(world.party.roster[0].hp, world.party.roster[0].max_hp);
+    assert_eq!(world.calendar.as_ref().unwrap().month, 1);
+}
+
+#[test]
 fn season_action_advances_the_act_vi_clock() {
     let mut world = World::new(42);
     world.set_act(Act::ActVIParis);
