@@ -13,8 +13,8 @@ use crate::ui::{
     battle::draw_battle_interface,
     confidence::draw_confidence_scene,
     menu::{
-        draw_field_hud, draw_file_select_screen, draw_menu_screen, MENU_ENTRIES, MENU_LOAD_INDEX,
-        MENU_SAVE_INDEX, SAVE_SLOT_COUNT,
+        draw_field_hud, draw_file_select_screen, draw_menu_detail_screen, draw_menu_screen,
+        MenuDetail, MENU_ENTRIES, MENU_LOAD_INDEX, MENU_SAVE_INDEX, SAVE_SLOT_COUNT,
     },
     title::draw_title_screen,
 };
@@ -45,6 +45,8 @@ pub enum ScreenState {
     Battle,
     /// Menu screen open.
     Menu,
+    /// Read-only detail view opened from the main menu.
+    MenuDetail(MenuDetail),
     /// Save/load slot picker open.
     FileSelect(FileSelectMode),
 }
@@ -406,6 +408,8 @@ impl App {
             .map(|command| match (self.screen_state, command) {
                 (ScreenState::Menu, Command::CancelSelection) => Command::CloseMenu,
                 (ScreenState::Menu, Command::OpenMenu) => Command::CloseMenu,
+                (ScreenState::MenuDetail(_), Command::CancelSelection) => Command::CloseMenu,
+                (ScreenState::MenuDetail(_), Command::OpenMenu) => Command::CloseMenu,
                 (ScreenState::FileSelect(_), Command::CancelSelection) => Command::CloseMenu,
                 (ScreenState::FileSelect(_), Command::OpenMenu) => Command::CloseMenu,
                 (_, command) => command,
@@ -419,6 +423,7 @@ impl App {
         match self.screen_state {
             ScreenState::Title => return self.translate_title_input(commands),
             ScreenState::Menu => return self.translate_menu_input(commands),
+            ScreenState::MenuDetail(_) => return self.translate_menu_detail_input(commands),
             ScreenState::FileSelect(mode) => return self.translate_file_input(mode, commands),
             ScreenState::Field | ScreenState::Battle => {}
         }
@@ -508,11 +513,27 @@ impl App {
                     self.file_error = None;
                     self.screen_state = ScreenState::FileSelect(FileSelectMode::Load);
                 }
-                Command::Interact => {}
+                Command::Interact => {
+                    if let Some(detail) = menu_detail_for(self.menu_choice_index) {
+                        self.screen_state = ScreenState::MenuDetail(detail);
+                    }
+                }
                 other => translated.push(other),
             }
         }
         translated
+    }
+
+    fn translate_menu_detail_input(&mut self, commands: Vec<Command>) -> Vec<Command> {
+        commands
+            .into_iter()
+            .filter_map(|command| match command {
+                Command::CancelSelection | Command::CloseMenu | Command::OpenMenu => {
+                    Some(Command::CloseMenu)
+                }
+                _ => None,
+            })
+            .collect()
     }
 
     fn translate_file_input(
@@ -765,6 +786,9 @@ impl App {
             ScreenState::Menu => {
                 draw_menu_screen(self.world.tick, self.menu_choice_index);
             }
+            ScreenState::MenuDetail(detail) => {
+                draw_menu_detail_screen(detail, view, &self.config);
+            }
             ScreenState::FileSelect(mode) => {
                 draw_file_select_screen(
                     mode,
@@ -777,6 +801,18 @@ impl App {
     }
 }
 
+fn menu_detail_for(index: usize) -> Option<MenuDetail> {
+    match index {
+        0 => Some(MenuDetail::Party),
+        1 => Some(MenuDetail::Curriculum),
+        2 => Some(MenuDetail::Inventory),
+        3 => Some(MenuDetail::WebOfDebt),
+        4 => Some(MenuDetail::Ledger),
+        5 => Some(MenuDetail::Settings),
+        _ => None,
+    }
+}
+
 /// Pure screen transition function used by the window loop and unit tests.
 pub fn screen_state_after(current: ScreenState, commands: &[Command]) -> ScreenState {
     let mut state = current;
@@ -785,6 +821,11 @@ pub fn screen_state_after(current: ScreenState, commands: &[Command]) -> ScreenS
             Command::OpenMenu if state == ScreenState::Field => state = ScreenState::Menu,
             Command::CloseMenu | Command::CancelSelection if state == ScreenState::Menu => {
                 state = ScreenState::Field
+            }
+            Command::CloseMenu | Command::CancelSelection
+                if matches!(state, ScreenState::MenuDetail(_)) =>
+            {
+                state = ScreenState::Menu
             }
             Command::CloseMenu | Command::CancelSelection
                 if matches!(state, ScreenState::FileSelect(_)) =>
@@ -840,6 +881,23 @@ mod tests {
             load_app.screen_state,
             ScreenState::FileSelect(FileSelectMode::Load)
         );
+    }
+
+    #[test]
+    fn menu_detail_entries_open_read_only_views_and_back_out() {
+        for index in 0..=5 {
+            let mut app = app(&format!("menu-detail-{index}"));
+            app.screen_state = ScreenState::Menu;
+            app.menu_choice_index = index;
+            assert!(app
+                .translate_scene_input(vec![Command::Interact])
+                .is_empty());
+            assert!(matches!(app.screen_state, ScreenState::MenuDetail(_)));
+            assert_eq!(
+                screen_state_after(app.screen_state, &[Command::CloseMenu]),
+                ScreenState::Menu
+            );
+        }
     }
 
     #[test]
