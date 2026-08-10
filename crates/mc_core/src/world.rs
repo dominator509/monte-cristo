@@ -89,7 +89,10 @@ impl Inventory {
     pub fn remove_item(&mut self, id: crate::ids::ItemId, count: u32) -> bool {
         if let Some(idx) = self.items.iter().position(|(i, _)| *i == id) {
             let (_, c) = self.items[idx];
-            if c <= count {
+            if c < count {
+                return false;
+            }
+            if c == count {
                 self.items.swap_remove(idx);
             } else {
                 self.items[idx].1 = c - count;
@@ -437,6 +440,15 @@ mod tests {
         assert!(battle.combatants[0].hp < Fx::from_int(100));
         assert!(!battle.combatants[1].atb.is_full());
         assert_eq!(world_a.state_hash(), world_b.state_hash());
+    }
+
+    #[test]
+    fn inventory_rejects_overconsumption_without_mutating() {
+        let mut inventory = Inventory::new();
+        inventory.add_item(crate::ids::ItemId::ITM_POTION, 2);
+
+        assert!(!inventory.remove_item(crate::ids::ItemId::ITM_POTION, 3));
+        assert_eq!(inventory.items(), &[(crate::ids::ItemId::ITM_POTION, 2)]);
     }
 
     #[test]
