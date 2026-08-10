@@ -304,6 +304,7 @@ fn real_shell_entry_point_supports_version_and_headless_execution() {
         .expect("headless shell should write clean-exit metrics");
     let metrics = std::fs::read_to_string(metrics_file.path()).expect("read headless metrics");
     assert!(metrics.contains("\"reference_machine\""));
+    assert!(metrics.contains("\"ticks_elapsed\": 60"));
 
     let missing_content_dir = temp_dir("missing-content");
     let verify_content = Command::new(binary)

@@ -117,6 +117,8 @@ impl App {
             let _events =
                 apply_commands_with_catalog(&mut self.world, &commands, Some(&self.scene_catalog));
             self.world.step();
+            crate::obs::CURRENT_TICK.store(self.world.tick, std::sync::atomic::Ordering::Relaxed);
+            crate::obs::record_tick();
             self.accum -= FIXED_DT;
         }
         self.alpha = (self.accum / FIXED_DT) as f32;
@@ -134,7 +136,12 @@ impl App {
         while self.accum >= FIXED_DT {
             let _events =
                 apply_commands_with_catalog(&mut self.world, &commands, Some(&self.scene_catalog));
+            for _ in &commands {
+                crate::obs::record_command();
+            }
             self.world.step();
+            crate::obs::CURRENT_TICK.store(self.world.tick, std::sync::atomic::Ordering::Relaxed);
+            crate::obs::record_tick();
             self.accum -= FIXED_DT;
         }
         self.alpha = (self.accum / FIXED_DT) as f32;
