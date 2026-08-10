@@ -62,18 +62,7 @@ impl App {
         let world = World::new(seed);
         let audio_enabled = !headless;
         let advisory_pending = !config.advisory_acknowledged && !headless;
-        // Build an initial tilemap with a simple test pattern
-        let mut tilemap = Tilemap::new();
-        // Fill layer0 with a checkerboard pattern
-        for y in 0..TILES_Y {
-            for x in 0..TILES_X {
-                let is_checker = (x + y) % 2;
-                tilemap.layer0.set_tile(x, y, is_checker);
-                tilemap
-                    .layer1
-                    .set_tile(x, y, if is_checker == 0 { 2 } else { 3 });
-            }
-        }
+        let tilemap = Tilemap::for_scene(world.act, world.region);
         App {
             world,
             config,

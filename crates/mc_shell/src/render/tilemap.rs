@@ -4,6 +4,8 @@
 //! Two background layers scroll independently; one overlay layer is fixed.
 
 use macroquad::prelude::*;
+use mc_core::ids::RegionId;
+use mc_core::world::Act;
 
 /// Tiles across (256 / 16).
 pub const TILES_X: u16 = 16;
@@ -82,6 +84,35 @@ impl Tilemap {
             layer1: TileLayer::new(TILES_X, TILES_Y),
             overlay: TileLayer::new(TILES_X, TILES_Y),
         }
+    }
+
+    /// Build a deterministic scene composition from the authoritative act and
+    /// region. This is presentation-only: it never feeds back into `mc_core`
+    /// or changes replay state, but it gives each authored location a stable
+    /// visual language instead of a startup checkerboard.
+    pub fn for_scene(act: Act, region: RegionId) -> Self {
+        let mut map = Self::new();
+        let seed = (region.raw() as u16).wrapping_add((act as u16).wrapping_mul(19));
+        let ground = 1 + seed % 3;
+
+        for y in 0..TILES_Y {
+            for x in 0..TILES_X {
+                let wave = (x.wrapping_mul(5) + y.wrapping_mul(3) + seed) % 11;
+                let ground_tile = if wave < 6 { ground } else { ground + 1 };
+                map.layer0.set_tile(x, y, ground_tile);
+
+                let detail = (x.wrapping_mul(7) + y.wrapping_mul(11) + seed) % 13;
+                let overlay_tile = if detail == 0 {
+                    3
+                } else if detail == 1 || detail == 2 {
+                    2
+                } else {
+                    0
+                };
+                map.layer1.set_tile(x, y, overlay_tile);
+            }
+        }
+        map
     }
 }
 

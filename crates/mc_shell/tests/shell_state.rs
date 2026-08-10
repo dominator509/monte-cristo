@@ -1,5 +1,7 @@
 use macroquad::prelude::KeyCode;
 use mc_core::command::Command as CoreCommand;
+use mc_core::ids::RegionId;
+use mc_core::world::Act;
 use mc_shell::app::{screen_state_after, App, ScreenState, FIXED_DT};
 use mc_shell::audio::{AudioState, CHANNELS, TRACKS};
 use mc_shell::config::{
@@ -42,10 +44,11 @@ fn headless_app_advances_the_authoritative_world_without_rendering() {
         !app.advisory_pending,
         "headless mode must not block on UI advisory"
     );
-    assert_eq!(app.tilemap.layer0.get_tile(0, 0), 0);
-    assert_eq!(app.tilemap.layer0.get_tile(1, 0), 1);
-    assert_eq!(app.tilemap.layer1.get_tile(0, 0), 2);
-    assert_eq!(app.tilemap.layer1.get_tile(1, 0), 3);
+    assert_ne!(
+        app.tilemap.layer0.get_tile(0, 0),
+        app.tilemap.layer0.get_tile(2, 0),
+        "the scene composition should not regress to a uniform startup pattern"
+    );
 
     app.headless_update();
 
@@ -157,6 +160,17 @@ fn input_audio_and_render_state_enforce_their_public_contracts() {
     assert!(text_speed_delay(TextSpeed::Slow) > text_speed_delay(TextSpeed::Normal));
     assert!(text_speed_delay(TextSpeed::Normal) > text_speed_delay(TextSpeed::Fast));
     assert_eq!(text_speed_delay(TextSpeed::Instant), 0.0);
+}
+
+#[test]
+fn scene_tilemaps_are_deterministic_and_region_specific() {
+    let first = Tilemap::for_scene(Act::ActIMarseille, RegionId::R01_MARSEILLE);
+    let repeat = Tilemap::for_scene(Act::ActIMarseille, RegionId::R01_MARSEILLE);
+    let other = Tilemap::for_scene(Act::ActIMarseille, RegionId::R02_CHATEAU_DIF);
+
+    assert_eq!(first.layer0.tiles, repeat.layer0.tiles);
+    assert_eq!(first.layer1.tiles, repeat.layer1.tiles);
+    assert_ne!(first.layer0.tiles, other.layer0.tiles);
 }
 
 #[test]
