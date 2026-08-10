@@ -2,7 +2,7 @@
     id: "ENM_VILLEFORT_AGENT",
     name_key: "enm.villefort_agent.name",
     family: BOSS,
-    region_affinity: ["R15_VILLEFORT_MANSION"],
+    region_affinity: ["R15"],
     gate: Always,
     stats: Stats(hp: 280, atk: 32, def: 22, spd: 12),
     resist: [BROKEN_GUARD],

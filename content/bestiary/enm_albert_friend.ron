@@ -2,7 +2,7 @@
     id: "ENM_ALBERT_FRIEND",
     name_key: "enm.albert_friend.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R14_MORCERF_ESTATE"],
+    region_affinity: ["R14"],
     gate: Always,
     stats: Stats(hp: 40, atk: 14, def: 8, spd: 12),
     resist: [],

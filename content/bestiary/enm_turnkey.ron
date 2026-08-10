@@ -2,7 +2,7 @@
     id: "ENM_TURNKEY",
     name_key: "enm.turnkey.name",
     family: PRISONER,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 38, atk: 12, def: 6, spd: 8),
     resist: [],

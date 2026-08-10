@@ -2,7 +2,7 @@
     id: "ENM_SALON_HOSTESS",
     name_key: "enm.salon_hostess.name",
     family: CRIMINAL,
-    region_affinity: ["R06_PARIS_SALON"],
+    region_affinity: ["R06"],
     gate: Always,
     stats: Stats(hp: 20, atk: 6, def: 4, spd: 12),
     resist: [],

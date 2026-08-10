@@ -690,21 +690,8 @@ fn prove_spawn_gating(rolls: u32, all_regions: bool) -> bool {
     use std::collections::BTreeSet;
 
     const REGION_KEYS: [&str; 15] = [
-        "R01_MARSEILLE",
-        "R02_CHATEAU_DIF",
-        "R03_MONTE_CRISTO",
-        "R04_ROME",
-        "R05_PARIS_FAUBOURG",
-        "R06_PARIS_SALON",
-        "R07_NORMANDY",
-        "R08_LYON",
-        "R09_STRASBOURG",
-        "R10_MEDITERRANEE",
-        "R11_ORIENT",
-        "R12_GREECE",
-        "R13_ALBANIA",
-        "R14_MORCERF_ESTATE",
-        "R15_VILLEFORT_MANSION",
+        "R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09", "R10", "R11", "R12", "R13",
+        "R14", "R15",
     ];
     let region_count = if all_regions { REGION_KEYS.len() } else { 1 };
     let no_flags = BTreeSet::new();

@@ -1,6 +1,6 @@
 Encounter(
     id: "RR03-s1-e0013",
-    region: "RR03",
+    region: "R03",
     chapter_stage: 1,
     pool: 2,
     enemies: ["ENM_TOWER_SENTRY", "ENM_INTERROGATOR", "ENM_GUARD_DOG", "ENM_MUTINEER"],

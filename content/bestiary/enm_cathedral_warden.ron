@@ -2,7 +2,7 @@
     id: "ENM_CATHEDRAL_WARDEN",
     name_key: "enm.cathedral_warden.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R09_STRASBOURG"],
+    region_affinity: ["R09"],
     gate: Always,
     stats: Stats(hp: 50, atk: 18, def: 16, spd: 8),
     resist: [],

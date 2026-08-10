@@ -1,9 +1,9 @@
 (
-    id: "R07_NORMANDY",
+    id: "R07",
     name_key: "region.r07.name",
     description_key: "region.r07.description",
     tier: 2,
-    connections: ["R06_PARIS_SALON"],
+    connections: ["R06"],
     locked: false,
     gate: Always,
 )

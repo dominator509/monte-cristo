@@ -2,7 +2,7 @@
     id: "ENM_TOWER_SENTRY",
     name_key: "enm.tower_sentry.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 48, atk: 15, def: 8, spd: 9),
     resist: [BLINDED],

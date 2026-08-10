@@ -2,7 +2,7 @@
     id: "ENM_GLADIATOR",
     name_key: "enm.gladiator.name",
     family: TROOP,
-    region_affinity: ["R04_ROME"],
+    region_affinity: ["R04"],
     gate: Always,
     stats: Stats(hp: 55, atk: 20, def: 12, spd: 10),
     resist: [],

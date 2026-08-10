@@ -2,7 +2,7 @@
     id: "ENM_STRASBOURG_KNIGHT",
     name_key: "enm.strasbourg_knight.name",
     family: BOSS,
-    region_affinity: ["R09_STRASBOURG"],
+    region_affinity: ["R09"],
     gate: Always,
     stats: Stats(hp: 260, atk: 32, def: 22, spd: 10),
     resist: [BROKEN_GUARD],

@@ -1,9 +1,9 @@
 (
-    id: "R15_VILLEFORT_MANSION",
+    id: "R15",
     name_key: "region.r15.name",
     description_key: "region.r15.description",
     tier: 5,
-    connections: ["R06_PARIS_SALON", "R14_MORCERF_ESTATE"],
+    connections: ["R06", "R14"],
     locked: false,
     gate: Always,
 )

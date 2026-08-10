@@ -2,7 +2,7 @@
     id: "ENM_FERNAND_MONDEGO",
     name_key: "enm.fernand_mondego.name",
     family: BOSS,
-    region_affinity: ["R14_MORCERF_ESTATE"],
+    region_affinity: ["R14"],
     gate: Always,
     stats: Stats(hp: 300, atk: 35, def: 20, spd: 14),
     resist: [BROKEN_GUARD],

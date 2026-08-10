@@ -2,7 +2,7 @@
     id: "ENM_COLOSSEUM_BEAST",
     name_key: "enm.colosseum_beast.name",
     family: BEAST,
-    region_affinity: ["R04_ROME"],
+    region_affinity: ["R04"],
     gate: Always,
     stats: Stats(hp: 70, atk: 22, def: 8, spd: 12),
     resist: [TERROR],

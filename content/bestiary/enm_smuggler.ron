@@ -2,7 +2,7 @@
     id: "ENM_SMUGGLER",
     name_key: "enm.smuggler.name",
     family: CRIMINAL,
-    region_affinity: ["R01_MARSEILLE", "R03_MONTE_CRISTO"],
+    region_affinity: ["R01", "R03"],
     gate: Always,
     stats: Stats(hp: 42, atk: 15, def: 5, spd: 10),
     resist: [BLEEDING],

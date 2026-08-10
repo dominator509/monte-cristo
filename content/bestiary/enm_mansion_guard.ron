@@ -2,7 +2,7 @@
     id: "ENM_MANSION_GUARD",
     name_key: "enm.mansion_guard.name",
     family: TROOP,
-    region_affinity: ["R15_VILLEFORT_MANSION"],
+    region_affinity: ["R15"],
     gate: Always,
     stats: Stats(hp: 50, atk: 18, def: 16, spd: 10),
     resist: [],

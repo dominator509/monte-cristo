@@ -2,7 +2,7 @@
     id: "ENM_RIVER_BANDIT",
     name_key: "enm.river_bandit.name",
     family: BANDIT,
-    region_affinity: ["R08_LYON"],
+    region_affinity: ["R08"],
     gate: Always,
     stats: Stats(hp: 35, atk: 15, def: 7, spd: 14),
     resist: [],

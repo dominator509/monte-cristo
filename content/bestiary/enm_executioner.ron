@@ -2,7 +2,7 @@
     id: "ENM_EXECUTIONER",
     name_key: "enm.executioner.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R03_MONTE_CRISTO", "R15_VILLEFORT_MANSION"],
+    region_affinity: ["R03", "R15"],
     gate: Always,
     stats: Stats(hp: 65, atk: 24, def: 14, spd: 8),
     resist: [BROKEN_GUARD],

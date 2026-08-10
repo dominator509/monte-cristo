@@ -2,7 +2,7 @@
     id: "ENM_SMUGGLER_KING",
     name_key: "enm.normandy_smuggler_king.name",
     family: BOSS,
-    region_affinity: ["R07_NORMANDY"],
+    region_affinity: ["R07"],
     gate: Always,
     stats: Stats(hp: 200, atk: 26, def: 14, spd: 14),
     resist: [BROKEN_GUARD],

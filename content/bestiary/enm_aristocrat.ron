@@ -2,7 +2,7 @@
     id: "ENM_ARISTOCRAT",
     name_key: "enm.aristocrat.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R06_PARIS_SALON"],
+    region_affinity: ["R06"],
     gate: Always,
     stats: Stats(hp: 30, atk: 10, def: 8, spd: 10),
     resist: [],

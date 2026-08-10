@@ -2,7 +2,7 @@
     id: "ENM_COLOSSEUM_CHAMPION",
     name_key: "enm.rome_colosseum.name",
     family: BOSS,
-    region_affinity: ["R04_ROME"],
+    region_affinity: ["R04"],
     gate: Always,
     stats: Stats(hp: 250, atk: 30, def: 20, spd: 12),
     resist: [BROKEN_GUARD],

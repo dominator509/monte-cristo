@@ -2,7 +2,7 @@
     id: "ENM_DESERT_SCORPION",
     name_key: "enm.desert_scorpion.name",
     family: VERMIN,
-    region_affinity: ["R11_ORIENT"],
+    region_affinity: ["R11"],
     gate: Always,
     stats: Stats(hp: 22, atk: 16, def: 4, spd: 24),
     resist: [TERROR],

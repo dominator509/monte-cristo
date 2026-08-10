@@ -2,7 +2,7 @@
     id: "ENM_MERCEDES_PROTECTOR",
     name_key: "enm.mercedes_protector.name",
     family: BOSS,
-    region_affinity: ["R14_MORCERF_ESTATE"],
+    region_affinity: ["R14"],
     gate: Always,
     stats: Stats(hp: 200, atk: 24, def: 14, spd: 12),
     resist: [BROKEN_GUARD],

@@ -2,7 +2,7 @@
     id: "ENM_CHAIN_GANG",
     name_key: "enm.chain_gang.name",
     family: PRISONER,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 60, atk: 16, def: 8, spd: 4),
     resist: [WINDED],

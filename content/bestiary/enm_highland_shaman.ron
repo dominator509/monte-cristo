@@ -2,7 +2,7 @@
     id: "ENM_HIGHLAND_SHAMAN",
     name_key: "enm.highland_shaman.name",
     family: CRIMINAL,
-    region_affinity: ["R13_ALBANIA"],
+    region_affinity: ["R13"],
     gate: Always,
     stats: Stats(hp: 30, atk: 12, def: 6, spd: 14),
     resist: [],

@@ -2,7 +2,7 @@
     id: "ENM_GERMAN_TRADER",
     name_key: "enm.german_trader.name",
     family: CRIMINAL,
-    region_affinity: ["R09_STRASBOURG"],
+    region_affinity: ["R09"],
     gate: Always,
     stats: Stats(hp: 25, atk: 8, def: 5, spd: 10),
     resist: [],

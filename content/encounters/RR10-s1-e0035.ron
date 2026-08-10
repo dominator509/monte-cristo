@@ -1,6 +1,6 @@
 Encounter(
     id: "RR10-s1-e0035",
-    region: "RR10",
+    region: "R10",
     chapter_stage: 1,
     pool: 1,
     enemies: ["ENM_SEA_SERPENT", "ENM_MERCHANT_GALLEY", "ENM_SLAVE_TRADER"],

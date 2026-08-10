@@ -2,7 +2,7 @@
     id: "ENM_AEGEAN_SAILOR",
     name_key: "enm.aegean_sailor.name",
     family: SEA,
-    region_affinity: ["R12_GREECE"],
+    region_affinity: ["R12"],
     gate: Always,
     stats: Stats(hp: 35, atk: 14, def: 8, spd: 12),
     resist: [],

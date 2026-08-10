@@ -1,6 +1,6 @@
 Encounter(
     id: "RR04-s1-e0022",
-    region: "RR04",
+    region: "R04",
     chapter_stage: 1,
     pool: 1,
     enemies: ["ENM_MERCHANT_GUARD", "ENM_STREET_VENDOR", "ENM_FORUM_THIEF", "ENM_PAPAL_SOLDIER"],

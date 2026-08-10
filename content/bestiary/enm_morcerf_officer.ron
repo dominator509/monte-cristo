@@ -2,7 +2,7 @@
     id: "ENM_MORCERF_OFFICER",
     name_key: "enm.morcerf_officer.name",
     family: TROOP,
-    region_affinity: ["R14_MORCERF_ESTATE"],
+    region_affinity: ["R14"],
     gate: Always,
     stats: Stats(hp: 55, atk: 20, def: 16, spd: 12),
     resist: [BROKEN_GUARD],

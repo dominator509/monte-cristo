@@ -2,7 +2,7 @@
     id: "ENM_SPYMASTER",
     name_key: "enm.paris_spymaster.name",
     family: BOSS,
-    region_affinity: ["R06_PARIS_SALON"],
+    region_affinity: ["R06"],
     gate: Always,
     stats: Stats(hp: 220, atk: 28, def: 15, spd: 18),
     resist: [BROKEN_GUARD],

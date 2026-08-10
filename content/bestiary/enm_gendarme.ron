@@ -2,7 +2,7 @@
     id: "ENM_GENDARME",
     name_key: "enm.gendarme.name",
     family: TROOP,
-    region_affinity: ["R01_MARSEILLE"],
+    region_affinity: ["R01"],
     gate: Not("FLG_ARRESTED"),
     stats: Stats(hp: 45, atk: 14, def: 8, spd: 7),
     resist: [BROKEN_GUARD],

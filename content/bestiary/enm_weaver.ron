@@ -2,7 +2,7 @@
     id: "ENM_WEAVER",
     name_key: "enm.weaver.name",
     family: CRIMINAL,
-    region_affinity: ["R08_LYON"],
+    region_affinity: ["R08"],
     gate: Always,
     stats: Stats(hp: 18, atk: 6, def: 3, spd: 8),
     resist: [],

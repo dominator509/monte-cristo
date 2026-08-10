@@ -2,7 +2,7 @@
     id: "ENM_WANDERING_KNIGHT",
     name_key: "enm.wandering_knight.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R09_STRASBOURG"],
+    region_affinity: ["R09"],
     gate: Always,
     stats: Stats(hp: 55, atk: 22, def: 16, spd: 12),
     resist: [BROKEN_GUARD],

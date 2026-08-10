@@ -2,7 +2,7 @@
     id: "ENM_MERCENARY",
     name_key: "enm.mercenary.name",
     family: BANDIT,
-    region_affinity: ["R09_STRASBOURG"],
+    region_affinity: ["R09"],
     gate: Always,
     stats: Stats(hp: 45, atk: 18, def: 10, spd: 14),
     resist: [],

@@ -2,7 +2,7 @@
     id: "ENM_PEASANT",
     name_key: "enm.peasant.name",
     family: CRIMINAL,
-    region_affinity: ["R07_NORMANDY"],
+    region_affinity: ["R07"],
     gate: Always,
     stats: Stats(hp: 15, atk: 6, def: 3, spd: 8),
     resist: [],

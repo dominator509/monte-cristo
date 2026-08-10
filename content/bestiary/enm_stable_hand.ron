@@ -2,7 +2,7 @@
     id: "ENM_STABLE_HAND",
     name_key: "enm.stable_hand.name",
     family: CRIMINAL,
-    region_affinity: ["R14_MORCERF_ESTATE"],
+    region_affinity: ["R14"],
     gate: Always,
     stats: Stats(hp: 22, atk: 8, def: 4, spd: 10),
     resist: [],

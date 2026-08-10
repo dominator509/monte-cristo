@@ -1,6 +1,6 @@
 Encounter(
     id: "RR01-s1-e0007",
-    region: "RR01",
+    region: "R01",
     chapter_stage: 1,
     pool: 2,
     enemies: ["ENM_DOCKHAND", "ENM_SMUGGLER", "ENM_BEGGAR", "ENM_BAR_BOUNCER"],

@@ -1,6 +1,6 @@
 Encounter(
     id: "RR15-s1-e0044",
-    region: "RR15",
+    region: "R15",
     chapter_stage: 1,
     pool: 1,
     enemies: ["ENM_CLERK_SECRETARY", "ENM_EXECUTIONER", "ENM_VILLEFORT_AGENT", "ENM_EVIDENCE_KEEPER"],

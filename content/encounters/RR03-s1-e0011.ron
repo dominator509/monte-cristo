@@ -1,6 +1,6 @@
 Encounter(
     id: "RR03-s1-e0011",
-    region: "RR03",
+    region: "R03",
     chapter_stage: 1,
     pool: 2,
     enemies: ["ENM_TURNKEY", "ENM_CONVICT", "ENM_SOLITARY_INMATE", "ENM_CORRIDOR_PATROL"],

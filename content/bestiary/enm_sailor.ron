@@ -2,7 +2,7 @@
     id: "ENM_SAILOR",
     name_key: "enm.sailor.name",
     family: BANDIT,
-    region_affinity: ["R01_MARSEILLE"],
+    region_affinity: ["R01"],
     gate: Always,
     stats: Stats(hp: 35, atk: 12, def: 5, spd: 9),
     resist: [],

@@ -2,7 +2,7 @@
     id: "ENM_DUNGEON_MASTER",
     name_key: "enm.dungeon_master.name",
     family: PRISONER,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 58, atk: 17, def: 9, spd: 7),
     resist: [BLEEDING, WINDED, FEVER],

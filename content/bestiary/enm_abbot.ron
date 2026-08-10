@@ -2,7 +2,7 @@
     id: "ENM_ABBOT",
     name_key: "enm.abbot.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R07_NORMANDY"],
+    region_affinity: ["R07"],
     gate: Always,
     stats: Stats(hp: 40, atk: 12, def: 10, spd: 8),
     resist: [],

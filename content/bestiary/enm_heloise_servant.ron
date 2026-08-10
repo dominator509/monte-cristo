@@ -2,7 +2,7 @@
     id: "ENM_HELOISE_SERVANT",
     name_key: "enm.heloise_servant.name",
     family: CRIMINAL,
-    region_affinity: ["R15_VILLEFORT_MANSION"],
+    region_affinity: ["R15"],
     gate: Always,
     stats: Stats(hp: 18, atk: 6, def: 3, spd: 10),
     resist: [],

@@ -2,7 +2,7 @@
     id: "ENM_BUTLER",
     name_key: "enm.butler.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R14_MORCERF_ESTATE"],
+    region_affinity: ["R14"],
     gate: Always,
     stats: Stats(hp: 35, atk: 12, def: 10, spd: 8),
     resist: [],

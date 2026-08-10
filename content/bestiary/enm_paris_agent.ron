@@ -2,7 +2,7 @@
     id: "ENM_PARIS_AGENT",
     name_key: "enm.paris_agent.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R05_PARIS_FAUBOURG"],
+    region_affinity: ["R05"],
     gate: Always,
     stats: Stats(hp: 40, atk: 16, def: 10, spd: 14),
     resist: [],

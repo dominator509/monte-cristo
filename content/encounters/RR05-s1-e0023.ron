@@ -1,6 +1,6 @@
 Encounter(
     id: "RR05-s1-e0023",
-    region: "RR05",
+    region: "R05",
     chapter_stage: 1,
     pool: 1,
     enemies: ["ENM_FAUBOURG_THUG", "ENM_PRINTER", "ENM_SPY", "ENM_HIDDEN_INFORMANT"],

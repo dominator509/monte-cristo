@@ -1,6 +1,6 @@
 Encounter(
     id: "RR08-s1-e0030",
-    region: "RR08",
+    region: "R08",
     chapter_stage: 1,
     pool: 1,
     enemies: ["ENM_CITY_GUARD_LYON", "ENM_MERCHANT_CARAVAN", "ENM_TRADE_NEGOTIATOR", "ENM_DANGLARS_AGENT"],

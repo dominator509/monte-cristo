@@ -2,7 +2,7 @@
     id: "ENM_ORACLE_PRIESTESS",
     name_key: "enm.oracle_priestess.name",
     family: CRIMINAL,
-    region_affinity: ["R12_GREECE"],
+    region_affinity: ["R12"],
     gate: Always,
     stats: Stats(hp: 30, atk: 12, def: 6, spd: 14),
     resist: [],

@@ -2,7 +2,7 @@
     id: "ENM_GREECE_TYRANT",
     name_key: "enm.greece_tyrant.name",
     family: BOSS,
-    region_affinity: ["R12_GREECE"],
+    region_affinity: ["R12"],
     gate: Always,
     stats: Stats(hp: 270, atk: 32, def: 18, spd: 14),
     resist: [BROKEN_GUARD],

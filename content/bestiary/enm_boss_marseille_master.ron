@@ -2,7 +2,7 @@
     id: "ENM_MARSEILLE_MASTER",
     name_key: "enm.marseille_master.name",
     family: BOSS,
-    region_affinity: ["R01_MARSEILLE"],
+    region_affinity: ["R01"],
     gate: Always,
     stats: Stats(hp: 180, atk: 24, def: 14, spd: 14),
     resist: [BROKEN_GUARD],

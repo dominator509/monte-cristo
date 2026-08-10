@@ -1,6 +1,6 @@
 Encounter(
     id: "RR07-s1-e0028",
-    region: "RR07",
+    region: "R07",
     chapter_stage: 1,
     pool: 1,
     enemies: ["ENM_ABBOT", "ENM_LOCAL_MILITIA", "ENM_SMUGGLER_NORMANDY", "ENM_CATTLE_DRIVER"],

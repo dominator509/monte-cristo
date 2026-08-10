@@ -2,7 +2,7 @@
     id: "ENM_ESTATE_STEWARD",
     name_key: "enm.estate_steward.name",
     family: CRIMINAL,
-    region_affinity: ["R14_MORCERF_ESTATE"],
+    region_affinity: ["R14"],
     gate: Always,
     stats: Stats(hp: 28, atk: 10, def: 8, spd: 10),
     resist: [],

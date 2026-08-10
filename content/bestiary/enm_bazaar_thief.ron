@@ -2,7 +2,7 @@
     id: "ENM_BAZAAR_THIEF",
     name_key: "enm.bazaar_thief.name",
     family: CRIMINAL,
-    region_affinity: ["R11_ORIENT"],
+    region_affinity: ["R11"],
     gate: Always,
     stats: Stats(hp: 20, atk: 10, def: 3, spd: 18),
     resist: [],

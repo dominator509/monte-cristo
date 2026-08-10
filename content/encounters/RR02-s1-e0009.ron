@@ -1,6 +1,6 @@
 Encounter(
     id: "RR02-s1-e0009",
-    region: "RR02",
+    region: "R02",
     chapter_stage: 1,
     pool: 1,
     enemies: ["ENM_ABBE_FARIA", "ENM_RAT_SWARM", "ENM_CHATEAU_SPIDER", "ENM_GIANT_RAT"],

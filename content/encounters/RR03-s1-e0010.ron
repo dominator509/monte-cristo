@@ -1,6 +1,6 @@
 Encounter(
     id: "RR03-s1-e0010",
-    region: "RR03",
+    region: "R03",
     chapter_stage: 1,
     pool: 2,
     enemies: ["ENM_CELL_RAT", "ENM_JAILER", "ENM_DUNGEON_MASTER", "ENM_WARDEN"],

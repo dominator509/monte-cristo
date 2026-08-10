@@ -2,7 +2,7 @@
     id: "ENM_COASTAL_PATROL",
     name_key: "enm.coastal_patrol.name",
     family: TROOP,
-    region_affinity: ["R07_NORMANDY"],
+    region_affinity: ["R07"],
     gate: Always,
     stats: Stats(hp: 40, atk: 15, def: 12, spd: 10),
     resist: [],

@@ -2,7 +2,7 @@
     id: "ENM_CONVICT",
     name_key: "enm.convict.name",
     family: PRISONER,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 40, atk: 14, def: 5, spd: 7),
     resist: [],

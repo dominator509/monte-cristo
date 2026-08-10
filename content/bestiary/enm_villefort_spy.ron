@@ -2,7 +2,7 @@
     id: "ENM_VILLEFORT_SPY",
     name_key: "enm.villefort_spy.name",
     family: CRIMINAL,
-    region_affinity: ["R15_VILLEFORT_MANSION"],
+    region_affinity: ["R15"],
     gate: Always,
     stats: Stats(hp: 28, atk: 14, def: 5, spd: 18),
     resist: [],

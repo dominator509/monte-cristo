@@ -103,7 +103,7 @@ fn references_orphans_and_affinity_are_checked_on_parsed_content() {
         .any(|error| error.message.contains("ENM_MISSING")));
     assert!(references
         .iter()
-        .any(|error| error.message.contains("R02_CHATEAU_DIF")));
+        .any(|error| error.message.contains("R02")));
 
     let orphans = orphan_detect(fixture.path());
     assert!(orphans
@@ -111,7 +111,7 @@ fn references_orphans_and_affinity_are_checked_on_parsed_content() {
         .any(|error| error.message.contains("ENM_ORPHAN")));
     assert!(orphans
         .iter()
-        .any(|error| error.message.contains("R01_MARSEILLE")));
+        .any(|error| error.message.contains("R01")));
 
     let affinity = region_affinity_check(fixture.path());
     assert_eq!(affinity.len(), 1);
@@ -125,7 +125,7 @@ fn references_orphans_and_affinity_are_checked_on_parsed_content() {
         .any(|error| error.contains("ENM_MISSING not in bestiary")));
     assert!(pack_references
         .iter()
-        .any(|error| error.contains("R02_CHATEAU_DIF not in regions")));
+        .any(|error| error.contains("R02 not in regions")));
 }
 
 #[test]

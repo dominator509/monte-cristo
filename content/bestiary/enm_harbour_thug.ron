@@ -2,7 +2,7 @@
     id: "ENM_HARBOUR_THUG",
     name_key: "enm.harbour_thug.name",
     family: BANDIT,
-    region_affinity: ["R01_MARSEILLE"],
+    region_affinity: ["R01"],
     gate: Always,
     stats: Stats(hp: 40, atk: 14, def: 5, spd: 9),
     resist: [],

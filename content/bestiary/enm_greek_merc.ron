@@ -2,7 +2,7 @@
     id: "ENM_GREEK_MERC",
     name_key: "enm.greek_merc.name",
     family: BANDIT,
-    region_affinity: ["R13_ALBANIA"],
+    region_affinity: ["R13"],
     gate: Always,
     stats: Stats(hp: 42, atk: 18, def: 10, spd: 14),
     resist: [],

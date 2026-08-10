@@ -2,7 +2,7 @@
     id: "ENM_SLAVE_TRADER",
     name_key: "enm.slave_trader.name",
     family: CRIMINAL,
-    region_affinity: ["R10_MEDITERRANEE"],
+    region_affinity: ["R10"],
     gate: Always,
     stats: Stats(hp: 45, atk: 18, def: 10, spd: 12),
     resist: [],

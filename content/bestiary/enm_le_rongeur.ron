@@ -2,7 +2,7 @@
     id: "ENM_LE_RONGEUR",
     name_key: "enm.le_rongeur.name",
     family: BOSS,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 100, atk: 32, def: 6, spd: 16),
     resist: [BLEEDING, POISONED, TERROR, FEVER],

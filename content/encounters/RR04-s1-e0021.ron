@@ -1,6 +1,6 @@
 Encounter(
     id: "RR04-s1-e0021",
-    region: "RR04",
+    region: "R04",
     chapter_stage: 1,
     pool: 1,
     enemies: ["ENM_CATACOMB_SCORPION", "ENM_GLADIATOR", "ENM_ROMAN_GUARD", "ENM_COLOSSEUM_BEAST"],

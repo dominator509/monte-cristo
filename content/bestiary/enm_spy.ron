@@ -2,7 +2,7 @@
     id: "ENM_SPY",
     name_key: "enm.spy.name",
     family: CRIMINAL,
-    region_affinity: ["R05_PARIS_FAUBOURG"],
+    region_affinity: ["R05"],
     gate: Always,
     stats: Stats(hp: 28, atk: 12, def: 5, spd: 18),
     resist: [],

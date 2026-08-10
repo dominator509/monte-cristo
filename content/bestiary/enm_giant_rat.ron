@@ -2,7 +2,7 @@
     id: "ENM_GIANT_RAT",
     name_key: "enm.giant_rat.name",
     family: VERMIN,
-    region_affinity: ["R02_CHATEAU_DIF", "R06_PARIS_SALON"],
+    region_affinity: ["R02", "R06"],
     gate: Always,
     stats: Stats(hp: 20, atk: 8, def: 4, spd: 18),
     resist: [TERROR],

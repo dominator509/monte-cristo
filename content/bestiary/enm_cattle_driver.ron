@@ -2,7 +2,7 @@
     id: "ENM_CATTLE_DRIVER",
     name_key: "enm.cattle_driver.name",
     family: CRIMINAL,
-    region_affinity: ["R07_NORMANDY"],
+    region_affinity: ["R07"],
     gate: Always,
     stats: Stats(hp: 30, atk: 12, def: 8, spd: 8),
     resist: [],

@@ -2,7 +2,7 @@
     id: "ENM_FERNAND_BODYGUARD",
     name_key: "enm.fernand_bodyguard.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R14_MORCERF_ESTATE"],
+    region_affinity: ["R14"],
     gate: Always,
     stats: Stats(hp: 60, atk: 22, def: 18, spd: 12),
     resist: [BROKEN_GUARD],

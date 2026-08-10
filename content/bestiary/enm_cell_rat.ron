@@ -2,7 +2,7 @@
     id: "ENM_CELL_RAT",
     name_key: "enm.cell_rat.name",
     family: VERMIN,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 15, atk: 5, def: 2, spd: 13),
     resist: [],

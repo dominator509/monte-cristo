@@ -1,6 +1,6 @@
 Encounter(
     id: "RR06-s1-e0027",
-    region: "RR06",
+    region: "R06",
     chapter_stage: 1,
     pool: 1,
     enemies: ["ENM_COURT_INTRIGUER", "ENM_FINAL_MONTE_CRISTO", "ENM_RAT_SWARM"],

@@ -2,7 +2,7 @@
     id: "ENM_DANGLARS_AGENT",
     name_key: "enm.danglars_agent.name",
     family: BOSS,
-    region_affinity: ["R08_LYON"],
+    region_affinity: ["R08"],
     gate: Always,
     stats: Stats(hp: 250, atk: 28, def: 18, spd: 16),
     resist: [BROKEN_GUARD],

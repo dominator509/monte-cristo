@@ -2,7 +2,7 @@
     id: "ENM_GREEK_REBEL",
     name_key: "enm.greek_rebel.name",
     family: BANDIT,
-    region_affinity: ["R12_GREECE"],
+    region_affinity: ["R12"],
     gate: Always,
     stats: Stats(hp: 45, atk: 18, def: 10, spd: 14),
     resist: [],

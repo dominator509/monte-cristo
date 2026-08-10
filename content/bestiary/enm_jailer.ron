@@ -2,7 +2,7 @@
     id: "ENM_JAILER",
     name_key: "enm.jailer.name",
     family: PRISONER,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 48, atk: 16, def: 7, spd: 6),
     resist: [WINDED],

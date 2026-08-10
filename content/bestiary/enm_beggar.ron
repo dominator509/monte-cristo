@@ -2,7 +2,7 @@
     id: "ENM_BEGGAR",
     name_key: "enm.beggar.name",
     family: CRIMINAL,
-    region_affinity: ["R01_MARSEILLE"],
+    region_affinity: ["R01"],
     gate: Always,
     stats: Stats(hp: 22, atk: 8, def: 3, spd: 6),
     resist: [],

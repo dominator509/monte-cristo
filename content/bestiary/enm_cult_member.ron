@@ -2,7 +2,7 @@
     id: "ENM_CULT_MEMBER",
     name_key: "enm.cult_member.name",
     family: CRIMINAL,
-    region_affinity: ["R12_GREECE"],
+    region_affinity: ["R12"],
     gate: Always,
     stats: Stats(hp: 32, atk: 14, def: 6, spd: 12),
     resist: [],

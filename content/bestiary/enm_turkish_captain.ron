@@ -2,7 +2,7 @@
     id: "ENM_TURKISH_CAPTAIN",
     name_key: "enm.turkish_captain.name",
     family: TROOP,
-    region_affinity: ["R10_MEDITERRANEE"],
+    region_affinity: ["R10"],
     gate: Always,
     stats: Stats(hp: 55, atk: 20, def: 14, spd: 12),
     resist: [BROKEN_GUARD],

@@ -2,7 +2,7 @@
     id: "ENM_OLYMPIAN_SENTINEL",
     name_key: "enm.olympian_sentinel.name",
     family: HAZARD,
-    region_affinity: ["R12_GREECE"],
+    region_affinity: ["R12"],
     gate: Always,
     stats: Stats(hp: 75, atk: 26, def: 18, spd: 14),
     resist: [TERROR, BROKEN_GUARD],

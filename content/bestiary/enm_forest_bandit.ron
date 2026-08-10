@@ -2,7 +2,7 @@
     id: "ENM_FOREST_BANDIT",
     name_key: "enm.forest_bandit.name",
     family: BANDIT,
-    region_affinity: ["R09_STRASBOURG"],
+    region_affinity: ["R09"],
     gate: Always,
     stats: Stats(hp: 38, atk: 16, def: 8, spd: 16),
     resist: [],

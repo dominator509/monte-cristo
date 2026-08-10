@@ -2,7 +2,7 @@
     id: "ENM_FAUBOURG_THUG",
     name_key: "enm.faubourg_thug.name",
     family: BANDIT,
-    region_affinity: ["R05_PARIS_FAUBOURG"],
+    region_affinity: ["R05"],
     gate: Always,
     stats: Stats(hp: 38, atk: 16, def: 8, spd: 10),
     resist: [],

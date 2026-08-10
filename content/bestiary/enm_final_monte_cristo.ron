@@ -2,7 +2,7 @@
     id: "ENM_FINAL_MONTE_CRISTO",
     name_key: "enm.final_monte_cristo.name",
     family: BOSS,
-    region_affinity: ["R06_PARIS_SALON"],
+    region_affinity: ["R06"],
     gate: Always,
     stats: Stats(hp: 500, atk: 40, def: 25, spd: 18),
     resist: [BROKEN_GUARD, TERROR],

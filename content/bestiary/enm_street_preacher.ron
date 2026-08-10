@@ -2,7 +2,7 @@
     id: "ENM_STREET_PREACHER",
     name_key: "enm.street_preacher.name",
     family: CRIMINAL,
-    region_affinity: ["R05_PARIS_FAUBOURG"],
+    region_affinity: ["R05"],
     gate: Always,
     stats: Stats(hp: 20, atk: 6, def: 4, spd: 10),
     resist: [],

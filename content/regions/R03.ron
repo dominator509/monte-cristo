@@ -1,9 +1,9 @@
 (
-    id: "R03_MONTE_CRISTO",
+    id: "R03",
     name_key: "region.r03.name",
     description_key: "region.r03.description",
     tier: 1,
-    connections: ["R02_CHATEAU_DIF", "R04_ROME", "R10_MEDITERRANEE"],
+    connections: ["R02", "R04", "R10"],
     locked: false,
     gate: Always,
 )

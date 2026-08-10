@@ -1,9 +1,9 @@
 (
-    id: "R10_MEDITERRANEE",
+    id: "R10",
     name_key: "region.r10.name",
     description_key: "region.r10.description",
     tier: 4,
-    connections: ["R03_MONTE_CRISTO", "R11_ORIENT"],
+    connections: ["R03", "R11"],
     locked: false,
     gate: Always,
 )

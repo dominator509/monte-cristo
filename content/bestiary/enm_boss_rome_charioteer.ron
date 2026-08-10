@@ -2,7 +2,7 @@
     id: "ENM_ROME_CHARIOTEER",
     name_key: "enm.rome_charioteer.name",
     family: BOSS,
-    region_affinity: ["R04_ROME"],
+    region_affinity: ["R04"],
     gate: Always,
     stats: Stats(hp: 210, atk: 28, def: 12, spd: 20),
     resist: [BROKEN_GUARD],

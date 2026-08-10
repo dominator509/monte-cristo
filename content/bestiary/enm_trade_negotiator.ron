@@ -2,7 +2,7 @@
     id: "ENM_TRADE_NEGOTIATOR",
     name_key: "enm.trade_negotiator.name",
     family: CRIMINAL,
-    region_affinity: ["R08_LYON"],
+    region_affinity: ["R08"],
     gate: Always,
     stats: Stats(hp: 20, atk: 8, def: 4, spd: 12),
     resist: [],

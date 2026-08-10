@@ -2,7 +2,7 @@
     id: "ENM_GREECE_PHILOSOPHER",
     name_key: "enm.greece_philosopher.name",
     family: BOSS,
-    region_affinity: ["R12_GREECE"],
+    region_affinity: ["R12"],
     gate: Always,
     stats: Stats(hp: 200, atk: 24, def: 10, spd: 18),
     resist: [BROKEN_GUARD],

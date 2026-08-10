@@ -2,7 +2,7 @@
     id: "ENM_EXAMINING_JUDGE",
     name_key: "enm.examining_judge.name",
     family: MAN_AT_ARMS,
-    region_affinity: ["R15_VILLEFORT_MANSION"],
+    region_affinity: ["R15"],
     gate: Always,
     stats: Stats(hp: 45, atk: 16, def: 12, spd: 10),
     resist: [BROKEN_GUARD],

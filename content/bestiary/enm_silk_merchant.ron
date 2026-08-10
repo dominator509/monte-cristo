@@ -2,7 +2,7 @@
     id: "ENM_SILK_MERCHANT",
     name_key: "enm.silk_merchant.name",
     family: CRIMINAL,
-    region_affinity: ["R08_LYON"],
+    region_affinity: ["R08"],
     gate: Always,
     stats: Stats(hp: 22, atk: 8, def: 5, spd: 10),
     resist: [],

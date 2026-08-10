@@ -2,7 +2,7 @@
     id: "ENM_SMUGGLER_NORMANDY",
     name_key: "enm.smuggler_normandy.name",
     family: CRIMINAL,
-    region_affinity: ["R07_NORMANDY"],
+    region_affinity: ["R07"],
     gate: Always,
     stats: Stats(hp: 35, atk: 14, def: 7, spd: 14),
     resist: [],

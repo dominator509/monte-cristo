@@ -2,7 +2,7 @@
     id: "ENM_WARDEN",
     name_key: "enm.warden.name",
     family: PRISONER,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 65, atk: 18, def: 10, spd: 6),
     resist: [WINDED, BLEEDING, TERROR],

@@ -2,7 +2,7 @@
     id: "ENM_DOCKHAND",
     name_key: "enm.dockhand.name",
     family: BANDIT,
-    region_affinity: ["R01_MARSEILLE"],
+    region_affinity: ["R01"],
     gate: Always,
     stats: Stats(hp: 38, atk: 13, def: 6, spd: 7),
     resist: [BLEEDING],

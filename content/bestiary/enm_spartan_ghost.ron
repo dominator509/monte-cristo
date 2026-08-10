@@ -2,7 +2,7 @@
     id: "ENM_SPARTAN_GHOST",
     name_key: "enm.spartan_ghost.name",
     family: HAZARD,
-    region_affinity: ["R12_GREECE"],
+    region_affinity: ["R12"],
     gate: Always,
     stats: Stats(hp: 60, atk: 24, def: 20, spd: 12),
     resist: [TERROR],

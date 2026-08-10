@@ -2,7 +2,7 @@
     id: "ENM_CONSPIRATOR",
     name_key: "enm.conspirator.name",
     family: CRIMINAL,
-    region_affinity: ["R06_PARIS_SALON"],
+    region_affinity: ["R06"],
     gate: Always,
     stats: Stats(hp: 32, atk: 14, def: 6, spd: 14),
     resist: [],

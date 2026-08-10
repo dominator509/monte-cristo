@@ -2,7 +2,7 @@
     id: "ENM_LEVIATHAN",
     name_key: "enm.leviathan.name",
     family: BEAST,
-    region_affinity: ["R10_MEDITERRANEE"],
+    region_affinity: ["R10"],
     gate: Always,
     stats: Stats(hp: 120, atk: 30, def: 18, spd: 10),
     resist: [TERROR, BROKEN_GUARD],

@@ -2,7 +2,7 @@
     id: "ENM_SOLITARY_INMATE",
     name_key: "enm.solitary_convict.name",
     family: PRISONER,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 55, atk: 18, def: 6, spd: 5),
     resist: [FEVER, TERROR],

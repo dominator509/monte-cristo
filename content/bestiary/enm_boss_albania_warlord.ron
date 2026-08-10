@@ -2,7 +2,7 @@
     id: "ENM_ALBANIA_WARLORD",
     name_key: "enm.albania_warlord.name",
     family: BOSS,
-    region_affinity: ["R13_ALBANIA"],
+    region_affinity: ["R13"],
     gate: Always,
     stats: Stats(hp: 260, atk: 30, def: 16, spd: 14),
     resist: [BROKEN_GUARD],

@@ -2,7 +2,7 @@
     id: "ENM_MUTINEER",
     name_key: "enm.mutineer.name",
     family: PRISONER,
-    region_affinity: ["R03_MONTE_CRISTO"],
+    region_affinity: ["R03"],
     gate: Always,
     stats: Stats(hp: 52, atk: 17, def: 5, spd: 9),
     resist: [],

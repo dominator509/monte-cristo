@@ -2,7 +2,7 @@
     id: "ENM_MONASTERY_MONK",
     name_key: "enm.monastery_monk.name",
     family: CRIMINAL,
-    region_affinity: ["R07_NORMANDY"],
+    region_affinity: ["R07"],
     gate: Always,
     stats: Stats(hp: 25, atk: 8, def: 6, spd: 8),
     resist: [],

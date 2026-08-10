@@ -2,7 +2,7 @@
     id: "ENM_CORSAIR",
     name_key: "enm.corsair.name",
     family: SEA,
-    region_affinity: ["R10_MEDITERRANEE"],
+    region_affinity: ["R10"],
     gate: Always,
     stats: Stats(hp: 50, atk: 20, def: 10, spd: 16),
     resist: [],

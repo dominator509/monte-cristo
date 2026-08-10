@@ -2,7 +2,7 @@
     id: "ENM_CATACOMB_SCORPION",
     name_key: "enm.catacomb_scorpion.name",
     family: VERMIN,
-    region_affinity: ["R04_ROME"],
+    region_affinity: ["R04"],
     gate: Always,
     stats: Stats(hp: 18, atk: 14, def: 3, spd: 22),
     resist: [TERROR],

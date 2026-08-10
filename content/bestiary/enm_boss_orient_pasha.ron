@@ -2,7 +2,7 @@
     id: "ENM_ORIENT_PASHA",
     name_key: "enm.orient_pasha.name",
     family: BOSS,
-    region_affinity: ["R11_ORIENT"],
+    region_affinity: ["R11"],
     gate: Always,
     stats: Stats(hp: 280, atk: 34, def: 20, spd: 14),
     resist: [BROKEN_GUARD],

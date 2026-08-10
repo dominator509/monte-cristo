@@ -1,6 +1,6 @@
 Encounter(
     id: "RR03-s1-e0012",
-    region: "RR03",
+    region: "R03",
     chapter_stage: 1,
     pool: 2,
     enemies: ["ENM_EXECUTIONER", "ENM_ANTOINE_STRANGLER", "ENM_PRISON_GUARD", "ENM_CHAIN_GANG"],

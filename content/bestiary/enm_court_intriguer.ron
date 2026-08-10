@@ -2,7 +2,7 @@
     id: "ENM_COURT_INTRIGUER",
     name_key: "enm.court_intriguer.name",
     family: CRIMINAL,
-    region_affinity: ["R06_PARIS_SALON"],
+    region_affinity: ["R06"],
     gate: Always,
     stats: Stats(hp: 28, atk: 12, def: 6, spd: 15),
     resist: [],

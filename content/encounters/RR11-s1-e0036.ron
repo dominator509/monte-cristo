@@ -1,6 +1,6 @@
 Encounter(
     id: "RR11-s1-e0036",
-    region: "RR11",
+    region: "R11",
     chapter_stage: 1,
     pool: 1,
     enemies: ["ENM_BAZAAR_THIEF", "ENM_GRAND_VIZIER", "ENM_PALACE_GUARD", "ENM_CARAVAN_GUARD"],

@@ -2,7 +2,7 @@
     id: "ENM_HIDDEN_INFORMANT",
     name_key: "enm.hidden_informant.name",
     family: CRIMINAL,
-    region_affinity: ["R05_PARIS_FAUBOURG"],
+    region_affinity: ["R05"],
     gate: Always,
     stats: Stats(hp: 24, atk: 10, def: 4, spd: 16),
     resist: [],

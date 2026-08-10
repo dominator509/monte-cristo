@@ -2,7 +2,7 @@
     id: "ENM_MASKED_STRANGER",
     name_key: "enm.masked_stranger.name",
     family: CRIMINAL,
-    region_affinity: ["R06_PARIS_SALON"],
+    region_affinity: ["R06"],
     gate: Always,
     stats: Stats(hp: 35, atk: 16, def: 8, spd: 18),
     resist: [],

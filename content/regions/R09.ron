@@ -1,9 +1,9 @@
 (
-    id: "R09_STRASBOURG",
+    id: "R09",
     name_key: "region.r09.name",
     description_key: "region.r09.description",
     tier: 3,
-    connections: ["R08_LYON"],
+    connections: ["R08"],
     locked: false,
     gate: Always,
 )
