@@ -84,6 +84,11 @@ pub struct Battle {
     pub state: BattleState,
     pub combatants: Vec<Combatant>,
     pub wait_mode: bool,
+    /// One-hit guard latches indexed like `combatants`.
+    ///
+    /// The save loader migrates pre-guard saves with an empty latch vector.
+    #[serde(default)]
+    pub guarding: Vec<bool>,
 }
 
 impl Battle {
@@ -91,10 +96,27 @@ impl Battle {
     pub fn new(party: Vec<Combatant>, enemies: Vec<Combatant>) -> Self {
         let mut combatants = party;
         combatants.extend(enemies);
+        let guarding = vec![false; combatants.len()];
         Battle {
             state: BattleState::Active,
             combatants,
             wait_mode: false,
+            guarding,
+        }
+    }
+
+    /// Return whether a combatant has an active one-hit guard latch.
+    pub fn is_guarding(&self, index: usize) -> bool {
+        self.guarding.get(index).copied().unwrap_or(false)
+    }
+
+    /// Set a combatant's one-hit guard latch, growing a legacy vector if needed.
+    pub fn set_guarding(&mut self, index: usize, guarding: bool) {
+        if index >= self.guarding.len() {
+            self.guarding.resize(self.combatants.len(), false);
+        }
+        if let Some(latch) = self.guarding.get_mut(index) {
+            *latch = guarding;
         }
     }
 

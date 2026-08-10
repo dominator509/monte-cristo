@@ -580,7 +580,11 @@ fn resolve_battle_action(
                     .mitigated;
             battle::damage::apply_damage(&mut battle.combatants[target_index], damage);
         }
-        Action::Guard => {}
+        Action::Guard => {
+            // Guard is a one-hit latch. The next incoming enemy strike consumes
+            // it and applies the locked half-damage reduction.
+            battle.set_guarding(actor.0, true);
+        }
         Action::Flee => {
             battle.state = BattleState::Fleeing;
         }
@@ -590,6 +594,10 @@ fn resolve_battle_action(
         Action::Item { .. } => {
             return Err("Item action was not routed through the authored item resolver".into())
         }
+    }
+
+    if !matches!(action, Action::Guard) {
+        battle.set_guarding(actor.0, false);
     }
 
     battle.combatants[actor.0].atb.reset();
@@ -656,6 +664,8 @@ fn resolve_item_action(
         if !world.inventory.remove_item(item_id, 1) {
             return Err("Item disappeared before use could be committed".into());
         }
+        // The action is now committed, so it ends a previous guard latch.
+        battle.set_guarding(actor.0, false);
         let target_combatant = &mut battle.combatants[target.0];
         target_combatant.hp = target_combatant
             .hp

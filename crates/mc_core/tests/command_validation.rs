@@ -180,6 +180,56 @@ fn attack_command_resolves_against_the_authoritative_battle() {
 }
 
 #[test]
+fn guard_command_reduces_the_next_incoming_hit_by_half() {
+    let mut guarded = World::new(42);
+    let mut party = Combatant {
+        kind: CombatantKind::PartyMember(CharId::CHR_EDMOND),
+        affiliation: Affiliation::Party,
+        name: "Edmond".into(),
+        atb: AtbGauge::new(Fx::from_int(12)),
+        hp: Fx::from_int(100),
+        max_hp: Fx::from_int(100),
+        attack: Fx::from_int(10),
+        defense: Fx::from_int(8),
+        speed: Fx::from_int(12),
+        level: 1,
+        statuses: StatusList::new(),
+    };
+    party.atb.force_full();
+    let mut enemy = Combatant {
+        kind: CombatantKind::Enemy(EnemyId::ENM_BANDIT),
+        affiliation: Affiliation::Enemy,
+        name: "Bandit".into(),
+        atb: AtbGauge::new(Fx::from_int(8)),
+        hp: Fx::from_int(30),
+        max_hp: Fx::from_int(30),
+        attack: Fx::from_int(6),
+        defense: Fx::from_int(4),
+        speed: Fx::from_int(8),
+        level: 1,
+        statuses: StatusList::new(),
+    };
+    enemy.atb.force_full();
+    guarded.battle = Some(Battle::new(vec![party], vec![enemy]));
+    let mut unguarded = guarded.clone();
+
+    let guard = Command::SelectAction(mc_core::command::ActorId(0), Action::Guard);
+    assert_valid(
+        &apply_commands(&mut guarded, std::slice::from_ref(&guard))[0],
+        &guard,
+    );
+    guarded.step();
+    unguarded.step();
+
+    let guarded_hp = guarded.battle.as_ref().unwrap().combatants[0].hp;
+    let unguarded_hp = unguarded.battle.as_ref().unwrap().combatants[0].hp;
+    let guarded_damage = Fx::from_int(100).saturating_sub(guarded_hp);
+    let unguarded_damage = Fx::from_int(100).saturating_sub(unguarded_hp);
+    assert_eq!(guarded_damage, unguarded_damage.saturating_mul(Fx::HALF));
+    assert!(!guarded.battle.as_ref().unwrap().is_guarding(0));
+}
+
+#[test]
 fn authored_potion_heals_and_consumes_inventory() {
     let mut world = World::new(42);
     let mut party = Combatant {

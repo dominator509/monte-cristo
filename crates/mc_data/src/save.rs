@@ -8,7 +8,17 @@
 use std::fs;
 use std::path::Path;
 
-use mc_core::world::World;
+use mc_core::battle::{Battle, BattleState, Combatant};
+use mc_core::world::{Act, EncounterBudget, Inventory, Party, World};
+use mc_core::{
+    calendar::IfCalendar,
+    curriculum::Curriculum,
+    flags::FlagSet,
+    ids::{CharId, RegionId},
+    rng::Rng,
+    scene::SceneState,
+    season::SeasonClock,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::error::SaveError;
@@ -21,6 +31,70 @@ pub const MAX_SCHEMA_VERSION: u16 = 256;
 
 /// Maximum length (in characters) for `product_version`.
 pub const MAX_PRODUCT_VERSION_LEN: usize = 128;
+
+/// The battle shape used by schema v2 before Guard became stateful.
+#[derive(Deserialize, Serialize)]
+struct LegacyBattle {
+    state: BattleState,
+    combatants: Vec<Combatant>,
+    wait_mode: bool,
+}
+
+impl LegacyBattle {
+    fn into_current(self) -> Battle {
+        let guarding = vec![false; self.combatants.len()];
+        Battle {
+            state: self.state,
+            combatants: self.combatants,
+            wait_mode: self.wait_mode,
+            guarding,
+        }
+    }
+}
+
+/// The schema-v2 world shape, kept only for one-way save migration.
+#[derive(Deserialize, Serialize)]
+struct LegacyWorld {
+    seed: u128,
+    tick: u64,
+    act: Act,
+    region: RegionId,
+    party: Party,
+    flags: FlagSet,
+    trust: std::collections::BTreeMap<CharId, i16>,
+    mask: i16,
+    curriculum: Curriculum,
+    inventory: Inventory,
+    budgets: std::collections::BTreeMap<(RegionId, u32), EncounterBudget>,
+    battle: Option<LegacyBattle>,
+    scene: Option<SceneState>,
+    calendar: Option<IfCalendar>,
+    season: Option<SeasonClock>,
+    rng: Rng,
+}
+
+impl LegacyWorld {
+    fn into_current(self) -> World {
+        World {
+            seed: self.seed,
+            tick: self.tick,
+            act: self.act,
+            region: self.region,
+            party: self.party,
+            flags: self.flags,
+            trust: self.trust,
+            mask: self.mask,
+            curriculum: self.curriculum,
+            inventory: self.inventory,
+            budgets: self.budgets,
+            battle: self.battle.map(LegacyBattle::into_current),
+            scene: self.scene,
+            calendar: self.calendar,
+            season: self.season,
+            rng: self.rng,
+        }
+    }
+}
 
 /// A game-state save with content-addressing integrity.
 ///
@@ -107,8 +181,16 @@ impl Save {
             String,
             [u8; 32],
             World,
-        ) = postcard::from_bytes(body)
-            .map_err(|e| SaveError::Deserialize(format!("postcard decode failed: {e}")))?;
+        ) = match postcard::from_bytes(body) {
+            Ok(decoded) => decoded,
+            Err(current_error) => {
+                let legacy: (u16, String, [u8; 32], LegacyWorld) = postcard::from_bytes(body)
+                    .map_err(|_| {
+                        SaveError::Deserialize(format!("postcard decode failed: {current_error}"))
+                    })?;
+                (legacy.0, legacy.1, legacy.2, legacy.3.into_current())
+            }
+        };
 
         // 2. Version check – refuse newer
         if schema_version > CURRENT_SCHEMA_VERSION {
@@ -190,4 +272,68 @@ impl Save {
 /// Helper: format a 32-byte digest as a lowercase hex string.
 fn hex_str(bytes: &[u8; 32]) -> String {
     blake3::Hash::from(*bytes).to_hex().to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn schema_v2_battle_migrates_without_guard_latches() {
+        let mut world = World::new(42);
+        world.battle = Some(Battle::new(Vec::new(), Vec::new()));
+        let World {
+            seed,
+            tick,
+            act,
+            region,
+            party,
+            flags,
+            trust,
+            mask,
+            curriculum,
+            inventory,
+            budgets,
+            battle,
+            scene,
+            calendar,
+            season,
+            rng,
+        } = world;
+        let legacy_world = LegacyWorld {
+            seed,
+            tick,
+            act,
+            region,
+            party,
+            flags,
+            trust,
+            mask,
+            curriculum,
+            inventory,
+            budgets,
+            battle: battle.map(|battle| LegacyBattle {
+                state: battle.state,
+                combatants: battle.combatants,
+                wait_mode: battle.wait_mode,
+            }),
+            scene,
+            calendar,
+            season,
+            rng,
+        };
+        let body = postcard::to_allocvec(&(2u16, "0.1.0".to_string(), [1u8; 32], legacy_world))
+            .expect("legacy save body should encode");
+        let digest = *blake3::hash(&body).as_bytes();
+        let mut bytes = body;
+        bytes.extend_from_slice(&digest);
+
+        let loaded = Save::load(&bytes).expect("schema-v2 save should migrate");
+        let battle = loaded
+            .world
+            .battle
+            .expect("legacy battle should remain present");
+        assert!(battle.guarding.is_empty());
+        assert!(!battle.is_guarding(0));
+    }
 }

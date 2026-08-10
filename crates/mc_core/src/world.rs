@@ -244,13 +244,17 @@ impl World {
                     };
                     let attacker = battle.combatants[attacker_index].clone();
                     let defender = battle.combatants[target_index].clone();
-                    let damage = crate::battle::damage::compute_damage(
+                    let mut damage = crate::battle::damage::compute_damage(
                         attacker.attack,
                         &attacker,
                         &defender,
                         &mut rng,
                     )
                     .mitigated;
+                    if battle.is_guarding(target_index) {
+                        damage = damage.saturating_mul(Fx::HALF);
+                        battle.set_guarding(target_index, false);
+                    }
                     crate::battle::damage::apply_damage(
                         &mut battle.combatants[target_index],
                         damage,
