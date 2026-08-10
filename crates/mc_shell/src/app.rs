@@ -20,7 +20,8 @@ use crate::ui::{
 };
 use macroquad::prelude::*;
 use mc_core::command::{
-    apply_commands_with_catalogs, ChoiceIdx, Command, CoreEvent, Dir, SaveSlot, StateView,
+    apply_commands_with_catalogs, Action, ActorId, ChoiceIdx, Command, CoreEvent, Dir, SaveSlot,
+    StateView, TargetId,
 };
 use mc_core::item::AuthoredItemCatalog;
 use mc_core::scene::AuthoredSceneCatalog;
@@ -213,6 +214,7 @@ impl App {
             let _events = self.apply_commands(&commands);
             let step_started = Instant::now();
             self.world.step();
+            self.sync_battle_screen_state();
             crate::obs::record_core_step(step_started.elapsed());
             crate::obs::CURRENT_TICK.store(self.world.tick, std::sync::atomic::Ordering::Relaxed);
             crate::obs::record_state_hash(*self.world.state_hash().as_bytes());
@@ -241,6 +243,7 @@ impl App {
             }
             let step_started = Instant::now();
             self.world.step();
+            self.sync_battle_screen_state();
             crate::obs::record_core_step(step_started.elapsed());
             crate::obs::CURRENT_TICK.store(self.world.tick, std::sync::atomic::Ordering::Relaxed);
             crate::obs::record_state_hash(*self.world.state_hash().as_bytes());
@@ -425,7 +428,8 @@ impl App {
             ScreenState::Menu => return self.translate_menu_input(commands),
             ScreenState::MenuDetail(_) => return self.translate_menu_detail_input(commands),
             ScreenState::FileSelect(mode) => return self.translate_file_input(mode, commands),
-            ScreenState::Field | ScreenState::Battle => {}
+            ScreenState::Battle => return self.translate_battle_input(commands),
+            ScreenState::Field => {}
         }
         let Some(state) = self.world.scene.as_ref() else {
             return commands;
@@ -467,6 +471,45 @@ impl App {
             }
         }
         translated
+    }
+
+    /// Translate the shared interact control into the default authored battle action.
+    /// Targeting remains deterministic: the core exposes the first living enemy.
+    fn translate_battle_input(&self, commands: Vec<Command>) -> Vec<Command> {
+        let Some((actor, target)) = self.world.battle.as_ref().and_then(|battle| {
+            if battle.state != mc_core::battle::BattleState::Active {
+                return None;
+            }
+            Some((battle.first_party_index()?, battle.first_enemy_index()?))
+        }) else {
+            return commands;
+        };
+        commands
+            .into_iter()
+            .map(|command| match command {
+                Command::Interact => Command::SelectAction(
+                    ActorId(actor),
+                    Action::Attack {
+                        target: TargetId(target),
+                    },
+                ),
+                other => other,
+            })
+            .collect()
+    }
+
+    /// Keep the shell overlay aligned with the authoritative battle state.
+    fn sync_battle_screen_state(&mut self) {
+        let active = self
+            .world
+            .battle
+            .as_ref()
+            .is_some_and(|battle| battle.state == mc_core::battle::BattleState::Active);
+        match (self.screen_state, active) {
+            (ScreenState::Field, true) => self.screen_state = ScreenState::Battle,
+            (ScreenState::Battle, false) => self.screen_state = ScreenState::Field,
+            _ => {}
+        }
     }
 
     fn translate_title_input(&mut self, commands: Vec<Command>) -> Vec<Command> {
@@ -781,7 +824,7 @@ impl App {
                 }
             }
             ScreenState::Battle => {
-                draw_battle_interface(self.world.tick);
+                draw_battle_interface(view);
             }
             ScreenState::Menu => {
                 draw_menu_screen(self.world.tick, self.menu_choice_index);
@@ -842,6 +885,11 @@ pub fn screen_state_after(current: ScreenState, commands: &[Command]) -> ScreenS
 mod tests {
     use super::*;
     use crate::config::{ShellConfig, ValidatedConfig};
+    use mc_core::battle::atb::AtbGauge;
+    use mc_core::battle::status::StatusList;
+    use mc_core::battle::{Affiliation, Battle, BattleState, Combatant, CombatantKind};
+    use mc_core::fx::Fx;
+    use mc_core::ids::{CharId, EnemyId};
     use std::path::PathBuf;
 
     fn temp_dir(name: &str) -> PathBuf {
@@ -858,6 +906,68 @@ mod tests {
             ValidatedConfig::from_config(ShellConfig::default(), temp_dir(name)),
             true,
         )
+    }
+
+    fn active_battle() -> Battle {
+        Battle::new(
+            vec![Combatant {
+                kind: CombatantKind::PartyMember(CharId::CHR_EDMOND),
+                affiliation: Affiliation::Party,
+                name: "Edmond".into(),
+                atb: AtbGauge::new(Fx::from_int(12)),
+                hp: Fx::from_int(100),
+                max_hp: Fx::from_int(100),
+                attack: Fx::from_int(10),
+                defense: Fx::from_int(8),
+                speed: Fx::from_int(12),
+                level: 1,
+                statuses: StatusList::new(),
+            }],
+            vec![Combatant {
+                kind: CombatantKind::Enemy(EnemyId::ENM_BANDIT),
+                affiliation: Affiliation::Enemy,
+                name: "Bandit".into(),
+                atb: AtbGauge::new(Fx::from_int(8)),
+                hp: Fx::from_int(30),
+                max_hp: Fx::from_int(30),
+                attack: Fx::from_int(6),
+                defense: Fx::from_int(4),
+                speed: Fx::from_int(8),
+                level: 1,
+                statuses: StatusList::new(),
+            }],
+        )
+    }
+
+    #[test]
+    fn battle_input_translates_interact_to_default_attack() {
+        let mut app = app("battle-input");
+        let mut battle = active_battle();
+        battle.combatants[0].atb.force_full();
+        app.world.battle = Some(battle);
+        app.screen_state = ScreenState::Battle;
+
+        assert_eq!(
+            app.translate_scene_input(vec![Command::Interact]),
+            vec![Command::SelectAction(
+                ActorId(0),
+                Action::Attack {
+                    target: TargetId(1)
+                }
+            )]
+        );
+    }
+
+    #[test]
+    fn battle_screen_sync_follows_authoritative_state() {
+        let mut app = app("battle-screen-sync");
+        app.world.battle = Some(active_battle());
+        app.sync_battle_screen_state();
+        assert_eq!(app.screen_state, ScreenState::Battle);
+
+        app.world.battle.as_mut().unwrap().state = BattleState::Victory;
+        app.sync_battle_screen_state();
+        assert_eq!(app.screen_state, ScreenState::Field);
     }
 
     #[test]
