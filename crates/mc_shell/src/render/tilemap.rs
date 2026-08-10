@@ -92,7 +92,7 @@ impl Tilemap {
     /// visual language instead of a startup checkerboard.
     pub fn for_scene(act: Act, region: RegionId) -> Self {
         let mut map = Self::new();
-        let seed = (region.raw() as u16).wrapping_add((act as u16).wrapping_mul(19));
+        let seed = region.raw().wrapping_add((act as u16).wrapping_mul(19));
         let ground = 1 + seed % 3;
 
         for y in 0..TILES_Y {

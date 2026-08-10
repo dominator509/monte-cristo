@@ -7,7 +7,7 @@
 use crate::config::ValidatedConfig;
 use crate::render::palette::{scene_palette, sky_gradient};
 use crate::render::target::{ShellRenderTarget, INTERNAL_HEIGHT, INTERNAL_WIDTH};
-use crate::render::tilemap::{Tilemap, TILES_X, TILES_Y};
+use crate::render::tilemap::Tilemap;
 use crate::ui::advisory::draw_advisory_screen;
 use crate::ui::{battle::draw_battle_interface, menu::draw_field_hud, menu::draw_menu_screen};
 use macroquad::prelude::*;
