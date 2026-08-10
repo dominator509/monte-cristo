@@ -121,8 +121,13 @@ fn main() -> ExitCode {
                 eprintln!("bake failed: {} error(s)", errs.len());
                 return ExitCode::FAILURE;
             }
-            let pack = mc_data::pack::Pack::from_content(&input)
-                .expect("bake validation passed but Pack::from_content failed");
+            let pack = match mc_data::pack::Pack::from_content(&input) {
+                Ok(pack) => pack,
+                Err(error) => {
+                    eprintln!("bake: failed to load validated content: {error}");
+                    return ExitCode::FAILURE;
+                }
+            };
             if let Err(e) = pack.save(&output) {
                 eprintln!("bake: failed to write pack: {}", e);
                 return ExitCode::FAILURE;

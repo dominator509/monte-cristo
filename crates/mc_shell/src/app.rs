@@ -112,14 +112,14 @@ pub struct App {
 impl App {
     /// Create a new application from a seed and configuration.
     pub fn new(seed: u128, config: ValidatedConfig, headless: bool) -> Self {
-        Self::new_with_catalog_and_items(
+        Self::new_base(
             seed,
             config,
             headless,
             AuthoredSceneCatalog::default(),
             AuthoredItemCatalog::default(),
+            None,
         )
-        .expect("an empty authored scene catalog is always valid")
     }
 
     /// Create an application with a verified authored scene catalog.
@@ -165,6 +165,30 @@ impl App {
         item_catalog: AuthoredItemCatalog,
         slot_store: Option<crate::persistence::SlotStore>,
     ) -> Result<Self, String> {
+        let mut app = Self::new_base(
+            seed,
+            config,
+            headless,
+            scene_catalog,
+            item_catalog,
+            slot_store,
+        );
+        if app.scene_catalog.scene("SCN_ARREST").is_some() {
+            app.scene_catalog
+                .begin(&mut app.world, "SCN_ARREST")
+                .map_err(|error| format!("failed to start SCN_ARREST: {error}"))?;
+        }
+        Ok(app)
+    }
+
+    fn new_base(
+        seed: u128,
+        config: ValidatedConfig,
+        headless: bool,
+        scene_catalog: AuthoredSceneCatalog,
+        item_catalog: AuthoredItemCatalog,
+        slot_store: Option<crate::persistence::SlotStore>,
+    ) -> Self {
         let world = World::new(seed);
         crate::obs::record_state_hash(*world.state_hash().as_bytes());
         let audio_enabled = !headless;
@@ -198,12 +222,7 @@ impl App {
             battle_started_tick: None,
         };
         app.refresh_slot_presence();
-        if app.scene_catalog.scene("SCN_ARREST").is_some() {
-            app.scene_catalog
-                .begin(&mut app.world, "SCN_ARREST")
-                .map_err(|error| format!("failed to start SCN_ARREST: {error}"))?;
-        }
-        Ok(app)
+        app
     }
 
     /// Advance the simulation by one frame's worth of fixed ticks.

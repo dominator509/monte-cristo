@@ -240,3 +240,4 @@
 2026-08-10T10:37:58Z | codex-root | - | AUDIT_FIX | M46 RNG range and weighted-pick panic paths now return typed errors or None; 201 core unit/integration tests pass
 2026-08-10T10:55:33Z | codex-root | - | AUDIT_FIX | report bestiary now fails closed when required SPEC-002 domains or locked counts are missing
 2026-08-10T11:01:32Z | codex-root | - | AUDIT_NATIVE_RUN | run 31381450997 success on f40d394; Linux and macOS archives verified with native replay; Windows rebuilt locally
+2026-08-10T11:09:23Z | codex-root | - | AUDIT_FIX | startup and bake paths now propagate catalog/content errors instead of panicking; focused mc_tools and mc_shell suites pass

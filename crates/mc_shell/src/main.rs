@@ -37,7 +37,7 @@ fn run_headless(
     scene_catalog: AuthoredSceneCatalog,
     item_catalog: AuthoredItemCatalog,
     slot_store: SlotStore,
-) {
+) -> Result<(), String> {
     tracing::info!("starting headless mode");
     let startup_started = Instant::now();
     let mut app = App::new_with_catalog_and_items_and_store(
@@ -47,8 +47,7 @@ fn run_headless(
         scene_catalog,
         item_catalog,
         Some(slot_store),
-    )
-    .expect("verified authored scene catalog should start");
+    )?;
     mc_shell::obs::record_startup_to_title(startup_started.elapsed());
     for _i in 0..60 {
         app.headless_update();
@@ -61,6 +60,7 @@ fn run_headless(
     if let Err(error) = mc_shell::obs::write_metrics() {
         eprintln!("Metrics write failed: {error}");
     }
+    Ok(())
 }
 
 /// Initialise local-only observability after the data root has been resolved.
@@ -338,13 +338,23 @@ fn main() -> ExitCode {
 
     // Headless mode: no window, no audio, pure simulation
     if std::env::var("MC_HEADLESS").is_ok() {
-        run_headless(seed, config, scene_catalog, item_catalog, slot_store);
-        return ExitCode::SUCCESS;
+        return match run_headless(seed, config, scene_catalog, item_catalog, slot_store) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(error) => {
+                eprintln!("Headless startup failed: {error}");
+                ExitCode::FAILURE
+            }
+        };
     }
 
     // Windowed mode: use macroquad
-    run_windowed(seed, config, scene_catalog, item_catalog, slot_store);
-    ExitCode::SUCCESS
+    match run_windowed(seed, config, scene_catalog, item_catalog, slot_store) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("Windowed startup failed: {error}");
+            ExitCode::FAILURE
+        }
+    }
 }
 
 /// Run the windowed application via macroquad.
@@ -354,19 +364,18 @@ fn run_windowed(
     scene_catalog: AuthoredSceneCatalog,
     item_catalog: AuthoredItemCatalog,
     slot_store: SlotStore,
-) {
+) -> Result<(), String> {
+    let mut app = App::new_with_catalog_and_items_and_store(
+        seed,
+        config,
+        false,
+        scene_catalog,
+        item_catalog,
+        Some(slot_store),
+    )?;
     macroquad::Window::new("Monte Cristo", async move {
         tracing::info!("starting windowed mode: 256x224 internal resolution");
         let startup_started = Instant::now();
-        let mut app = App::new_with_catalog_and_items_and_store(
-            seed,
-            config,
-            false,
-            scene_catalog,
-            item_catalog,
-            Some(slot_store),
-        )
-        .expect("verified authored scene catalog should start");
         mc_shell::obs::record_startup_to_title(startup_started.elapsed());
         let render_target = mc_shell::render::target::ShellRenderTarget::new();
         app.render_target = Some(render_target);
@@ -376,4 +385,5 @@ fn run_windowed(
             macroquad::prelude::next_frame().await;
         }
     });
+    Ok(())
 }
