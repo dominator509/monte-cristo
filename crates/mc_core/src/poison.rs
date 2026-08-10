@@ -260,7 +260,13 @@ impl PoisonState {
 
     /// Decay all tolerances by `decay_rate` fraction.
     fn decay_tolerance(&mut self, current_tick: u64) {
-        let rate = self.decay_rate;
+        // A negative rate can only come from malformed serialized state. Clamp
+        // it so corruption cannot increase tolerance during a decay pass.
+        let rate = if self.decay_rate < Fx::ZERO {
+            Fx::ZERO
+        } else {
+            self.decay_rate
+        };
         for state in self.tolerance.values_mut() {
             let elapsed = current_tick.saturating_sub(state.last_tick);
             if elapsed == 0 {
@@ -399,6 +405,26 @@ mod tests {
     fn zero_decay_interval_does_not_panic_or_change_tolerance() {
         let mut state = PoisonState::new();
         state.decay_interval = 0;
+        state.administer(
+            CharId::CHR_VALENTINE,
+            PoisonId::PSN_BRUCINE,
+            Fx::from_int(1),
+            0,
+        );
+        let before = state.tolerance_for(CharId::CHR_VALENTINE, PoisonId::PSN_BRUCINE);
+
+        let _ = state.tick(1);
+
+        assert_eq!(
+            state.tolerance_for(CharId::CHR_VALENTINE, PoisonId::PSN_BRUCINE),
+            before
+        );
+    }
+
+    #[test]
+    fn negative_decay_rate_cannot_increase_tolerance() {
+        let mut state = PoisonState::new();
+        state.decay_rate = Fx::from_int(-1);
         state.administer(
             CharId::CHR_VALENTINE,
             PoisonId::PSN_BRUCINE,
