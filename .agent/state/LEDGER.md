@@ -241,3 +241,4 @@
 2026-08-10T10:55:33Z | codex-root | - | AUDIT_FIX | report bestiary now fails closed when required SPEC-002 domains or locked counts are missing
 2026-08-10T11:01:32Z | codex-root | - | AUDIT_NATIVE_RUN | run 31381450997 success on f40d394; Linux and macOS archives verified with native replay; Windows rebuilt locally
 2026-08-10T11:09:23Z | codex-root | - | AUDIT_FIX | startup and bake paths now propagate catalog/content errors instead of panicking; focused mc_tools and mc_shell suites pass
+2026-08-10T11:10:24Z | codex-root | - | AUDIT_FIX | save-identity proof now reports serialization failures instead of panicking; mc_tools suite remains green

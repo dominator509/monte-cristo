@@ -656,8 +656,20 @@ fn prove_save_identity() -> bool {
     use mc_core::world::World;
 
     let world = World::new(42);
-    let data = postcard::to_allocvec(&world).expect("serialize");
-    let restored: World = postcard::from_bytes(&data).expect("deserialize");
+    let data = match postcard::to_allocvec(&world) {
+        Ok(data) => data,
+        Err(error) => {
+            eprintln!("save-identity: FAIL - serialize: {error}");
+            return false;
+        }
+    };
+    let restored: World = match postcard::from_bytes(&data) {
+        Ok(restored) => restored,
+        Err(error) => {
+            eprintln!("save-identity: FAIL - deserialize: {error}");
+            return false;
+        }
+    };
 
     if world.state_hash() != restored.state_hash() {
         eprintln!("save-identity: FAIL - hashes differ");
