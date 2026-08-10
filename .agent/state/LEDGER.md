@@ -258,3 +258,4 @@
 2026-08-10T14:25:00Z | codex-root | - | AUDIT_FIX | if-calendar and encounter-budget proofs now require applied commands, bounded reentries, and explicit budget exhaustion; focused mc_tools suite passes
 2026-08-10T14:38:00Z | codex-root | - | AUDIT_FIX | shell startup now creates and confines MC_DATA_DIR fail-closed; data-root creation errors are surfaced instead of silently discarding saves/settings; mc_shell test suites pass
 2026-08-10T14:52:00Z | codex-root | - | AUDIT_FIX | save-slot occupancy errors no longer collapse to empty slots; unreadable or unconfined slots remain visible and load can surface the typed failure; mc_shell test suites pass
+2026-08-10T15:06:00Z | codex-root | - | AUDIT_FIX | staged save replacement now reports backup-cleanup failures and preserves restore failures instead of discarding them; mc_shell test suites pass

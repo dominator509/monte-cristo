@@ -199,13 +199,24 @@ fn replace_file(temporary: &Path, target: &Path) -> Result<(), SlotError> {
     match fs::rename(temporary, target) {
         Ok(()) => {
             if had_previous {
-                let _ = fs::remove_file(backup);
+                if let Err(error) = fs::remove_file(backup) {
+                    // The new slot is already durable; retain that success but
+                    // make the cleanup failure observable for operators.
+                    tracing::warn!("save-slot backup cleanup failed: {error}");
+                }
             }
             Ok(())
         }
         Err(error) => {
             if had_previous {
-                let _ = fs::rename(&backup, target);
+                if let Err(restore_error) = fs::rename(&backup, target) {
+                    return Err(SlotError::Replace(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        format!(
+                            "replacement failed: {error}; restoring previous save failed: {restore_error}"
+                        ),
+                    )));
+                }
             }
             Err(SlotError::Replace(error))
         }
