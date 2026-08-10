@@ -111,6 +111,48 @@ fn report_bestiary(input: &str) -> bool {
         println!("  unexpected region IDs: {unexpected_region_ids:?}");
     }
 
+    let required_story_flags: BTreeSet<&str> = [
+        "ACT1_ARREST",
+        "IF_FARIA_JOINED",
+        "IF_ESCAPE",
+        "TREASURE_FOUND",
+        "CADEROUSSE_TESTIMONY",
+        "CADEROUSSE_BURGLARY",
+        "MORREL_SAVED",
+        "HAYDEE_RECRUITED",
+        "VAMPA_ALLY",
+        "QUARRIES_OPENED",
+        "DANGLARS_STAGE_1",
+        "DANGLARS_STAGE_2",
+        "DANGLARS_STAGE_3",
+        "DANGLARS_STAGE_4",
+        "DANGLARS_STAGE_5",
+        "VILLEFORT_COLLAPSE",
+        "VILLEFORT_MADNESS",
+        "EDOUARD_DEAD",
+        "MERCEDES_RECOGNITION",
+        "MORCERF_ALBERT_WITHDRAWN",
+        "MORCERF_YANINA_DOSSIER",
+        "FERNAND_NAMED",
+        "EPILOGUE_SAIL",
+    ]
+    .into_iter()
+    .collect();
+    let actual_flags: BTreeSet<&str> = pack.flags.iter().map(String::as_str).collect();
+    let missing_story_flags: Vec<_> = required_story_flags
+        .difference(&actual_flags)
+        .copied()
+        .collect();
+    let flag_vocab_match = missing_story_flags.is_empty();
+
+    println!();
+    println!("--- Locked Story Flag Vocabulary (SPEC-009) ---");
+    if flag_vocab_match {
+        println!("  required story flags: present");
+    } else {
+        println!("  missing story flags: {missing_story_flags:?}");
+    }
+
     // SPEC-002 names these authoring domains explicitly.  Pack currently
     // carries only the schemas it can load, so report their presence here
     // instead of allowing a missing directory to look like an empty, valid
@@ -158,7 +200,8 @@ fn report_bestiary(input: &str) -> bool {
     let counts_match = expected_counts
         .iter()
         .all(|(_, expected, actual)| expected == actual)
-        && region_vocab_match;
+        && region_vocab_match
+        && flag_vocab_match;
     println!();
     println!("--- Locked Count Checks (SPEC-002 / SPEC-009) ---");
     for (label, expected, actual) in expected_counts {
