@@ -23,6 +23,21 @@ rm -f "$OUT"/SHA256SUMS
 
 TARGETS="x86_64-unknown-linux-gnu x86_64-pc-windows-gnu aarch64-apple-darwin"
 HOST=$(rustc -vV | sed -n 's/^host: //p')
+# GNU tar needs --force-local for Windows-style paths; BSD tar rejects that
+# option. Keep archive creation and inspection portable across native runners.
+TAR_FORCE_LOCAL=""
+if tar --help 2>&1 | grep -q -- '--force-local'; then
+  TAR_FORCE_LOCAL="--force-local"
+fi
+
+tar_cmd() {
+  if [ -n "$TAR_FORCE_LOCAL" ]; then
+    tar "$TAR_FORCE_LOCAL" "$@"
+  else
+    tar "$@"
+  fi
+}
+
 if ! command -v x86_64-w64-mingw32-gcc >/dev/null 2>&1 &&
    [ -x /c/ProgramData/mingw64/mingw64/bin/x86_64-w64-mingw32-gcc.exe ]; then
   PATH="/c/ProgramData/mingw64/mingw64/bin:$PATH"
@@ -97,7 +112,7 @@ for t in $TARGETS; do
     exit 1
   }
   cp docs/artifact-README.txt "$stage/README.txt"
-  tar --force-local -czf "$OUT/monte-cristo-$VER-$t.tar.gz" -C "$stage" .
+  tar_cmd -czf "$OUT/monte-cristo-$VER-$t.tar.gz" -C "$stage" .
   rm -rf "$stage"
 done
 
@@ -110,7 +125,7 @@ for t in $TARGETS; do
     x86_64-pc-windows-gnu) archive_bin="monte-cristo.exe" ;;
     *) archive_bin="monte-cristo" ;;
   esac
-  actual_members=$(tar --force-local -tzf "$archive" | sed 's|^\./||' | grep -v '^$' | sort)
+  actual_members=$(tar_cmd -tzf "$archive" | sed 's|^\./||' | grep -v '^$' | sort)
   expected_members=$(printf '%s\n' \
     "$archive_bin" content.pack content.pack.blake3 LICENSE \
     THIRD-PARTY-LICENSES.txt README.txt | sort)
