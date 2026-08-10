@@ -294,3 +294,4 @@
 2026-08-10T14:16:26Z | codex-root | EP-010 | AUDIT_VERIFY | post-poison-clamp mc_core integration/property suites pass: 385 tests
 2026-08-10T14:17:16Z | codex-root | EP-010 | AUDIT_FIX | PoisonState tolerance reads now clamp malformed negative serialized values to zero, preserving the locked lethal threshold
 2026-08-10T14:17:16Z | codex-root | EP-010 | AUDIT_VERIFY | negative tolerance regression and full mc_core library suite pass: 205 tests
+2026-08-10T14:18:02Z | codex-root | EP-010 | AUDIT_VERIFY | post-tolerance-normalization mc_core integration/property suites pass: 386 tests
