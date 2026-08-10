@@ -5,9 +5,10 @@
 //!
 //! SPEC-004 section 11: MC_HEADLESS=1 suppresses window + audio, same simulation.
 use crate::config::ValidatedConfig;
+use crate::render::palette::{scene_palette, sky_gradient};
 use crate::render::target::{ShellRenderTarget, INTERNAL_HEIGHT, INTERNAL_WIDTH};
 use crate::render::tilemap::{Tilemap, TILES_X, TILES_Y};
-use crate::ui::{battle::draw_battle_interface, menu::draw_menu_screen};
+use crate::ui::{battle::draw_battle_interface, menu::draw_field_hud, menu::draw_menu_screen};
 use macroquad::prelude::*;
 use mc_core::command::{Command, StateView};
 use mc_core::world::World;
@@ -166,32 +167,46 @@ impl App {
     }
 
     /// Draw the tilemap layers (layer0, layer1, overlay).
-    fn draw_tilemap(&self, _view: &StateView) {
+    fn draw_tilemap(&self, view: &StateView) {
         let tiles_x = INTERNAL_WIDTH / 16;
         let tiles_y = INTERNAL_HEIGHT / 16;
+        let palette = scene_palette(view.act);
 
-        // Draw layer 0 (background)
+        // Act-locked sky bands give every location a distinct 16-bit identity.
+        for (offset, colour_index, height) in sky_gradient(view.act) {
+            draw_rectangle(
+                0.0,
+                offset as f32,
+                INTERNAL_WIDTH as f32,
+                height as f32,
+                palette[colour_index as usize].to_color(),
+            );
+        }
+
+        // Draw layer 0 as a tiled ground plane over the sky.
         for ty in 0..tiles_y {
             for tx in 0..tiles_x {
                 let tile_id = self.tilemap.layer0.get_tile(tx, ty);
                 let x = tx as f32 * 16.0;
                 let y = ty as f32 * 16.0;
-
-                // Map tile_id to a colour tint
-                let (r, g, b) = match tile_id {
-                    0 => (0.15, 0.15, 0.2), // even checker
-                    1 => (0.2, 0.25, 0.3),  // odd checker
-                    2 => (0.25, 0.2, 0.15), // alt
-                    3 => (0.3, 0.25, 0.2),
-                    _ => (0.1, 0.1, 0.1),
+                let colour_index = match tile_id {
+                    0 => 3,
+                    1 => 4,
+                    2 => 5,
+                    3 => 4,
+                    _ => 7,
                 };
-                draw_rectangle(
-                    x,
-                    y,
-                    16.0,
-                    16.0,
-                    Color::from_rgba((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8, 255),
-                );
+                draw_rectangle(x, y, 16.0, 16.0, palette[colour_index].to_color());
+                if tile_id % 2 == 1 {
+                    draw_line(
+                        x + 3.0,
+                        y + 12.0,
+                        x + 13.0,
+                        y + 4.0,
+                        1.0,
+                        palette[7].to_color(),
+                    );
+                }
             }
         }
 
@@ -206,17 +221,15 @@ impl App {
                 }
                 let x = tx as f32 * 16.0 + scroll_x;
                 let y = ty as f32 * 16.0 + scroll_y;
-                let (r, g, b) = match tile_id {
-                    2 => (0.35, 0.3, 0.25),
-                    3 => (0.4, 0.35, 0.3),
-                    _ => (0.2, 0.2, 0.25),
-                };
-                draw_rectangle(
-                    x,
-                    y,
-                    16.0,
-                    16.0,
-                    Color::from_rgba((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8, 255),
+                let colour_index = if tile_id == 2 { 5 } else { 6 };
+                draw_rectangle(x, y, 16.0, 16.0, palette[colour_index].to_color());
+                draw_line(
+                    x + 2.0,
+                    y + 2.0,
+                    x + 14.0,
+                    y + 2.0,
+                    1.0,
+                    palette[6].to_color(),
                 );
             }
         }
@@ -224,14 +237,7 @@ impl App {
         // Grid overlay lines
         for ty in 0..=tiles_y {
             let y = ty as f32 * 16.0;
-            draw_line(
-                0.0,
-                y,
-                INTERNAL_WIDTH as f32,
-                y,
-                0.5,
-                Color::from_rgba(40, 40, 50, 255),
-            );
+            draw_line(0.0, y, INTERNAL_WIDTH as f32, y, 0.5, palette[7].to_color());
         }
         for tx in 0..=tiles_x {
             let x = tx as f32 * 16.0;
@@ -241,21 +247,63 @@ impl App {
                 x,
                 INTERNAL_HEIGHT as f32,
                 0.5,
-                Color::from_rgba(40, 40, 50, 255),
+                palette[7].to_color(),
+            );
+        }
+
+        // A crisp horizon line and a few fixed stars keep the low-resolution scene legible.
+        draw_line(
+            0.0,
+            96.0,
+            INTERNAL_WIDTH as f32,
+            96.0,
+            1.0,
+            palette[6].to_color(),
+        );
+        for x in [18.0, 76.0, 156.0, 224.0] {
+            draw_rectangle(
+                x,
+                20.0 + (x as u32 % 3) as f32 * 5.0,
+                1.0,
+                1.0,
+                palette[6].to_color(),
             );
         }
     }
 
-    fn draw_sprites(&self, _view: &StateView) {
-        // M2: sprite rendering placeholder - uses Sprite struct from render::sprite
-        // Full implementation in later milestones.
+    fn draw_sprites(&self, view: &StateView) {
+        let palette = scene_palette(view.act);
+        let bob = ((view.tick / 12) % 2) as f32;
+        let x = INTERNAL_WIDTH as f32 / 2.0 - 12.0;
+        let y = 116.0 + bob;
+        // Edmond's silhouette is intentionally drawn from rectangles so it stays crisp at 1x.
+        draw_rectangle(x + 5.0, y, 14.0, 9.0, palette[6].to_color());
+        draw_rectangle(x + 3.0, y + 8.0, 18.0, 18.0, palette[2].to_color());
+        draw_rectangle(x, y + 26.0, 9.0, 6.0, palette[7].to_color());
+        draw_rectangle(x + 15.0, y + 26.0, 9.0, 6.0, palette[7].to_color());
+        draw_line(
+            x + 8.0,
+            y + 3.0,
+            x + 12.0,
+            y + 3.0,
+            1.0,
+            palette[7].to_color(),
+        );
+        draw_line(
+            x + 6.0,
+            y + 14.0,
+            x + 18.0,
+            y + 14.0,
+            1.0,
+            palette[4].to_color(),
+        );
     }
 
-    fn draw_ui(&self, _view: &StateView) {
+    fn draw_ui(&self, view: &StateView) {
         // Draw screen overlays conditionally based on current screen state
         match self.screen_state {
             ScreenState::Field => {
-                // Field overlay: draw minimal HUD
+                draw_field_hud(view, self.config.high_contrast);
             }
             ScreenState::Battle => {
                 draw_battle_interface(self.world.tick);

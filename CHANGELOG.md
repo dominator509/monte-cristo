@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 against observable game behaviour (see RELEASE.md).
 
+## [0.1.1] — 2026-08-09
+
+### Changed
+
+- Release metadata and native artifact packaging now identify the immutable `v0.1.1` patch release.
+- The presentation shell's field and menu surfaces receive the 16-bit palette and HUD facelift described by the existing game design.
+
+### Fixed
+
+- Final readiness evidence now records the measured frame-budget result instead of leaving LF-11 skipped.
+
+### Determinism
+
+- **Golden tape hash unchanged.** The patch changes release metadata and presentation-only rendering; the deterministic core and all recorded tape hashes remain unchanged.
+
 ## [0.1.0] — 2026-07-29
 
 ### Added
@@ -48,4 +63,5 @@ against observable game behaviour (see RELEASE.md).
 - Determinism invariant maintained: identical input tapes + identical seed produce identical final hash across all 10 execution plans. 200+ tests assert hash stability.
 - Hash stability verified by: crate-level determinism tests, cross-run determinism proof (LF-09), fixed-point arithmetic invariants, debug-overlay hash stability test, audio mute/unmute hash stability test.
 
+[0.1.1]: https://github.com/dominator509/monte-cristo/releases/tag/v0.1.1
 [0.1.0]: https://github.com/dominator509/monte-cristo/releases/tag/v0.1.0

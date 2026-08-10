@@ -656,7 +656,7 @@ dependencies = [
 
 [[package]]
 name = "mc_core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "blake3",
  "criterion",
@@ -669,7 +669,7 @@ dependencies = [
 
 [[package]]
 name = "mc_data"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "blake3",
  "mc_core",
@@ -681,7 +681,7 @@ dependencies = [
 
 [[package]]
 name = "mc_shell"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "blake3",
  "macroquad",
@@ -699,7 +699,7 @@ dependencies = [
 
 [[package]]
 name = "mc_tape"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "blake3",
  "mc_core",
@@ -710,7 +710,7 @@ dependencies = [
 
 [[package]]
 name = "mc_tools"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "mc_core",

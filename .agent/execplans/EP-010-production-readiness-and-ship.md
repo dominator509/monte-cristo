@@ -246,10 +246,18 @@ verification milestones is always correct and is in fact what the evidence rule 
 5. **Smallest human decision that unblocks:** either authorize reopening release planning
    to bump `VERSION` and release metadata to `0.1.1`, or explicitly authorize deletion and
    replacement of both local and remote `v0.1.0` tags.
-6. **Recommended default:** bump to `0.1.1`. It preserves immutable published history and
-   permits the final clean verification, readiness checklist, tag, `green/EP-010`, and
-   `RUN_COMPLETE` to proceed. The broader graphical-facelift objective also remains
-   unverified and cannot be implemented inside M6 because feature work is a declared non-goal.
+  6. **Recommended default:** bump to `0.1.1`. It preserves immutable published history and
+  permits the final clean verification, readiness checklist, tag, `green/EP-010`, and
+  `RUN_COMPLETE` to proceed. The broader graphical-facelift objective also remains
+  unverified and cannot be implemented inside M6 because feature work is a declared non-goal.
+
+### M6 resumed by explicit human authorization — 2026-08-09
+
+The user explicitly authorized a version bump to `0.1.1`. This reopens the blocked release
+decision without mutating or deleting the existing remote `v0.1.0` tag. M6 resumes as a
+fresh blocked audit under the recorded `LEASE_TAKEOVER` event; the graph-control scripts
+remain unchanged. The visual audit is limited to the existing shell presentation boundary
+and will not alter the deterministic core or release gates.
 
 ## 12. Surprises and Discoveries
 
@@ -303,6 +311,9 @@ verification milestones is always correct and is in fact what the evidence rule 
   probes, and full golden replay, as the platform-native execution of M5's Linux command.
   Keep the local three-entry manifest check and Windows clean-extraction smoke as independent
   evidence; do not claim Windows executed an ELF binary.
+- 2026-08-09, M6 human authorization: the user explicitly authorized bumping the release
+  metadata to `0.1.1`. Preserve the published `v0.1.0` tag, update only release metadata and
+  the bounded shell presentation audit, then verify and tag `v0.1.1`.
 
 ## 14. Outcomes and Retrospective
 

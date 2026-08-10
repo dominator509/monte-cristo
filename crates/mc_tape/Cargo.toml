@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
-mc_core = { path = "../mc_core", version = "0.1.0" }
+mc_core = { path = "../mc_core", version = "0.1.1" }
 serde = { workspace = true }
 postcard = { workspace = true }
 blake3 = { workspace = true }

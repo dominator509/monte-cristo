@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/mc_core", "crates/mc_data", "crates/mc_tape", "crates/mc_shell", "crates/mc_tools"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.83.0"
 license = "MIT OR Apache-2.0"
