@@ -97,7 +97,7 @@ fn validated_config_clamps_round_trips_and_falls_back_from_invalid_ron() {
     assert_eq!(validated.shake_intensity, 100);
     assert_eq!(validated.flash_intensity, 100);
     assert_eq!(validated.volume, 100);
-    validated.save();
+    validated.save().expect("validated settings should save");
 
     let loaded = ValidatedConfig::load_or_default(dir.clone());
     assert!(loaded.advisory_acknowledged);
@@ -111,6 +111,19 @@ fn validated_config_clamps_round_trips_and_falls_back_from_invalid_ron() {
     let fallback = ValidatedConfig::load_or_default(dir);
     assert_eq!(fallback.text_speed, ConfigTextSpeed::Normal);
     assert_eq!(fallback.volume, 80);
+}
+
+#[test]
+fn settings_write_failure_returns_typed_error() {
+    let dir = temp_dir("settings-error");
+    let mut config = ValidatedConfig::load_or_default(dir.clone());
+    config.settings_path = dir.join("settings.ron");
+    std::fs::create_dir_all(&config.settings_path).expect("settings path fixture");
+
+    let error = config
+        .save()
+        .expect_err("directory settings path must fail cleanly");
+    assert!(error.to_string().contains("settings I/O failed"));
 }
 
 #[test]

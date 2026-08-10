@@ -207,7 +207,9 @@ impl App {
 
         if acknowledged {
             self.config.advisory_acknowledged = true;
-            self.config.save();
+            if let Err(error) = self.config.save() {
+                tracing::error!(error = %error, "failed to persist settings acknowledgement");
+            }
             self.advisory_pending = false;
         }
     }

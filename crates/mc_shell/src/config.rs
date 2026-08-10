@@ -33,6 +33,17 @@ pub enum InputAction {
 /// The complete input map: action -> list of key/gamepad bindings.
 pub type InputMap = HashMap<InputAction, Vec<String>>;
 
+/// Failure while persisting validated shell settings.
+#[derive(Debug, thiserror::Error)]
+pub enum ConfigSaveError {
+    /// The settings directory or file could not be written.
+    #[error("settings I/O failed: {0}")]
+    Io(#[from] std::io::Error),
+    /// The validated settings could not be serialized.
+    #[error("settings serialization failed: {0}")]
+    Serialize(#[from] ron::Error),
+}
+
 /// Default keyboard bindings per SPEC-004 section 7.
 pub fn default_input_map() -> InputMap {
     use InputAction::*;
@@ -136,8 +147,8 @@ impl ValidatedConfig {
         v
     }
 
-    /// Save to disk.
-    pub fn save(&self) {
+    /// Save to disk, returning a typed error instead of panicking.
+    pub fn save(&self) -> Result<(), ConfigSaveError> {
         let cfg = ShellConfig {
             advisory_acknowledged: self.advisory_acknowledged,
             text_speed: self.text_speed,
@@ -149,10 +160,10 @@ impl ValidatedConfig {
             input_map: self.input_map.clone(),
         };
         if let Some(parent) = self.settings_path.parent() {
-            std::fs::create_dir_all(parent).expect("settings directory creation should succeed");
+            std::fs::create_dir_all(parent)?;
         }
-        let s = ron::to_string(&cfg).expect("ShellConfig serialization should never fail");
-        std::fs::write(&self.settings_path, s.as_bytes())
-            .expect("settings file write should succeed");
+        let s = ron::to_string(&cfg)?;
+        std::fs::write(&self.settings_path, s.as_bytes())?;
+        Ok(())
     }
 }

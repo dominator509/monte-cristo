@@ -31,7 +31,7 @@ fn advisory_acknowledged_persists() {
     let dir = tmp_cfg_dir("persists");
     let mut config = ValidatedConfig::load_or_default(dir.clone());
     config.advisory_acknowledged = true;
-    config.save();
+    config.save().expect("acknowledgement settings should save");
 
     let loaded = ValidatedConfig::load_or_default(dir.clone());
     assert!(
@@ -46,7 +46,7 @@ fn advisory_not_shown_after_acknowledge() {
     let dir = tmp_cfg_dir("not_shown");
     let mut config = ValidatedConfig::load_or_default(dir.clone());
     config.advisory_acknowledged = true;
-    config.save();
+    config.save().expect("acknowledgement settings should save");
 
     let loaded = ValidatedConfig::load_or_default(dir);
     assert!(
