@@ -55,8 +55,11 @@ impl FlagSet {
         match expr {
             FlagExpr::Always => true,
             FlagExpr::Never => false,
-            FlagExpr::Set(flag) => self.is_set(*flag),
-            FlagExpr::NotSet(flag) => !self.is_set(*flag),
+            // Invalid raw identifiers must fail closed in both positive and
+            // negative expressions; treating an unknown flag as "not set"
+            // could unlock authored content from malformed input.
+            FlagExpr::Set(flag) => Self::bit_location(*flag).is_some() && self.is_set(*flag),
+            FlagExpr::NotSet(flag) => Self::bit_location(*flag).is_some() && !self.is_set(*flag),
             FlagExpr::All(exprs) => exprs.iter().all(|e| self.satisfies(e)),
             FlagExpr::Any(exprs) => exprs.iter().any(|e| self.satisfies(e)),
             FlagExpr::Not(expr) => !self.satisfies(expr),
@@ -187,5 +190,6 @@ mod tests {
         flags.clear(invalid);
         assert!(!flags.is_set(invalid));
         assert!(!flags.satisfies(&FlagExpr::Set(invalid)));
+        assert!(!flags.satisfies(&FlagExpr::NotSet(invalid)));
     }
 }

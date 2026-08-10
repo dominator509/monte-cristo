@@ -283,3 +283,5 @@
 2026-08-10T14:05:22Z | codex-root | EP-010 | AUDIT_FIX | hardened FlagSet against invalid raw FlagId values and PoisonState against zero decay_interval; malformed serialized state no longer panics
 2026-08-10T14:05:22Z | codex-root | EP-010 | AUDIT_VERIFY | mc_core focused safety tests passed; mc_core library 203 passed; mc_core integration/property suites 384 passed
 2026-08-10T14:10:57Z | codex-root | EP-010 | AUDIT_VERIFY | post-M49 verify: preflight/install/lint/format/typecheck, 203 mc_core unit tests, workspace integration/e2e, build, security, dependency, reality, content, hash, smoke, and LF-01 through LF-09 passed; LF-10 remains the sole verifier failure
+2026-08-10T14:12:04Z | codex-root | EP-010 | AUDIT_FIX | invalid FlagExpr Set and NotSet identifiers now fail closed; malformed content cannot unlock a gate through NotSet
+2026-08-10T14:12:04Z | codex-root | EP-010 | AUDIT_VERIFY | invalid raw flag regression and full mc_core library suite pass: 203 tests
