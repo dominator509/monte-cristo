@@ -254,3 +254,4 @@
 2026-08-10T13:24:00Z | codex-root | - | AUDIT_VERIFY | current sh scripts/verify.sh passed preflight/install/lint/format/typecheck/workspace tests/build/security/dependency/reality/smoke and LF-01 through LF-09, then failed only at LF-10 locked content corpus
 2026-08-10T13:42:00Z | codex-root | - | AUDIT_FIX | locked-content report now checks the exact SPEC-009 R01-R15 region vocabulary; current authored pack has 15 renamed region IDs and is rejected with explicit missing/unexpected IDs
 2026-08-10T13:55:00Z | codex-root | - | AUDIT_FIX | locked-content report now checks SPEC-009 story flag identifiers; current pack is missing all 23 listed story flags despite carrying 26 differently named flags
+2026-08-10T14:12:00Z | codex-root | - | AUDIT_FIX | epilogue proof now begins and traverses the authored terminal scene through the scene catalog and exits via authored effects; prove epilogue and mc_tools suite pass

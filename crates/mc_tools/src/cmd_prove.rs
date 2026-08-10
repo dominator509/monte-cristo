@@ -405,6 +405,65 @@ fn prove_epilogue() -> bool {
         return false;
     }
 
+    let catalog = match pack.scene_catalog() {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            eprintln!("epilogue: FAIL - authored scene catalog rejected content: {error}");
+            return false;
+        }
+    };
+    let Some(terminal_scene) = pack.scenes.iter().find(|scene| scene.terminal) else {
+        eprintln!("epilogue: FAIL - terminal scene disappeared during catalog verification");
+        return false;
+    };
+    let mut terminal_world = mc_core::world::World::new(42);
+    for raw in 0..mc_core::ids::FlagId::COUNT as u16 {
+        terminal_world
+            .flags
+            .set(mc_core::ids::FlagId::from_raw(raw));
+    }
+    if catalog
+        .begin(&mut terminal_world, &terminal_scene.id)
+        .is_err()
+    {
+        eprintln!(
+            "epilogue: FAIL - terminal scene `{}` could not begin from the authored catalog",
+            terminal_scene.id
+        );
+        return false;
+    }
+    for _ in 0..catalog.node_count() {
+        let Some(current) = terminal_world.scene.as_ref().map(|state| state.current) else {
+            break;
+        };
+        let Some(node) = catalog.node(current) else {
+            eprintln!("epilogue: FAIL - terminal scene cursor left the authored catalog");
+            return false;
+        };
+        if node.choices.is_empty() {
+            break;
+        }
+        let events = apply_commands_with_catalog(
+            &mut terminal_world,
+            &[Command::SceneChoose(ChoiceIdx(0))],
+            Some(&catalog),
+        );
+        if !matches!(events.first(), Some(CoreEvent::Applied { .. })) {
+            eprintln!("epilogue: FAIL - terminal scene choice was rejected");
+            return false;
+        }
+    }
+    let events = apply_commands_with_catalog(
+        &mut terminal_world,
+        &[Command::SceneAdvance],
+        Some(&catalog),
+    );
+    if !matches!(events.first(), Some(CoreEvent::Applied { .. })) || terminal_world.scene.is_some()
+    {
+        eprintln!("epilogue: FAIL - terminal scene did not exit through authored effects");
+        return false;
+    }
+
     let known_count = known_flags.len();
     println!("epilogue: ok");
     println!(
@@ -421,7 +480,7 @@ fn prove_epilogue() -> bool {
         known_count,
         bad_refs.len()
     );
-    println!("  terminal scenes: 1");
+    println!("  terminal scenes: 1 ({} traversed)", terminal_scene.id);
     true
 }
 
