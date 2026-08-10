@@ -291,9 +291,10 @@ and will not alter the deterministic core or release gates.
   with an escaped drive prefix under this shell bridge. The fallback is the existing ignored
   `.local-data` root with a relative artifact path, which is accepted by both preflight and
   the tar implementation and survives `cargo clean`.
-- The verifier canonicalizes that relative root before invoking the build script; the RTK
-  shell bridge then rewrites the POSIX path back to `C\:/...` for `tar`. Direct Git Bash
-  preserves the canonical `/c/...` form and is the narrowest environment-specific fallback.
+- The verifier canonicalizes that relative root with `pwd -W`; the Windows shell bridge then
+  presents a `C\:/...` path to `tar`. Direct Git Bash plus an ignored local wrapper that
+  converts only drive-letter arguments back to `/c/...` is the narrowest environment-specific
+  fallback; the real `/usr/bin/tar` performs every archive operation.
 
 ## 13. Decision Log
 
