@@ -75,9 +75,9 @@ fn init_observability() {
 
 /// Load the authored catalog for the real game loop.
 ///
-/// Release artifacts contain a verified `content.pack`; source checkouts may
-/// still run directly from the RON tree before a bake has occurred. Both paths
-/// feed the same core catalog and therefore the same deterministic behavior.
+/// Release artifacts contain a verified `content.pack`; debug source checkouts
+/// may still run directly from the RON tree before a bake has occurred. A
+/// release binary refuses that loose-source fallback.
 fn load_runtime_catalog() -> Result<(AuthoredSceneCatalog, AuthoredItemCatalog, [u8; 32]), String> {
     let mut candidates = Vec::new();
     let manifest_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -110,6 +110,9 @@ fn load_runtime_catalog() -> Result<(AuthoredSceneCatalog, AuthoredItemCatalog, 
             mc_data::pack::Pack::load_from_dir(&confined)
                 .map_err(|error| format!("content pack failed integrity verification: {error}"))?
         } else {
+            if !cfg!(debug_assertions) {
+                continue;
+            }
             mc_data::pack::Pack::from_content(&confined)
                 .map_err(|error| format!("content source failed validation: {error}"))?
         };
