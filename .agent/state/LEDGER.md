@@ -239,3 +239,4 @@
 2026-08-10T10:28:42Z | codex-root | - | AUDIT_NATIVE_RUN | run 31378976606 success on 2b488c1; linux and macOS archives verified and golden replay passed
 2026-08-10T10:37:58Z | codex-root | - | AUDIT_FIX | M46 RNG range and weighted-pick panic paths now return typed errors or None; 201 core unit/integration tests pass
 2026-08-10T10:55:33Z | codex-root | - | AUDIT_FIX | report bestiary now fails closed when required SPEC-002 domains or locked counts are missing
+2026-08-10T11:01:32Z | codex-root | - | AUDIT_NATIVE_RUN | run 31381450997 success on f40d394; Linux and macOS archives verified with native replay; Windows rebuilt locally
