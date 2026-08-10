@@ -243,3 +243,4 @@
 2026-08-10T11:09:23Z | codex-root | - | AUDIT_FIX | startup and bake paths now propagate catalog/content errors instead of panicking; focused mc_tools and mc_shell suites pass
 2026-08-10T11:10:24Z | codex-root | - | AUDIT_FIX | save-identity proof now reports serialization failures instead of panicking; mc_tools suite remains green
 2026-08-10T11:11:49Z | codex-root | - | AUDIT_FIX | windowed and advisory frames now skip cleanly when no render target is configured; mc_shell suite remains green
+2026-08-10T11:13:06Z | codex-root | - | AUDIT_FIX | production-readiness-check now consumes the fail-closed locked-content report instead of certifying incomplete content
