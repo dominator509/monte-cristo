@@ -17,17 +17,24 @@ use mc_shell::fsroot::{self, Root};
 use mc_shell::persistence::SlotStore;
 
 /// Get the data directory for settings and saves.
-fn data_dir() -> PathBuf {
+fn data_dir() -> Result<PathBuf, String> {
     let base = std::env::var("MC_DATA_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|_| {
             let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".into());
             PathBuf::from(home).join(".local/share/monte-cristo")
         });
+    // The confinement helper requires the root itself to exist before it can
+    // resolve a child path. Create the user-owned root first and fail startup
+    // if that operation is not possible; silently continuing would make saves
+    // and settings appear to work while all writes are discarded.
+    fs::create_dir_all(&base)
+        .map_err(|error| format!("cannot create MC_DATA_DIR root {}: {error}", base.display()))?;
     // Use fsroot for confined directory creation — set MC_DATA_DIR for it.
     std::env::set_var(Root::Data.env_var(), &base);
-    let _ = fsroot::create_dir_all(Root::Data, Path::new(""));
-    base
+    fsroot::create_dir_all(Root::Data, Path::new(""))
+        .map_err(|error| format!("cannot confine MC_DATA_DIR root: {error}"))?;
+    Ok(base)
 }
 
 /// Run the headless application (no window, no audio).
@@ -331,7 +338,13 @@ fn main() -> ExitCode {
     };
 
     let seed: u128 = 42;
-    let dd = data_dir();
+    let dd = match data_dir() {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!("Game startup failed: {error}");
+            return ExitCode::FAILURE;
+        }
+    };
     init_observability();
     let config = ValidatedConfig::load_or_default(dd.clone());
     let slot_store = SlotStore::new(dd, content_digest);
