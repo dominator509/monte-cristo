@@ -1,0 +1,32 @@
+[
+    PoisonDef(
+        onset: 240,
+        potency: Fx(16384),
+        tolerance_step: Fx(6554),
+        lethal_dose: Fx(262144),
+    ),
+    PoisonDef(
+        onset: 120,
+        potency: Fx(39322),
+        tolerance_step: Fx(2621),
+        lethal_dose: Fx(196608),
+    ),
+    PoisonDef(
+        onset: 300,
+        potency: Fx(19661),
+        tolerance_step: Fx(3932),
+        lethal_dose: Fx(229376),
+    ),
+    PoisonDef(
+        onset: 900,
+        potency: Fx(9830),
+        tolerance_step: Fx(5243),
+        lethal_dose: Fx(393216),
+    ),
+    PoisonDef(
+        onset: 30,
+        potency: Fx(98304),
+        tolerance_step: Fx(0),
+        lethal_dose: Fx(98304),
+    ),
+]

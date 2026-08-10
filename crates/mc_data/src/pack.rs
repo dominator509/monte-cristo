@@ -16,6 +16,7 @@ use crate::schema::scene::Scene;
 use crate::schema::spawn_table::SpawnTable;
 use mc_core::ids::{CharId, FlagId, ItemId};
 use mc_core::item::{AuthoredItemCatalog, AuthoredItemDefinition, ItemKind};
+use mc_core::poison::{PoisonDef, POISON_TABLE};
 use mc_core::scene::{
     AuthoredChoiceDefinition, AuthoredNodeDefinition, AuthoredSceneCatalog,
     AuthoredSceneDefinition, SceneEffect,
@@ -31,6 +32,8 @@ pub struct Pack {
     pub scenes: Vec<Scene>,
     pub spawn_tables: Vec<SpawnTable>,
     pub items: Vec<Item>,
+    /// The five SPEC-009 poison compounds, in PoisonId order.
+    pub poisons: Vec<PoisonDef>,
     pub flags: Vec<String>,
     /// Localised string key-value pairs.
     pub strings: Vec<(String, String)>,
@@ -46,6 +49,7 @@ impl Pack {
         let items_dir = root.join("items");
         let encounter_dir = root.join("encounters");
         let flags_file = root.join("flags.ron");
+        let poisons_file = root.join("poisons.ron");
         let strings_dir = root.join("strings").join("en");
 
         let enemies = load_ron_dir::<Enemy>(&bestiary_dir)?;
@@ -53,6 +57,20 @@ impl Pack {
         let scenes = load_ron_tree::<Scene>(&scenes_dir)?;
         let spawn_tables = load_ron_dir::<SpawnTable>(&spawn_dir)?;
         let items = load_ron_dir::<Item>(&items_dir)?;
+        let poisons = if poisons_file.exists() {
+            let data = fs::read_to_string(&poisons_file)
+                .map_err(|e| ContentError::new(format!("cannot read {poisons_file:?}: {e}")))?;
+            let parsed: Vec<PoisonDef> = ron::from_str(&data)
+                .map_err(|e| ContentError::new(format!("cannot parse {poisons_file:?}: {e}")))?;
+            if parsed.as_slice() != &POISON_TABLE[..] {
+                return Err(ContentError::new(
+                    "poisons.ron does not match the locked SPEC-009 poison table",
+                ));
+            }
+            parsed
+        } else {
+            Vec::new()
+        };
         let encounters = if encounter_dir.exists() {
             load_ron_dir::<Encounter>(&encounter_dir)?
         } else {
@@ -81,6 +99,7 @@ impl Pack {
             scenes,
             spawn_tables,
             items,
+            poisons,
             flags,
             strings,
         })
@@ -149,6 +168,7 @@ impl Pack {
             scenes: self.scenes.len(),
             spawn_tables: self.spawn_tables.len(),
             items: self.items.len(),
+            poisons: self.poisons.len(),
             flags: self.flags.len(),
         }
     }
@@ -380,6 +400,7 @@ pub struct PackCounts {
     pub scenes: usize,
     pub spawn_tables: usize,
     pub items: usize,
+    pub poisons: usize,
     pub flags: usize,
 }
 

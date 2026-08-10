@@ -67,6 +67,12 @@ fn pack_includes_every_authored_scene_act() {
 }
 
 #[test]
+fn pack_includes_the_locked_poison_table() {
+    let pack = build_pack();
+    assert_eq!(pack.poisons.as_slice(), &mc_core::poison::POISON_TABLE[..]);
+}
+
+#[test]
 fn authored_arrest_scene_executes_through_core_catalog() {
     let pack = build_pack();
     let catalog = pack
