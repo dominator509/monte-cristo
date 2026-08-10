@@ -170,6 +170,46 @@ impl World {
         self.season = (act == Act::ActVIParis).then(|| SeasonClock::new(Vec::new()));
     }
 
+    /// Persist battle wounds into the authoritative party roster when a battle
+    /// reaches a terminal state. Battle combatants are a temporary projection;
+    /// the party remains the source of truth between encounters.
+    fn sync_party_wounds(&mut self) {
+        let Some(battle) = self.battle.as_ref() else {
+            return;
+        };
+        if !matches!(
+            battle.state,
+            crate::battle::BattleState::Victory
+                | crate::battle::BattleState::Defeat
+                | crate::battle::BattleState::Fleeing
+        ) {
+            return;
+        }
+
+        for combatant in &battle.combatants {
+            let crate::battle::CombatantKind::PartyMember(char_id) = combatant.kind else {
+                continue;
+            };
+            let hp = combatant.hp.min(combatant.max_hp).max(Fx::ZERO);
+            if let Some(member) = self
+                .party
+                .active
+                .iter_mut()
+                .find(|member| member.char_id == char_id)
+            {
+                member.hp = hp;
+            }
+            if let Some(member) = self
+                .party
+                .roster
+                .iter_mut()
+                .find(|member| member.char_id == char_id)
+            {
+                member.hp = hp;
+            }
+        }
+    }
+
     /// Advance the world by one tick.
     /// Dispatches over step::ORDER.
     pub fn step(&mut self) {
@@ -229,6 +269,7 @@ impl World {
                 _ => {}
             }
         }
+        self.sync_party_wounds();
         self.tick += 1;
     }
 }
@@ -254,6 +295,57 @@ mod tests {
         assert_eq!(world.tick, 1);
         world.step();
         assert_eq!(world.tick, 2);
+    }
+
+    #[test]
+    fn terminal_battle_persists_party_wounds() {
+        use crate::battle::atb::AtbGauge;
+        use crate::battle::status::StatusList;
+        use crate::battle::{Affiliation, Battle, Combatant, CombatantKind};
+        use crate::ids::EnemyId;
+
+        let mut world = World::new(42);
+        let party = Combatant {
+            kind: CombatantKind::PartyMember(CharId::CHR_EDMOND),
+            affiliation: Affiliation::Party,
+            name: "Edmond".into(),
+            atb: AtbGauge::new(Fx::from_int(12)),
+            hp: Fx::from_int(37),
+            max_hp: Fx::from_int(100),
+            attack: Fx::from_int(10),
+            defense: Fx::from_int(8),
+            speed: Fx::from_int(12),
+            level: 1,
+            statuses: StatusList::new(),
+        };
+        let battle = Battle::new(
+            vec![party],
+            vec![Combatant {
+                kind: CombatantKind::Enemy(EnemyId::ENM_BANDIT),
+                affiliation: Affiliation::Enemy,
+                name: "Bandit".into(),
+                atb: AtbGauge::new(Fx::from_int(8)),
+                hp: Fx::from_int(30),
+                max_hp: Fx::from_int(30),
+                attack: Fx::from_int(6),
+                defense: Fx::from_int(4),
+                speed: Fx::from_int(8),
+                level: 1,
+                statuses: StatusList::new(),
+            }],
+        );
+        world.battle = Some(battle);
+
+        world.step();
+        assert_eq!(world.party.active[0].hp, Fx::from_int(100));
+
+        let battle = world.battle.as_mut().unwrap();
+        battle.combatants[1].hp = Fx::ZERO;
+        battle.check_end_conditions();
+        world.step();
+
+        assert_eq!(world.party.active[0].hp, Fx::from_int(37));
+        assert_eq!(world.party.roster[0].hp, Fx::from_int(37));
     }
 
     #[test]
