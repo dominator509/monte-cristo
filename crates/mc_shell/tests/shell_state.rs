@@ -60,9 +60,9 @@ fn headless_app_advances_the_authoritative_world_without_rendering() {
 }
 
 #[test]
-fn authored_runtime_starts_at_the_arrival_scene() {
+fn authored_runtime_starts_at_the_available_arrest_scene() {
     let catalog = AuthoredSceneCatalog::from_definitions(vec![AuthoredSceneDefinition {
-        id: "SCN_ARRIVAL".into(),
+        id: "SCN_ARREST".into(),
         requires: FlagExpr::Always,
         nodes: vec![AuthoredNodeDefinition {
             id: "start".into(),
