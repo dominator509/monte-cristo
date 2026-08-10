@@ -104,6 +104,9 @@ pub struct App {
     /// Commands captured between fixed ticks. Input is still applied only at
     /// the tick boundary, but a short render frame can no longer drop a press.
     pending_commands: Vec<Command>,
+    /// Tick at which the current authoritative battle became active, used for
+    /// encounter metrics and transition-safe presentation state.
+    battle_started_tick: Option<u64>,
 }
 
 impl App {
@@ -192,6 +195,7 @@ impl App {
             file_error: None,
             slot_occupied: [false; SAVE_SLOT_COUNT],
             pending_commands: Vec::new(),
+            battle_started_tick: None,
         };
         app.refresh_slot_presence();
         if app.scene_catalog.scene("SCN_ARREST").is_some() {
@@ -505,6 +509,18 @@ impl App {
             .battle
             .as_ref()
             .is_some_and(|battle| battle.state == mc_core::battle::BattleState::Active);
+        match (self.battle_started_tick, active) {
+            (None, true) => {
+                crate::obs::record_battle();
+                self.battle_started_tick = Some(self.world.tick);
+            }
+            (Some(start_tick), false) => {
+                crate::obs::record_encounter();
+                crate::obs::record_encounter_ticks(self.world.tick.saturating_sub(start_tick));
+                self.battle_started_tick = None;
+            }
+            _ => {}
+        }
         match (self.screen_state, active) {
             (ScreenState::Field, true) => self.screen_state = ScreenState::Battle,
             (ScreenState::Battle, false) => self.screen_state = ScreenState::Field,
@@ -964,10 +980,12 @@ mod tests {
         app.world.battle = Some(active_battle());
         app.sync_battle_screen_state();
         assert_eq!(app.screen_state, ScreenState::Battle);
+        assert_eq!(app.battle_started_tick, Some(app.world.tick));
 
         app.world.battle.as_mut().unwrap().state = BattleState::Victory;
         app.sync_battle_screen_state();
         assert_eq!(app.screen_state, ScreenState::Field);
+        assert_eq!(app.battle_started_tick, None);
     }
 
     #[test]
