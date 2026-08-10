@@ -66,9 +66,8 @@ impl SceneEffect {
             SceneEffect::ConsumeItem(id, count) => {
                 world.inventory.remove_item(*id, *count);
             }
-            SceneEffect::Goto(_scene) => {
-                // Scene pointer updates are handled by the caller via
-                // set_current; storing this for reactive dispatchers.
+            SceneEffect::Goto(scene) => {
+                world.scene = Some(SceneState::new(*scene));
             }
         }
     }
@@ -288,6 +287,19 @@ mod tests {
             .items()
             .iter()
             .any(|(id, c)| *id == potion && *c == 2));
+    }
+
+    #[test]
+    fn scene_effect_goto_updates_authoritative_scene_pointer() {
+        let mut world = World::new(0);
+        assert!(world.scene.is_none());
+
+        SceneEffect::Goto(SceneId::SCN_FARIA_MEETING).apply(&mut world);
+
+        assert_eq!(
+            world.scene.as_ref().map(|state| state.current),
+            Some(SceneId::SCN_FARIA_MEETING)
+        );
     }
 
     #[test]
