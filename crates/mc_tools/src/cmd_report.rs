@@ -106,6 +106,22 @@ fn report_bestiary(input: &str) -> bool {
             missing_domains.len()
         );
     }
+
+    let expected_counts = [
+        ("regions", 15usize, pack.regions.len()),
+        ("enemies", 102usize, pack.enemies.len()),
+        ("encounters", 180usize, pack.encounters.len()),
+        ("spawn_tables", 45usize, pack.spawn_tables.len()),
+    ];
+    println!();
+    println!("--- Locked Count Checks (SPEC-002 / SPEC-009) ---");
+    for (label, expected, actual) in expected_counts {
+        if expected == actual {
+            println!("  {label}: {actual} (expected)");
+        } else {
+            println!("  MISMATCH {label}: {actual} (expected {expected})");
+        }
+    }
     println!();
     println!("--- Enemies by Family ---");
     let mut fams: Vec<_> = family_counts.into_iter().collect();
