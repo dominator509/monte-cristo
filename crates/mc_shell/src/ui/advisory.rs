@@ -12,7 +12,7 @@ pub const ADVISORY_LINES: &[&str] = &[
     "CONTENT ADVISORY",
     "This game depicts suicide and the death of a child.",
     "These events are presented faithfully to Alexandre Dumas's novel.",
-    "Press Z / ENTER / SPACE to continue.",
+    "Press Z / ENTER to continue.",
 ];
 
 /// Draw the content advisory screen. Returns true if acknowledged.
@@ -35,5 +35,5 @@ pub fn draw_advisory_screen(tick: u64) -> bool {
         Color::new(paper.r, paper.g, paper.b, pulse),
     );
 
-    is_key_pressed(KeyCode::Z) || is_key_pressed(KeyCode::Enter) || is_key_pressed(KeyCode::Space)
+    is_key_pressed(KeyCode::Z) || is_key_pressed(KeyCode::Enter)
 }

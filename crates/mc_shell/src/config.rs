@@ -52,7 +52,7 @@ pub fn default_input_map() -> InputMap {
     m.insert(MoveDown, vec!["Down".into(), "S".into()]);
     m.insert(MoveLeft, vec!["Left".into(), "A".into()]);
     m.insert(MoveRight, vec!["Right".into(), "D".into()]);
-    m.insert(Confirm, vec!["Z".into(), "Enter".into(), "Space".into()]);
+    m.insert(Confirm, vec!["Z".into(), "Enter".into()]);
     m.insert(Cancel, vec!["X".into(), "Escape".into()]);
     m.insert(Menu, vec!["C".into()]);
     m.insert(Run, vec!["LeftShift".into(), "RightShift".into()]);
@@ -118,6 +118,13 @@ impl ValidatedConfig {
         let shake = cfg.shake_intensity.min(100);
         let flash = cfg.flash_intensity.min(100);
         let vol = cfg.volume.min(100);
+        let input_map = if crate::input::remap::validate_map(&cfg.input_map)
+            && !crate::input::remap::has_ambiguous_bindings(&cfg.input_map)
+        {
+            cfg.input_map
+        } else {
+            default_input_map()
+        };
         ValidatedConfig {
             advisory_acknowledged: cfg.advisory_acknowledged,
             text_speed: cfg.text_speed,
@@ -126,7 +133,7 @@ impl ValidatedConfig {
             flash_intensity: flash,
             volume: vol,
             captions_enabled: cfg.captions_enabled,
-            input_map: cfg.input_map,
+            input_map,
             settings_path: data_dir.join("settings.ron"),
         }
     }

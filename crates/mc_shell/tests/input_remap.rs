@@ -30,10 +30,7 @@ fn default_input_map() -> InputMap {
     m.insert(InputAction::MoveDown, vec!["Down".into(), "S".into()]);
     m.insert(InputAction::MoveLeft, vec!["Left".into(), "A".into()]);
     m.insert(InputAction::MoveRight, vec!["Right".into(), "D".into()]);
-    m.insert(
-        InputAction::Confirm,
-        vec!["Z".into(), "Enter".into(), "Space".into()],
-    );
+    m.insert(InputAction::Confirm, vec!["Z".into(), "Enter".into()]);
     m.insert(InputAction::Cancel, vec!["X".into(), "Escape".into()]);
     m.insert(InputAction::Menu, vec!["C".into()]);
     m.insert(

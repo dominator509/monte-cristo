@@ -61,5 +61,5 @@ fn advisory_copy_contains_the_required_warnings_and_acknowledgement_prompt() {
     assert!(copy.contains("suicide"));
     assert!(copy.contains("death of a child"));
     assert!(copy.contains("faithfully"));
-    assert!(copy.contains("Z / ENTER / SPACE"));
+    assert!(copy.contains("Z / ENTER"));
 }

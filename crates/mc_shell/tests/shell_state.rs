@@ -129,12 +129,26 @@ fn settings_write_failure_returns_typed_error() {
 #[test]
 fn input_audio_and_render_state_enforce_their_public_contracts() {
     let mut input = default_input_map();
-    assert!(!validate_map(&input));
+    assert!(validate_map(&input));
     input.insert(InputAction::Confirm, vec!["Z".into(), "Enter".into()]);
     assert!(validate_map(&input));
     assert!(!has_ambiguous_bindings(&input));
     input.insert(InputAction::Cancel, vec!["Z".into()]);
     assert!(has_ambiguous_bindings(&input));
+
+    let invalid = ShellConfig {
+        input_map: {
+            let mut map = default_input_map();
+            map.insert(
+                InputAction::Confirm,
+                vec!["Z".into(), "Enter".into(), "Space".into()],
+            );
+            map
+        },
+        ..ShellConfig::default()
+    };
+    let validated = ValidatedConfig::from_config(invalid, temp_dir("invalid-input"));
+    assert_eq!(validated.input_map, default_input_map());
 
     let mut audio = AudioState::new(true);
     audio.update(1, mc_core::world::Act::ActIMarseille);
