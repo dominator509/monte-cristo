@@ -48,17 +48,17 @@ impl SceneEffect {
             SceneEffect::ClearFlag(f) => world.flags.clear(*f),
             SceneEffect::AddTrust(c, v) => {
                 let entry = world.trust.entry(*c).or_insert(0);
-                *entry = entry.saturating_add(*v);
+                *entry = entry.saturating_add(*v).clamp(-50, 50);
             }
             SceneEffect::SubTrust(c, v) => {
                 let entry = world.trust.entry(*c).or_insert(0);
-                *entry = entry.saturating_sub(*v);
+                *entry = entry.saturating_sub(*v).clamp(-50, 50);
             }
             SceneEffect::AddMask(v) => {
-                world.mask = world.mask.saturating_add(*v);
+                world.mask = world.mask.saturating_add(*v).clamp(0, 100);
             }
             SceneEffect::SubMask(v) => {
-                world.mask = world.mask.saturating_sub(*v);
+                world.mask = world.mask.saturating_sub(*v).clamp(0, 100);
             }
             SceneEffect::GrantItem(id, count) => {
                 world.inventory.add_item(*id, *count);
@@ -252,6 +252,10 @@ mod tests {
         assert_eq!(world.trust.get(&mercedes), Some(&10));
         SceneEffect::SubTrust(mercedes, 3).apply(&mut world);
         assert_eq!(world.trust.get(&mercedes), Some(&7));
+        SceneEffect::AddTrust(mercedes, 100).apply(&mut world);
+        assert_eq!(world.trust.get(&mercedes), Some(&50));
+        SceneEffect::SubTrust(mercedes, 100).apply(&mut world);
+        assert_eq!(world.trust.get(&mercedes), Some(&-50));
     }
 
     #[test]
@@ -259,9 +263,13 @@ mod tests {
         let mut world = World::new(0);
         assert_eq!(world.mask, 100);
         SceneEffect::AddMask(10).apply(&mut world);
-        assert_eq!(world.mask, 110);
+        assert_eq!(world.mask, 100);
         SceneEffect::SubMask(20).apply(&mut world);
-        assert_eq!(world.mask, 90);
+        assert_eq!(world.mask, 80);
+        SceneEffect::SubMask(100).apply(&mut world);
+        assert_eq!(world.mask, 0);
+        SceneEffect::AddMask(100).apply(&mut world);
+        assert_eq!(world.mask, 100);
     }
 
     #[test]
