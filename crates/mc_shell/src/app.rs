@@ -21,6 +21,7 @@ use mc_core::command::{
 use mc_core::item::AuthoredItemCatalog;
 use mc_core::scene::AuthoredSceneCatalog;
 use mc_core::world::World;
+use std::time::Instant;
 use tracing::info;
 
 /// Fixed time step: 60 fps = 16.666... ms.
@@ -167,7 +168,9 @@ impl App {
         }
         while self.accum >= FIXED_DT {
             let _events = self.apply_commands(&commands);
+            let step_started = Instant::now();
             self.world.step();
+            crate::obs::record_core_step(step_started.elapsed());
             crate::obs::CURRENT_TICK.store(self.world.tick, std::sync::atomic::Ordering::Relaxed);
             crate::obs::record_state_hash(*self.world.state_hash().as_bytes());
             crate::obs::record_tick();
@@ -190,7 +193,9 @@ impl App {
             for _ in &commands {
                 crate::obs::record_command();
             }
+            let step_started = Instant::now();
             self.world.step();
+            crate::obs::record_core_step(step_started.elapsed());
             crate::obs::CURRENT_TICK.store(self.world.tick, std::sync::atomic::Ordering::Relaxed);
             crate::obs::record_state_hash(*self.world.state_hash().as_bytes());
             crate::obs::record_tick();
@@ -256,8 +261,10 @@ impl App {
 
     /// Run one windowed frame. Called from macroquad's render loop.
     pub fn windowed_frame(&mut self) {
+        let frame_started = Instant::now();
         if self.advisory_pending {
             self.draw_advisory_frame();
+            crate::obs::record_frame(frame_started.elapsed());
             return;
         }
 
@@ -302,6 +309,7 @@ impl App {
             14.0,
             WHITE,
         );
+        crate::obs::record_frame(frame_started.elapsed());
     }
 
     /// Render and acknowledge the first-run advisory before any gameplay input

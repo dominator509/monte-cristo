@@ -28,6 +28,21 @@ fn metrics_serializes_correctly() {
         json.contains("\"ticks_elapsed\""),
         "metrics json should contain ticks_elapsed"
     );
+    for metric in [
+        "core.step.duration",
+        "frame.total.duration",
+        "content.load.duration",
+        "startup.to_title.duration",
+        "save.write.duration",
+        "save.load.duration",
+        "memory.resident.peak",
+        "encounter.resolve.ticks",
+    ] {
+        assert!(
+            json.contains(&format!("\"{metric}\"")),
+            "metrics json should contain {metric}: {json}"
+        );
+    }
 }
 
 #[test]
@@ -41,6 +56,13 @@ fn metrics_write_creates_file() {
     mc_shell::obs::record_tick();
     mc_shell::obs::record_command();
     mc_shell::obs::record_battle();
+    mc_shell::obs::record_core_step(std::time::Duration::from_micros(12));
+    mc_shell::obs::record_frame(std::time::Duration::from_micros(34));
+    mc_shell::obs::record_content_load(std::time::Duration::from_millis(5));
+    mc_shell::obs::record_startup_to_title(std::time::Duration::from_millis(7));
+    mc_shell::obs::record_save_write(std::time::Duration::from_millis(2));
+    mc_shell::obs::record_save_load(std::time::Duration::from_millis(3));
+    mc_shell::obs::record_encounter_ticks(4);
 
     let result = mc_shell::obs::write_metrics();
     assert!(result.is_ok(), "write_metrics should succeed: {:?}", result);

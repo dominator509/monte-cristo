@@ -9,6 +9,7 @@
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 
 use mc_core::command::SaveSlot;
 use mc_core::world::World;
@@ -97,6 +98,13 @@ impl SlotStore {
 
     /// Save the world into a slot using a staged replacement.
     pub fn save(&self, slot: SaveSlot, world: &World) -> Result<(), SlotError> {
+        let started = Instant::now();
+        let result = self.save_inner(slot, world);
+        crate::obs::record_save_write(started.elapsed());
+        result
+    }
+
+    fn save_inner(&self, slot: SaveSlot, world: &World) -> Result<(), SlotError> {
         let save_dir = self.save_dir()?;
         let path = self.slot_path(slot)?;
         let temporary = save_dir.join(format!(".slot-{}.sav.{}.tmp", slot.0, std::process::id()));
@@ -126,6 +134,13 @@ impl SlotStore {
 
     /// Load and verify a slot against the currently loaded content pack.
     pub fn load(&self, slot: SaveSlot) -> Result<Save, SlotError> {
+        let started = Instant::now();
+        let result = self.load_inner(slot);
+        crate::obs::record_save_load(started.elapsed());
+        result
+    }
+
+    fn load_inner(&self, slot: SaveSlot) -> Result<Save, SlotError> {
         let path = self.slot_path(slot)?;
         if !path.is_file() {
             return Err(SlotError::EmptySlot(slot));

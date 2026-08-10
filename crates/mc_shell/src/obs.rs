@@ -13,7 +13,7 @@ use serde::Serialize;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{LazyLock, Mutex};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tracing_subscriber::prelude::*;
 
 // ── Session identity ──────────────────────────────────────────────────────────
@@ -365,6 +365,103 @@ pub fn init_logging() -> Result<(), Box<dyn std::error::Error>> {
 
 // ── Metrics ───────────────────────────────────────────────────────────────────
 
+/// Fixed buckets keep the metrics accumulator bounded while retaining useful
+/// percentile evidence for long-running sessions.
+const HISTOGRAM_BUCKETS: [u64; 18] = [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1_024,
+    2_048,
+    4_096,
+    8_192,
+    16_384,
+    32_768,
+    65_536,
+    u64::MAX,
+];
+
+/// A bounded local histogram. Values are recorded in the metric's declared
+/// unit (microseconds, milliseconds, or ticks).
+#[derive(Debug, Clone)]
+pub struct MetricHistogram {
+    count: u64,
+    sum: u64,
+    max: u64,
+    buckets: [u64; HISTOGRAM_BUCKETS.len()],
+}
+
+impl MetricHistogram {
+    fn record(&mut self, value: u64) {
+        self.count = self.count.saturating_add(1);
+        self.sum = self.sum.saturating_add(value);
+        self.max = self.max.max(value);
+        let bucket = HISTOGRAM_BUCKETS
+            .iter()
+            .position(|bound| value <= *bound)
+            .unwrap_or(HISTOGRAM_BUCKETS.len() - 1);
+        self.buckets[bucket] = self.buckets[bucket].saturating_add(1);
+    }
+
+    fn percentile(&self, percentile: u64) -> u64 {
+        if self.count == 0 {
+            return 0;
+        }
+        let rank = ((self.count.saturating_mul(percentile)).saturating_add(99)) / 100;
+        let mut cumulative = 0u64;
+        for (index, count) in self.buckets.iter().enumerate() {
+            cumulative = cumulative.saturating_add(*count);
+            if cumulative >= rank.max(1) {
+                return HISTOGRAM_BUCKETS[index];
+            }
+        }
+        self.max
+    }
+}
+
+impl Default for MetricHistogram {
+    fn default() -> Self {
+        Self {
+            count: 0,
+            sum: 0,
+            max: 0,
+            buckets: [0; HISTOGRAM_BUCKETS.len()],
+        }
+    }
+}
+
+impl Serialize for MetricHistogram {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut output = serializer.serialize_struct("MetricHistogram", 6)?;
+        output.serialize_field("count", &self.count)?;
+        output.serialize_field("sum", &self.sum)?;
+        output.serialize_field("max", &self.max)?;
+        output.serialize_field("p50", &self.percentile(50))?;
+        output.serialize_field("p95", &self.percentile(95))?;
+        output.serialize_field("p99", &self.percentile(99))?;
+        output.end()
+    }
+}
+
+fn duration_micros(duration: Duration) -> u64 {
+    duration.as_micros().min(u128::from(u64::MAX)) as u64
+}
+
+fn duration_millis(duration: Duration) -> u64 {
+    duration.as_millis().min(u128::from(u64::MAX)) as u64
+}
+
 /// Runtime metrics collected across the session.
 #[derive(Debug, Clone, Serialize)]
 pub struct SessionMetrics {
@@ -377,6 +474,22 @@ pub struct SessionMetrics {
     pub commands_processed: u64,
     pub battles_fought: u32,
     pub encounters_resolved: u32,
+    #[serde(rename = "core.step.duration")]
+    pub core_step_duration: MetricHistogram,
+    #[serde(rename = "frame.total.duration")]
+    pub frame_total_duration: MetricHistogram,
+    #[serde(rename = "content.load.duration")]
+    pub content_load_duration: MetricHistogram,
+    #[serde(rename = "startup.to_title.duration")]
+    pub startup_to_title_duration: MetricHistogram,
+    #[serde(rename = "save.write.duration")]
+    pub save_write_duration: MetricHistogram,
+    #[serde(rename = "save.load.duration")]
+    pub save_load_duration: MetricHistogram,
+    #[serde(rename = "memory.resident.peak")]
+    pub memory_resident_peak: MetricHistogram,
+    #[serde(rename = "encounter.resolve.ticks")]
+    pub encounter_resolve_ticks: MetricHistogram,
 }
 
 impl SessionMetrics {
@@ -392,6 +505,14 @@ impl SessionMetrics {
             commands_processed: 0,
             battles_fought: 0,
             encounters_resolved: 0,
+            core_step_duration: MetricHistogram::default(),
+            frame_total_duration: MetricHistogram::default(),
+            content_load_duration: MetricHistogram::default(),
+            startup_to_title_duration: MetricHistogram::default(),
+            save_write_duration: MetricHistogram::default(),
+            save_load_duration: MetricHistogram::default(),
+            memory_resident_peak: MetricHistogram::default(),
+            encounter_resolve_ticks: MetricHistogram::default(),
         }
     }
 }
@@ -431,6 +552,63 @@ pub fn record_battle() {
 pub fn record_encounter() {
     if let Ok(mut m) = METRICS.lock() {
         m.encounters_resolved += 1;
+    }
+}
+
+/// Record one core step duration in microseconds.
+pub fn record_core_step(duration: Duration) {
+    if let Ok(mut metrics) = METRICS.lock() {
+        metrics.core_step_duration.record(duration_micros(duration));
+    }
+}
+
+/// Record one complete presentation frame duration in microseconds.
+pub fn record_frame(duration: Duration) {
+    if let Ok(mut metrics) = METRICS.lock() {
+        metrics
+            .frame_total_duration
+            .record(duration_micros(duration));
+    }
+}
+
+/// Record content-pack loading duration in milliseconds.
+pub fn record_content_load(duration: Duration) {
+    if let Ok(mut metrics) = METRICS.lock() {
+        metrics
+            .content_load_duration
+            .record(duration_millis(duration));
+    }
+}
+
+/// Record startup-to-title duration in milliseconds.
+pub fn record_startup_to_title(duration: Duration) {
+    if let Ok(mut metrics) = METRICS.lock() {
+        metrics
+            .startup_to_title_duration
+            .record(duration_millis(duration));
+    }
+}
+
+/// Record one save write duration in milliseconds.
+pub fn record_save_write(duration: Duration) {
+    if let Ok(mut metrics) = METRICS.lock() {
+        metrics
+            .save_write_duration
+            .record(duration_millis(duration));
+    }
+}
+
+/// Record one save load duration in milliseconds.
+pub fn record_save_load(duration: Duration) {
+    if let Ok(mut metrics) = METRICS.lock() {
+        metrics.save_load_duration.record(duration_millis(duration));
+    }
+}
+
+/// Record the tick span used to resolve one encounter.
+pub fn record_encounter_ticks(ticks: u64) {
+    if let Ok(mut metrics) = METRICS.lock() {
+        metrics.encounter_resolve_ticks.record(ticks);
     }
 }
 

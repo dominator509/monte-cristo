@@ -6,6 +6,7 @@
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+use std::time::Instant;
 use std::{fs, io::Write};
 
 use mc_core::item::AuthoredItemCatalog;
@@ -38,6 +39,7 @@ fn run_headless(
     slot_store: SlotStore,
 ) {
     tracing::info!("starting headless mode");
+    let startup_started = Instant::now();
     let mut app = App::new_with_catalog_and_items_and_store(
         seed,
         config,
@@ -47,6 +49,7 @@ fn run_headless(
         Some(slot_store),
     )
     .expect("verified authored scene catalog should start");
+    mc_shell::obs::record_startup_to_title(startup_started.elapsed());
     for _i in 0..60 {
         app.headless_update();
     }
@@ -79,6 +82,7 @@ fn init_observability() {
 /// may still run directly from the RON tree before a bake has occurred. A
 /// release binary refuses that loose-source fallback.
 fn load_runtime_catalog() -> Result<(AuthoredSceneCatalog, AuthoredItemCatalog, [u8; 32]), String> {
+    let load_started = Instant::now();
     let mut candidates = Vec::new();
     let manifest_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     candidates.push(manifest_root.join("../.."));
@@ -125,6 +129,7 @@ fn load_runtime_catalog() -> Result<(AuthoredSceneCatalog, AuthoredItemCatalog, 
         let item_catalog = pack
             .item_catalog()
             .map_err(|error| format!("authored item catalog failed: {error}"))?;
+        mc_shell::obs::record_content_load(load_started.elapsed());
         return Ok((scene_catalog, item_catalog, *content_digest.as_bytes()));
     }
 
@@ -352,6 +357,7 @@ fn run_windowed(
 ) {
     macroquad::Window::new("Monte Cristo", async move {
         tracing::info!("starting windowed mode: 256x224 internal resolution");
+        let startup_started = Instant::now();
         let mut app = App::new_with_catalog_and_items_and_store(
             seed,
             config,
@@ -361,6 +367,7 @@ fn run_windowed(
             Some(slot_store),
         )
         .expect("verified authored scene catalog should start");
+        mc_shell::obs::record_startup_to_title(startup_started.elapsed());
         let render_target = mc_shell::render::target::ShellRenderTarget::new();
         app.render_target = Some(render_target);
 
