@@ -113,6 +113,9 @@ fn report_bestiary(input: &str) -> bool {
         ("encounters", 180usize, pack.encounters.len()),
         ("spawn_tables", 45usize, pack.spawn_tables.len()),
     ];
+    let counts_match = expected_counts
+        .iter()
+        .all(|(_, expected, actual)| expected == actual);
     println!();
     println!("--- Locked Count Checks (SPEC-002 / SPEC-009) ---");
     for (label, expected, actual) in expected_counts {
@@ -145,6 +148,11 @@ fn report_bestiary(input: &str) -> bool {
     }
 
     println!();
-    println!("report bestiary: ok");
-    true
+    if missing_domains.is_empty() && counts_match {
+        println!("report bestiary: ok");
+        true
+    } else {
+        println!("report bestiary: FAIL - locked content requirements are not met");
+        false
+    }
 }

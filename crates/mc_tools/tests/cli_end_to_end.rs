@@ -130,7 +130,10 @@ fn cli_success_paths_cover_real_content_tapes_and_proofs() {
         "printed state hash is 32-byte lowercase hex"
     );
 
-    assert_success(&["report", "bestiary"], "report bestiary: ok");
+    assert_failure(
+        &["report", "bestiary"],
+        "locked content requirements are not met",
+    );
     let fixture_dir = Path::new(REPO_ROOT).join("tests/fixtures/saves-v1");
     let fixture = fixture_dir.join("save.v1");
     let fixture_before = std::fs::read(&fixture).expect("read migration fixture before dry-run");
