@@ -16,6 +16,7 @@ use crate::ui::{
         draw_field_hud, draw_file_select_screen, draw_menu_screen, MENU_ENTRIES, MENU_LOAD_INDEX,
         MENU_SAVE_INDEX, SAVE_SLOT_COUNT,
     },
+    title::draw_title_screen,
 };
 use macroquad::prelude::*;
 use mc_core::command::{
@@ -36,6 +37,8 @@ pub const MAX_ACCUM: f64 = 0.25;
 /// Which screen overlay is currently active.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScreenState {
+    /// Title screen shown before a windowed new game or continue.
+    Title,
     /// Field/exploration (default state).
     Field,
     /// Active battle.
@@ -87,6 +90,8 @@ pub struct App {
     pub scene_choice_index: usize,
     /// Currently highlighted main-menu entry.
     pub menu_choice_index: usize,
+    /// Currently highlighted title entry (New Game or Continue).
+    pub title_choice_index: usize,
     /// Currently highlighted save slot.
     pub file_slot_index: u8,
     /// Latest typed save/load failure shown by the file picker.
@@ -168,13 +173,18 @@ impl App {
             render_target: None,
             tilemap,
             audio: crate::audio::AudioState::new(audio_enabled),
-            screen_state: ScreenState::Field,
+            screen_state: if headless || advisory_pending {
+                ScreenState::Field
+            } else {
+                ScreenState::Title
+            },
             advisory_pending,
             scene_catalog,
             item_catalog,
             slot_store,
             scene_choice_index: 0,
             menu_choice_index: 0,
+            title_choice_index: 0,
             file_slot_index: 0,
             file_error: None,
             slot_occupied: [false; SAVE_SLOT_COUNT],
@@ -383,6 +393,7 @@ impl App {
                 tracing::error!(error = %error, "failed to persist settings acknowledgement");
             }
             self.advisory_pending = false;
+            self.screen_state = ScreenState::Title;
         }
     }
 
@@ -406,6 +417,7 @@ impl App {
     /// traversal without introducing a second input channel.
     fn translate_scene_input(&mut self, commands: Vec<Command>) -> Vec<Command> {
         match self.screen_state {
+            ScreenState::Title => return self.translate_title_input(commands),
             ScreenState::Menu => return self.translate_menu_input(commands),
             ScreenState::FileSelect(mode) => return self.translate_file_input(mode, commands),
             ScreenState::Field | ScreenState::Battle => {}
@@ -450,6 +462,29 @@ impl App {
             }
         }
         translated
+    }
+
+    fn translate_title_input(&mut self, commands: Vec<Command>) -> Vec<Command> {
+        for command in commands {
+            match command {
+                Command::Move(Dir::North) => {
+                    self.title_choice_index = self.title_choice_index.saturating_sub(1);
+                }
+                Command::Move(Dir::South) => {
+                    self.title_choice_index = (self.title_choice_index + 1) % 2;
+                }
+                Command::Interact if self.title_choice_index == 0 => {
+                    self.screen_state = ScreenState::Field;
+                }
+                Command::Interact => {
+                    self.file_slot_index = 0;
+                    self.file_error = None;
+                    self.screen_state = ScreenState::FileSelect(FileSelectMode::Load);
+                }
+                _ => {}
+            }
+        }
+        Vec::new()
     }
 
     fn translate_menu_input(&mut self, commands: Vec<Command>) -> Vec<Command> {
@@ -705,6 +740,9 @@ impl App {
     fn draw_ui(&self, view: &StateView) {
         // Draw screen overlays conditionally based on current screen state
         match self.screen_state {
+            ScreenState::Title => {
+                draw_title_screen(self.title_choice_index);
+            }
             ScreenState::Field => {
                 if let Some(state) = view.scene {
                     if let Some(node) = self.scene_catalog.node(state.current) {
@@ -800,6 +838,39 @@ mod tests {
         assert!(load_app.translate_scene_input(load_commands).is_empty());
         assert_eq!(
             load_app.screen_state,
+            ScreenState::FileSelect(FileSelectMode::Load)
+        );
+    }
+
+    #[test]
+    fn title_selection_starts_new_game_or_opens_continue_picker() {
+        let acknowledged = App::new(
+            42,
+            ValidatedConfig::from_config(
+                ShellConfig {
+                    advisory_acknowledged: true,
+                    ..ShellConfig::default()
+                },
+                temp_dir("title-windowed"),
+            ),
+            false,
+        );
+        assert_eq!(acknowledged.screen_state, ScreenState::Title);
+
+        let mut new_game = app("title-new-game");
+        new_game.screen_state = ScreenState::Title;
+        assert!(new_game
+            .translate_scene_input(vec![Command::Interact])
+            .is_empty());
+        assert_eq!(new_game.screen_state, ScreenState::Field);
+
+        let mut continue_game = app("title-continue");
+        continue_game.screen_state = ScreenState::Title;
+        assert!(continue_game
+            .translate_scene_input(vec![Command::Move(Dir::South), Command::Interact])
+            .is_empty());
+        assert_eq!(
+            continue_game.screen_state,
             ScreenState::FileSelect(FileSelectMode::Load)
         );
     }

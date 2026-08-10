@@ -5,3 +5,4 @@ pub mod battle;
 pub mod confidence;
 pub mod menu;
 pub mod text;
+pub mod title;
