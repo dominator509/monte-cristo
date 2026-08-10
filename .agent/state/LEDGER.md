@@ -285,3 +285,5 @@
 2026-08-10T14:10:57Z | codex-root | EP-010 | AUDIT_VERIFY | post-M49 verify: preflight/install/lint/format/typecheck, 203 mc_core unit tests, workspace integration/e2e, build, security, dependency, reality, content, hash, smoke, and LF-01 through LF-09 passed; LF-10 remains the sole verifier failure
 2026-08-10T14:12:04Z | codex-root | EP-010 | AUDIT_FIX | invalid FlagExpr Set and NotSet identifiers now fail closed; malformed content cannot unlock a gate through NotSet
 2026-08-10T14:12:04Z | codex-root | EP-010 | AUDIT_VERIFY | invalid raw flag regression and full mc_core library suite pass: 203 tests
+2026-08-10T14:12:51Z | codex-root | EP-010 | AUDIT_FIX | FlagExpr validation now rejects malformed identifiers recursively before evaluation, covering Not and Any gate inversion paths
+2026-08-10T14:12:52Z | codex-root | EP-010 | AUDIT_VERIFY | recursive flag-expression hardening: focused invalid-ID test and mc_core library 203 passed

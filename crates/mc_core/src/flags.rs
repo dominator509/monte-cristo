@@ -52,6 +52,9 @@ impl FlagSet {
 
     /// Check if this expression is satisfied by the current flags.
     pub fn satisfies(&self, expr: &FlagExpr) -> bool {
+        if !Self::expression_is_valid(expr) {
+            return false;
+        }
         match expr {
             FlagExpr::Always => true,
             FlagExpr::Never => false,
@@ -63,6 +66,20 @@ impl FlagSet {
             FlagExpr::All(exprs) => exprs.iter().all(|e| self.satisfies(e)),
             FlagExpr::Any(exprs) => exprs.iter().any(|e| self.satisfies(e)),
             FlagExpr::Not(expr) => !self.satisfies(expr),
+        }
+    }
+
+    /// Validate every identifier in an authored expression before evaluating
+    /// it. This keeps `Not` and `Any` from turning one malformed child into a
+    /// gate that accidentally passes.
+    fn expression_is_valid(expr: &FlagExpr) -> bool {
+        match expr {
+            FlagExpr::Always | FlagExpr::Never => true,
+            FlagExpr::Set(flag) | FlagExpr::NotSet(flag) => Self::bit_location(*flag).is_some(),
+            FlagExpr::All(exprs) | FlagExpr::Any(exprs) => {
+                exprs.iter().all(Self::expression_is_valid)
+            }
+            FlagExpr::Not(expr) => Self::expression_is_valid(expr),
         }
     }
 
@@ -191,5 +208,10 @@ mod tests {
         assert!(!flags.is_set(invalid));
         assert!(!flags.satisfies(&FlagExpr::Set(invalid)));
         assert!(!flags.satisfies(&FlagExpr::NotSet(invalid)));
+        assert!(!flags.satisfies(&FlagExpr::Not(Box::new(FlagExpr::NotSet(invalid,)))));
+        assert!(!flags.satisfies(&FlagExpr::Any(vec![
+            FlagExpr::Set(invalid),
+            FlagExpr::Always,
+        ])));
     }
 }
