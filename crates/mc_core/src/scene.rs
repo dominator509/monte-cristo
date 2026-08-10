@@ -148,6 +148,17 @@ pub struct SceneChoice {
     pub effects: Vec<SceneEffect>,
 }
 
+/// Failure returned when a scene choice cannot be selected safely.
+#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
+pub enum SceneChoiceError {
+    /// The requested index does not exist in the authored choice list.
+    #[error("scene choice index {0} is out of range")]
+    InvalidIndex(usize),
+    /// The choice exists but its authored condition is not satisfied.
+    #[error("scene choice index {0} is not available")]
+    Unavailable(usize),
+}
+
 /// A branching scene node where the player chooses from multiple paths.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct SceneChoose {
@@ -175,20 +186,28 @@ impl SceneChoose {
         }
     }
 
-    /// Select a choice by index. Returns the destination scene after applying
-    /// the choice's effects. Panics if index is out of range.
+    /// Select an available choice by index and return its destination.
+    ///
+    /// The index and authored condition are checked before any effect is
+    /// applied, so malformed input cannot panic or partially mutate the world.
     pub fn select_choice(
         &self,
         index: usize,
         state: &mut SceneState,
         world: &mut World,
-    ) -> SceneId {
-        let choice = &self.choices[index];
+    ) -> Result<SceneId, SceneChoiceError> {
+        let choice = self
+            .choices
+            .get(index)
+            .ok_or(SceneChoiceError::InvalidIndex(index))?;
+        if !world.flags.satisfies(&choice.condition) {
+            return Err(SceneChoiceError::Unavailable(index));
+        }
         for effect in &choice.effects {
             effect.apply(world);
         }
         state.current = choice.to;
-        choice.to
+        Ok(choice.to)
     }
 }
 
@@ -321,7 +340,9 @@ mod tests {
         let available = choose.available_choices(&world.flags);
         assert_eq!(available.len(), 2);
 
-        let dest = choose.select_choice(0, &mut state, &mut world);
+        let dest = choose
+            .select_choice(0, &mut state, &mut world)
+            .expect("available scene choice should select");
         assert_eq!(dest, SceneId::SCN_MORCERF_REVEAL);
         assert_eq!(state.current, SceneId::SCN_MORCERF_REVEAL);
         assert!(world.flags.is_set(FlagId::FLG_MORCERF_DOSSIER));
@@ -351,5 +372,47 @@ mod tests {
         let available = choose.available_choices(&world.flags);
         assert_eq!(available.len(), 1);
         assert_eq!(available[0].label, "Hide");
+    }
+
+    #[test]
+    fn scene_choose_rejects_invalid_index_without_mutating() {
+        let mut state = SceneState::new(SceneId::SCN_SINDBAD);
+        let mut world = World::new(0);
+        let choose = SceneChoose {
+            from: SceneId::SCN_SINDBAD,
+            choices: vec![SceneChoice {
+                label: "Reveal".into(),
+                to: SceneId::SCN_MORCERF_REVEAL,
+                condition: FlagExpr::Always,
+                effects: vec![SceneEffect::SetFlag(FlagId::FLG_MORCERF_DOSSIER)],
+            }],
+            entry_effects: vec![],
+        };
+
+        let result = choose.select_choice(1, &mut state, &mut world);
+        assert_eq!(result, Err(SceneChoiceError::InvalidIndex(1)));
+        assert_eq!(state.current, SceneId::SCN_SINDBAD);
+        assert!(!world.flags.is_set(FlagId::FLG_MORCERF_DOSSIER));
+    }
+
+    #[test]
+    fn scene_choose_rejects_locked_choice_without_mutating() {
+        let mut state = SceneState::new(SceneId::SCN_SINDBAD);
+        let mut world = World::new(0);
+        let choose = SceneChoose {
+            from: SceneId::SCN_SINDBAD,
+            choices: vec![SceneChoice {
+                label: "Reveal".into(),
+                to: SceneId::SCN_MORCERF_REVEAL,
+                condition: FlagExpr::Set(FlagId::FLG_MORCERF_DOSSIER),
+                effects: vec![SceneEffect::SetFlag(FlagId::FLG_MORCERF_DOSSIER)],
+            }],
+            entry_effects: vec![],
+        };
+
+        let result = choose.select_choice(0, &mut state, &mut world);
+        assert_eq!(result, Err(SceneChoiceError::Unavailable(0)));
+        assert_eq!(state.current, SceneId::SCN_SINDBAD);
+        assert!(!world.flags.is_set(FlagId::FLG_MORCERF_DOSSIER));
     }
 }
