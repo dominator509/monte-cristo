@@ -92,12 +92,15 @@ fn batched_commands_apply_same_tick() {
         Command::OpenMenu,
     ];
     let events = apply_commands(&mut world, &cmds);
-    // All commands applied at tick 0
+    // Commands are evaluated at tick 0; SceneAdvance is rejected without an
+    // authored catalog, while the other commands apply.
     assert_eq!(world.tick, t0, "tick must not advance before step");
     assert_eq!(events.len(), 5, "all 5 commands should produce events");
-    for ev in &events {
-        assert!(matches!(ev, CoreEvent::Applied { .. }));
-    }
+    assert!(matches!(events[0], CoreEvent::Applied { .. }));
+    assert!(matches!(events[1], CoreEvent::Applied { .. }));
+    assert!(matches!(events[2], CoreEvent::Applied { .. }));
+    assert!(matches!(events[3], CoreEvent::Rejected { .. }));
+    assert!(matches!(events[4], CoreEvent::Applied { .. }));
     // Now step — tick advances by exactly 1
     world.step();
     assert_eq!(
