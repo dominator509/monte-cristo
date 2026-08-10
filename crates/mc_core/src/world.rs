@@ -210,22 +210,64 @@ impl World {
         }
     }
 
+    /// Resolve ready enemy turns through the same deterministic damage path as
+    /// player attacks. Enemy actions are intentionally basic attacks here; any
+    /// authored ability resolver can build on this battle boundary later.
+    fn resolve_enemy_actions(&mut self) {
+        let mut rng = self.rng;
+        if let Some(battle) = self.battle.as_mut() {
+            if battle.state == crate::battle::BattleState::Active {
+                let ready_enemies: Vec<usize> = battle
+                    .combatants
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, combatant)| {
+                        combatant.affiliation == crate::battle::Affiliation::Enemy
+                            && combatant.is_alive()
+                            && combatant.is_atb_full()
+                            && !combatant
+                                .statuses
+                                .has(crate::battle::status::StatusKind::Winded)
+                    })
+                    .map(|(index, _)| index)
+                    .collect();
+
+                for attacker_index in ready_enemies {
+                    if battle.state != crate::battle::BattleState::Active {
+                        break;
+                    }
+                    let Some(target_index) = battle.find_auto_target(attacker_index) else {
+                        break;
+                    };
+                    let attacker = battle.combatants[attacker_index].clone();
+                    let defender = battle.combatants[target_index].clone();
+                    let damage = crate::battle::damage::compute_damage(
+                        attacker.attack,
+                        &attacker,
+                        &defender,
+                        &mut rng,
+                    )
+                    .mitigated;
+                    crate::battle::damage::apply_damage(
+                        &mut battle.combatants[target_index],
+                        damage,
+                    );
+                    battle.combatants[attacker_index].atb.reset();
+                    battle.check_end_conditions();
+                }
+            }
+        }
+        self.rng = rng;
+    }
+
     /// Advance the world by one tick.
     /// Dispatches over step::ORDER.
     pub fn step(&mut self) {
         for &system in step::ORDER {
             match system {
-                "scene_advance"
-                | "calendar_advance"
-                | "season_advance"
-                | "field_movement"
-                | "spawn_resolution"
-                | "encounter_contact"
-                | "battle_action_resolve"
-                | "poison_tick"
-                | "budget_decay"
-                | "flag_reactions"
-                | "event_flush" => {}
+                "scene_advance" | "calendar_advance" | "season_advance" | "field_movement"
+                | "spawn_resolution" | "encounter_contact" | "poison_tick" | "budget_decay"
+                | "flag_reactions" | "event_flush" => {}
                 "battle_atb" => {
                     if let Some(battle) = self.battle.as_mut() {
                         if battle.state == crate::battle::BattleState::Active {
@@ -266,6 +308,7 @@ impl World {
                         }
                     }
                 }
+                "battle_action_resolve" => self.resolve_enemy_actions(),
                 _ => {}
             }
         }
@@ -346,6 +389,54 @@ mod tests {
 
         assert_eq!(world.party.active[0].hp, Fx::from_int(37));
         assert_eq!(world.party.roster[0].hp, Fx::from_int(37));
+    }
+
+    #[test]
+    fn ready_enemy_resolves_deterministic_basic_attack() {
+        use crate::battle::atb::AtbGauge;
+        use crate::battle::status::StatusList;
+        use crate::battle::{Affiliation, Battle, Combatant, CombatantKind};
+        use crate::ids::EnemyId;
+
+        let party = Combatant {
+            kind: CombatantKind::PartyMember(CharId::CHR_EDMOND),
+            affiliation: Affiliation::Party,
+            name: "Edmond".into(),
+            atb: AtbGauge::new(Fx::from_int(12)),
+            hp: Fx::from_int(100),
+            max_hp: Fx::from_int(100),
+            attack: Fx::from_int(10),
+            defense: Fx::from_int(8),
+            speed: Fx::from_int(12),
+            level: 1,
+            statuses: StatusList::new(),
+        };
+        let mut enemy = Combatant {
+            kind: CombatantKind::Enemy(EnemyId::ENM_BANDIT),
+            affiliation: Affiliation::Enemy,
+            name: "Bandit".into(),
+            atb: AtbGauge::new(Fx::from_int(8)),
+            hp: Fx::from_int(30),
+            max_hp: Fx::from_int(30),
+            attack: Fx::from_int(6),
+            defense: Fx::from_int(4),
+            speed: Fx::from_int(8),
+            level: 1,
+            statuses: StatusList::new(),
+        };
+        enemy.atb.force_full();
+
+        let mut world_a = World::new(42);
+        world_a.battle = Some(Battle::new(vec![party], vec![enemy]));
+        let mut world_b = world_a.clone();
+
+        world_a.step();
+        world_b.step();
+
+        let battle = world_a.battle.as_ref().unwrap();
+        assert!(battle.combatants[0].hp < Fx::from_int(100));
+        assert!(!battle.combatants[1].atb.is_full());
+        assert_eq!(world_a.state_hash(), world_b.state_hash());
     }
 
     #[test]

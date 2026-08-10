@@ -420,13 +420,11 @@ fn resolve_battle_action(world: &mut World, actor: ActorId, action: &Action) -> 
             if target_ref.affiliation != Affiliation::Enemy || !target_ref.is_alive() {
                 return Err("Attack target must be a living enemy".into());
             }
-            let damage = battle::damage::compute_damage(
-                crate::fx::Fx::from_int(1),
-                &battle.combatants[actor.0],
-                &battle.combatants[target_index],
-                &mut rng,
-            )
-            .mitigated;
+            let attacker = battle.combatants[actor.0].clone();
+            let defender = battle.combatants[target_index].clone();
+            let damage =
+                battle::damage::compute_damage(attacker.attack, &attacker, &defender, &mut rng)
+                    .mitigated;
             battle::damage::apply_damage(&mut battle.combatants[target_index], damage);
         }
         Action::Guard => {}
