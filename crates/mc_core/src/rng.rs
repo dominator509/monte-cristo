@@ -78,9 +78,7 @@ impl Rng {
         let total: u32 = weights.values().copied().sum();
         if total == 0 {
             // All weights are zero; pick uniformly.
-            let idx = self
-                .next_range(0, weights.len() as u32 - 1)
-                .ok()?;
+            let idx = self.next_range(0, weights.len() as u32 - 1).ok()?;
             return weights.keys().nth(idx as usize).copied();
         }
         let mut roll = self.next_range(1, total).ok()?;
