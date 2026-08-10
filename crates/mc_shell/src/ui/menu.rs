@@ -300,19 +300,35 @@ pub fn draw_field_hud(view: &StateView<'_>, high_contrast: bool) {
     let accent = if high_contrast { WHITE } else { PAPER };
     draw_rectangle(6.0, 6.0, 116.0, 34.0, panel);
     draw_rectangle_lines(6.0, 6.0, 116.0, 34.0, 1.0, accent);
-    draw_text("EDMOND", 12.0, 19.0, 10.0, accent);
-    draw_text(
-        &format!(
-            "HP {:>3}/{:<3}",
-            view.party.active[0].hp, view.party.active[0].max_hp
-        ),
-        12.0,
-        31.0,
-        9.0,
-        TEXT,
-    );
+    if let Some(member) = view.party.active.first() {
+        draw_text(member.char_id.name(), 12.0, 19.0, 10.0, accent);
+        draw_text(
+            &format!(
+                "HP {:>3}/{:<3}",
+                member.hp.to_int_floor(),
+                member.max_hp.to_int_floor()
+            ),
+            12.0,
+            31.0,
+            9.0,
+            TEXT,
+        );
+    } else {
+        draw_text("NO ACTIVE PARTY", 12.0, 19.0, 9.0, accent);
+        draw_text("HP ---/---", 12.0, 31.0, 9.0, TEXT);
+    }
     draw_rectangle(72.0, 25.0, 42.0, 4.0, Color::new(0.18, 0.10, 0.14, 1.0));
-    draw_rectangle(72.0, 25.0, 42.0, 4.0, Color::new(0.30, 0.76, 0.46, 1.0));
+    if let Some(member) = view.party.active.first() {
+        let ratio =
+            (member.hp.raw().max(0) as f32 / member.max_hp.raw().max(1) as f32).clamp(0.0, 1.0);
+        draw_rectangle(
+            72.0,
+            25.0,
+            42.0 * ratio,
+            4.0,
+            Color::new(0.30, 0.76, 0.46, 1.0),
+        );
+    }
     draw_text(
         &format!("ACT {}", act_label(view.act)),
         169.0,

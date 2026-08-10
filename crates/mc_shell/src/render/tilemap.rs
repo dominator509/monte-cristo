@@ -127,10 +127,48 @@ impl Tilemap {
         }
         map
     }
+
+    /// Return deterministic parallax offsets for the two scrolling background
+    /// layers. The offsets are derived from the authoritative replay tick, not
+    /// wall-clock time, so a visual frame can never affect simulation or make
+    /// two replays render different motion (INV-02, INV-04).
+    pub fn scroll_offsets(&self, tick: u64) -> (f32, f32) {
+        let far_width = (self.layer0.width.max(1) as f32) * 16.0;
+        let near_width = (self.layer1.width.max(1) as f32) * 16.0;
+        let far = -((tick % far_width as u64) as f32) / 32.0;
+        let near = -((tick % near_width as u64) as f32) / 8.0;
+        (far.rem_euclid(far_width), near.rem_euclid(near_width))
+    }
 }
 
 impl Default for Tilemap {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn scene_tilemap_is_region_specific_and_deterministic() {
+        let marseille = Tilemap::for_scene(Act::ActIMarseille, RegionId::R01_MARSEILLE);
+        let repeat = Tilemap::for_scene(Act::ActIMarseille, RegionId::R01_MARSEILLE);
+        let if_map = Tilemap::for_scene(Act::ActIIIf, RegionId::R02_CHATEAU_DIF);
+        assert_eq!(marseille.layer0.tiles, repeat.layer0.tiles);
+        assert_ne!(marseille.layer0.tiles, if_map.layer0.tiles);
+    }
+
+    #[test]
+    fn parallax_offsets_are_replay_deterministic_and_bounded() {
+        let map = Tilemap::for_scene(Act::ActIMarseille, RegionId::R01_MARSEILLE);
+        let first = map.scroll_offsets(1234);
+        assert_eq!(first, map.scroll_offsets(1234));
+        assert_ne!(first, map.scroll_offsets(1235));
+        let far_width = map.layer0.width as f32 * 16.0;
+        let near_width = map.layer1.width as f32 * 16.0;
+        assert!(first.0 >= 0.0 && first.0 < far_width);
+        assert!(first.1 >= 0.0 && first.1 < near_width);
     }
 }

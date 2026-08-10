@@ -653,6 +653,7 @@ impl App {
         let tiles_x = INTERNAL_WIDTH / 16;
         let tiles_y = INTERNAL_HEIGHT / 16;
         let palette = scene_palette(view.act);
+        let (far_scroll_x, near_scroll_x) = self.tilemap.scroll_offsets(view.tick);
 
         // Act-locked sky bands give every location a distinct 16-bit identity.
         for (offset, colour_index, height) in sky_gradient(view.act) {
@@ -665,11 +666,13 @@ impl App {
             );
         }
 
-        // Draw layer 0 as a tiled ground plane over the sky.
+        // Draw layer 0 as a slowly moving far plane over the sky. Wrapping the
+        // finite authored layer keeps the internal target covered at every
+        // integer tick while preserving the 16-bit tile grid.
+        let far_width = self.tilemap.layer0.width.max(1) as f32 * 16.0;
         for ty in 0..tiles_y {
             for tx in 0..tiles_x {
                 let tile_id = self.tilemap.layer0.get_tile(tx, ty);
-                let x = tx as f32 * 16.0;
                 let y = ty as f32 * 16.0;
                 let colour_index = match tile_id {
                     0 => 3,
@@ -678,59 +681,56 @@ impl App {
                     3 => 4,
                     _ => 7,
                 };
-                draw_rectangle(x, y, 16.0, 16.0, palette[colour_index].to_color());
-                if tile_id % 2 == 1 {
-                    draw_line(
-                        x + 3.0,
-                        y + 12.0,
-                        x + 13.0,
-                        y + 4.0,
-                        1.0,
-                        palette[7].to_color(),
-                    );
+                for repeat in -1..=1 {
+                    let x = tx as f32 * 16.0 + far_scroll_x + repeat as f32 * far_width;
+                    if x <= -16.0 || x >= INTERNAL_WIDTH as f32 {
+                        continue;
+                    }
+                    draw_rectangle(x, y, 16.0, 16.0, palette[colour_index].to_color());
+                    if tile_id % 2 == 1 {
+                        draw_line(
+                            x + 3.0,
+                            y + 12.0,
+                            x + 13.0,
+                            y + 4.0,
+                            1.0,
+                            palette[7].to_color(),
+                        );
+                    }
                 }
             }
         }
 
-        // Draw layer 1 (midground) with scroll offset
-        let scroll_x = self.tilemap.layer1.scroll_x;
+        // Draw layer 1 (midground) with an independent, faster parallax
+        // offset. The authored layer's explicit offset remains available for
+        // scene-specific composition, while replay time supplies the motion.
+        let scroll_x = self.tilemap.layer1.scroll_x + near_scroll_x;
         let scroll_y = self.tilemap.layer1.scroll_y;
+        let near_width = self.tilemap.layer1.width.max(1) as f32 * 16.0;
         for ty in 0..tiles_y {
             for tx in 0..tiles_x {
                 let tile_id = self.tilemap.layer1.get_tile(tx, ty);
                 if tile_id == 0 {
                     continue;
                 }
-                let x = tx as f32 * 16.0 + scroll_x;
                 let y = ty as f32 * 16.0 + scroll_y;
                 let colour_index = if tile_id == 2 { 5 } else { 6 };
-                draw_rectangle(x, y, 16.0, 16.0, palette[colour_index].to_color());
-                draw_line(
-                    x + 2.0,
-                    y + 2.0,
-                    x + 14.0,
-                    y + 2.0,
-                    1.0,
-                    palette[6].to_color(),
-                );
+                for repeat in -1..=1 {
+                    let x = tx as f32 * 16.0 + scroll_x + repeat as f32 * near_width;
+                    if x <= -16.0 || x >= INTERNAL_WIDTH as f32 {
+                        continue;
+                    }
+                    draw_rectangle(x, y, 16.0, 16.0, palette[colour_index].to_color());
+                    draw_line(
+                        x + 2.0,
+                        y + 2.0,
+                        x + 14.0,
+                        y + 2.0,
+                        1.0,
+                        palette[6].to_color(),
+                    );
+                }
             }
-        }
-
-        // Grid overlay lines
-        for ty in 0..=tiles_y {
-            let y = ty as f32 * 16.0;
-            draw_line(0.0, y, INTERNAL_WIDTH as f32, y, 0.5, palette[7].to_color());
-        }
-        for tx in 0..=tiles_x {
-            let x = tx as f32 * 16.0;
-            draw_line(
-                x,
-                0.0,
-                x,
-                INTERNAL_HEIGHT as f32,
-                0.5,
-                palette[7].to_color(),
-            );
         }
 
         // Draw the fixed foreground overlay after the scrolling layers. The
@@ -769,7 +769,8 @@ impl App {
             }
         }
 
-        // A crisp horizon line and a few fixed stars keep the low-resolution scene legible.
+        // A crisp horizon line and a few deterministic, parallaxed landmarks
+        // keep the low-resolution scene legible without a static checkerboard.
         draw_line(
             0.0,
             96.0,
@@ -780,41 +781,52 @@ impl App {
         );
         for x in [18.0, 76.0, 156.0, 224.0] {
             draw_rectangle(
-                x,
+                (x + far_scroll_x * 0.5).rem_euclid(INTERNAL_WIDTH as f32),
                 20.0 + (x as u32 % 3) as f32 * 5.0,
                 1.0,
                 1.0,
                 palette[6].to_color(),
             );
         }
+        for index in 0..6 {
+            let x = ((index * 53) as f32 + far_scroll_x * 0.25).rem_euclid(INTERNAL_WIDTH as f32);
+            let height = 6.0 + (index % 3) as f32 * 3.0;
+            draw_rectangle(x, 96.0 - height, 10.0, height, palette[7].to_color());
+        }
     }
 
     fn draw_sprites(&self, view: &StateView) {
         let palette = scene_palette(view.act);
         let bob = ((view.tick / 12) % 2) as f32;
-        let x = INTERNAL_WIDTH as f32 / 2.0 - 12.0;
-        let y = 116.0 + bob;
-        // Edmond's silhouette is intentionally drawn from rectangles so it stays crisp at 1x.
-        draw_rectangle(x + 5.0, y, 14.0, 9.0, palette[6].to_color());
-        draw_rectangle(x + 3.0, y + 8.0, 18.0, 18.0, palette[2].to_color());
-        draw_rectangle(x, y + 26.0, 9.0, 6.0, palette[7].to_color());
-        draw_rectangle(x + 15.0, y + 26.0, 9.0, 6.0, palette[7].to_color());
-        draw_line(
-            x + 8.0,
-            y + 3.0,
-            x + 12.0,
-            y + 3.0,
-            1.0,
-            palette[7].to_color(),
-        );
-        draw_line(
-            x + 6.0,
-            y + 14.0,
-            x + 18.0,
-            y + 14.0,
-            1.0,
-            palette[4].to_color(),
-        );
+        let count = view.party.active.len().min(3);
+        for (index, member) in view.party.active.iter().take(count).enumerate() {
+            let x = INTERNAL_WIDTH as f32 / 2.0 - 12.0
+                + (index as f32 - (count.saturating_sub(1) as f32 / 2.0)) * 30.0;
+            let y = 116.0 + bob + (member.char_id.raw() % 2) as f32;
+            let coat = palette[2 + (member.char_id.raw() as usize % 3)].to_color();
+            // Party silhouettes stay authored-free and crisp at 1x, while
+            // identity-specific coat tones make a full party readable.
+            draw_rectangle(x + 5.0, y, 14.0, 9.0, palette[6].to_color());
+            draw_rectangle(x + 3.0, y + 8.0, 18.0, 18.0, coat);
+            draw_rectangle(x, y + 26.0, 9.0, 6.0, palette[7].to_color());
+            draw_rectangle(x + 15.0, y + 26.0, 9.0, 6.0, palette[7].to_color());
+            draw_line(
+                x + 8.0,
+                y + 3.0,
+                x + 12.0,
+                y + 3.0,
+                1.0,
+                palette[7].to_color(),
+            );
+            draw_line(
+                x + 6.0,
+                y + 14.0,
+                x + 18.0,
+                y + 14.0,
+                1.0,
+                palette[4].to_color(),
+            );
+        }
     }
 
     fn draw_ui(&self, view: &StateView) {
