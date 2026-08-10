@@ -288,3 +288,4 @@
 2026-08-10T14:12:51Z | codex-root | EP-010 | AUDIT_FIX | FlagExpr validation now rejects malformed identifiers recursively before evaluation, covering Not and Any gate inversion paths
 2026-08-10T14:12:52Z | codex-root | EP-010 | AUDIT_VERIFY | recursive flag-expression hardening: focused invalid-ID test and mc_core library 203 passed
 2026-08-10T14:13:23Z | codex-root | EP-010 | AUDIT_VERIFY | post-recursive-flag integration/property suites pass: 384 mc_core tests
+2026-08-10T14:14:45Z | codex-root | EP-010 | AUDIT_FIX | corrected PRODUCTION_READINESS.md LF-10 checkbox to unchecked because executable locked-content gate fails; no gate or acceptance criterion was weakened

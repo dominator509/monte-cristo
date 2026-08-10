@@ -56,6 +56,6 @@ Every item below must be checked before the ship gate passes (EP-010 condition 5
 - [x] LF-07: Save-load identity
 - [x] LF-08: Golden full tape replay (hash match)
 - [x] LF-09: Determinism across runs (hash consistent)
-- [x] LF-10: Content integrity
+- [ ] LF-10: Content integrity
 - [x] LF-11: Frame budget benchmark (p99 0.000400 ms from the EP-010 M4 benchmark and live-fire run)
 - [x] LF-12: Final encounter two-phase
