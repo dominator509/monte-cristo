@@ -211,6 +211,7 @@ impl App {
     /// handled only after the core event is produced, and a failed slot
     /// operation is surfaced as a rejected event without mutating the world.
     pub fn apply_commands(&mut self, commands: &[Command]) -> Vec<CoreEvent> {
+        let previous_scene = (self.world.act, self.world.region);
         let mut events = apply_commands_with_catalogs(
             &mut self.world,
             commands,
@@ -230,6 +231,9 @@ impl App {
                 };
                 tracing::error!(command = ?command, error = %error, "save-slot command failed");
             }
+        }
+        if previous_scene != (self.world.act, self.world.region) {
+            self.tilemap = Tilemap::for_scene(self.world.act, self.world.region);
         }
         events
     }

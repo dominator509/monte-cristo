@@ -226,6 +226,28 @@ fn scene_tilemaps_are_deterministic_and_region_specific() {
 }
 
 #[test]
+fn fast_travel_refreshes_the_presentation_tilemap() {
+    let config = ValidatedConfig::from_config(ShellConfig::default(), temp_dir("travel"));
+    let mut app = App::new(42, config, true);
+    let initial = app.tilemap.layer0.tiles.clone();
+
+    let events = app.apply_commands(&[CoreCommand::FastTravel(RegionId::R02_CHATEAU_DIF)]);
+
+    assert!(matches!(
+        events.as_slice(),
+        [mc_core::command::CoreEvent::Applied { .. }]
+    ));
+    assert_eq!(app.world.region, RegionId::R02_CHATEAU_DIF);
+    assert_ne!(app.tilemap.layer0.tiles, initial);
+    assert_eq!(
+        app.tilemap.layer0.tiles,
+        Tilemap::for_scene(Act::ActIMarseille, RegionId::R02_CHATEAU_DIF)
+            .layer0
+            .tiles
+    );
+}
+
+#[test]
 fn menu_commands_reach_and_leave_the_menu_overlay() {
     assert_eq!(
         screen_state_after(ScreenState::Field, &[CoreCommand::OpenMenu]),
