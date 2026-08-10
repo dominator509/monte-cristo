@@ -202,7 +202,9 @@ verification milestones is always correct and is in fact what the evidence rule 
   final native run 30723274849 clean-extracted Linux/macOS and printed version 0.1.0,
   `content: ok`, `paths: ok`, and `hash: match`; clean Windows extraction printed version,
   content, and hash sentinels; agent-doc placeholder count 0.
-- [ ] M6 ship gate, tag, and MANUAL stop
+- [x] M6 ship gate, tag, and MANUAL stop — 0.1.1 metadata, clean verification, native
+  runner artifacts, readiness, and local Windows extraction all passed; the tag and final
+  ledger events are recorded below.
   BLOCKED before mutation: annotated tag `v0.1.0` already exists locally and on `origin`,
   pointing to commit `cfc2957065da2049bee2e3c19829b47c201e9c2f` (tag object
   `c66e57bd7597b0d8357bdee97da0e4f4b3199bf3`, dated 2026-07-29). The corrected M5
@@ -328,4 +330,20 @@ and will not alter the deterministic core or release gates.
 
 ## 14. Outcomes and Retrospective
 
-<empty>
+EP-010 M6 completed under the user-authorized `0.1.1` patch release. The immutable remote
+`v0.1.0` tag was preserved. The final clean verifier printed `verify: ok`; standalone
+`reality gate: ok`, `live-fire: ok` (LF-01 through LF-12), and
+`production readiness: ok` were observed. Native workflow `31349697192` passed Linux and
+macOS jobs on the 0.1.1 release candidate, each reporting archive checksum, version,
+content, path, and golden-hash success. The local Windows archive extracted and reported
+`Monte Cristo v0.1.1`, `content: ok`, `paths: ok`, and `hash: match`.
+
+The M6 plan's declared change list was extended by the explicit human authorization and the
+recorded Decision Log: release metadata (`VERSION`, workspace and local package manifests,
+`Cargo.lock`, changelog, artifact README), the bounded shell presentation facelift, and
+append-only audit evidence were necessary to make the 0.1.1 release truthful. No runtime
+networking, core-state, or tape behavior changed. The final artifact manifest contains all
+three target archives and every `sha256sum -c` line is `OK`.
+
+Manual publish remains intentionally unexecuted because Auto-Deploy Authorization is `no`:
+`rsync -av --checksum "$MC_ARTIFACT_DIR"/ /srv/releases/monte-cristo/"$(cat VERSION)"/`

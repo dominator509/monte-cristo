@@ -229,3 +229,6 @@
 2026-08-10T02:46:00Z | codex-root | EP-010 | SIG | BUILD_ARTIFACT_ROOT_GITBASH_TAR_PATH
 2026-08-10T02:52:37Z | codex-root | EP-010 | ATTEMPT_FAIL | M1_RTKSHELL_CANONICAL_ARTIFACT_PATH_NOT_TAR_COMPATIBLE
 2026-08-10T02:52:38Z | codex-root | EP-010 | SIG | RTK_CANONICAL_ARTIFACT_PATH_TAR
+2026-08-10T03:12:03Z | codex-root | EP-010 | MILESTONE_PASS | M6 production readiness: ok; verify/live-fire/reality green; artifacts and Windows smoke verified
+2026-08-10T03:12:03Z | codex-root | EP-010 | NODE_DONE | M6 ship gate passed; 0.1.1 release candidate ready for immutable tag
+2026-08-10T03:12:03Z | codex-root | EP-010 | RUN_COMPLETE | ship gate passed, manual publish pending; Auto-Deploy Authorization is no
