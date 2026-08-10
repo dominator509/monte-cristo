@@ -110,6 +110,19 @@ impl Tilemap {
                     0
                 };
                 map.layer1.set_tile(x, y, overlay_tile);
+
+                // The fixed overlay carries sparse landmark accents. Keeping
+                // these in the presentation tilemap (rather than deriving
+                // them from wall-clock state) makes the facelift deterministic
+                // while giving each authored location a readable silhouette.
+                let landmark = (x.wrapping_mul(13) + y.wrapping_mul(17) + seed) % 29;
+                let overlay_tile = match landmark {
+                    0 => 1,     // a short foreground rail / pier
+                    1 | 2 => 2, // a shrub or cypress cluster
+                    3 => 3,     // a glint / hanging lamp
+                    _ => 0,
+                };
+                map.overlay.set_tile(x, y, overlay_tile);
             }
         }
         map

@@ -205,7 +205,10 @@ fn scene_tilemaps_are_deterministic_and_region_specific() {
 
     assert_eq!(first.layer0.tiles, repeat.layer0.tiles);
     assert_eq!(first.layer1.tiles, repeat.layer1.tiles);
+    assert_eq!(first.overlay.tiles, repeat.overlay.tiles);
     assert_ne!(first.layer0.tiles, other.layer0.tiles);
+    assert_ne!(first.overlay.tiles, other.overlay.tiles);
+    assert!(first.overlay.tiles.iter().any(|tile| *tile != 0));
 }
 
 #[test]

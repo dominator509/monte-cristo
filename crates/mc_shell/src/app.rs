@@ -485,6 +485,42 @@ impl App {
             );
         }
 
+        // Draw the fixed foreground overlay after the scrolling layers. The
+        // overlay is deliberately sparse so the scene remains legible while
+        // landmarks retain crisp 16-bit silhouettes at the internal scale.
+        for ty in 0..tiles_y {
+            for tx in 0..tiles_x {
+                let tile_id = self.tilemap.overlay.get_tile(tx, ty);
+                if tile_id == 0 {
+                    continue;
+                }
+                let x = tx as f32 * 16.0;
+                let y = ty as f32 * 16.0;
+                match tile_id {
+                    1 => {
+                        let accent = palette[4].to_color();
+                        draw_rectangle(x + 2.0, y + 8.0, 12.0, 3.0, accent);
+                        draw_rectangle(x + 3.0, y + 4.0, 2.0, 10.0, accent);
+                        draw_rectangle(x + 11.0, y + 4.0, 2.0, 10.0, accent);
+                    }
+                    2 => {
+                        let shadow = palette[7].to_color();
+                        let leaf = palette[2].to_color();
+                        draw_rectangle(x + 7.0, y + 9.0, 2.0, 6.0, shadow);
+                        draw_circle(x + 6.0, y + 8.0, 4.0, leaf);
+                        draw_circle(x + 11.0, y + 7.0, 5.0, leaf);
+                    }
+                    3 => {
+                        let glow = palette[6].to_color();
+                        draw_rectangle(x + 7.0, y + 5.0, 2.0, 2.0, glow);
+                        draw_rectangle(x + 5.0, y + 7.0, 6.0, 2.0, glow);
+                        draw_rectangle(x + 7.0, y + 9.0, 2.0, 2.0, glow);
+                    }
+                    _ => {}
+                }
+            }
+        }
+
         // A crisp horizon line and a few fixed stars keep the low-resolution scene legible.
         draw_line(
             0.0,
