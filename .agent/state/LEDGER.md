@@ -282,3 +282,4 @@
 2026-08-10T13:54:39Z | codex-root | EP-010 | AUDIT_VERIFY | production-readiness-check: FAIL - locked content report; current counts regions 15, maps 0/118, enemies 138/102, encounters 180, spawn tables 45; missing maps, abilities, techs, party.ron, curriculum.ron
 2026-08-10T14:05:22Z | codex-root | EP-010 | AUDIT_FIX | hardened FlagSet against invalid raw FlagId values and PoisonState against zero decay_interval; malformed serialized state no longer panics
 2026-08-10T14:05:22Z | codex-root | EP-010 | AUDIT_VERIFY | mc_core focused safety tests passed; mc_core library 203 passed; mc_core integration/property suites 384 passed
+2026-08-10T14:10:57Z | codex-root | EP-010 | AUDIT_VERIFY | post-M49 verify: preflight/install/lint/format/typecheck, 203 mc_core unit tests, workspace integration/e2e, build, security, dependency, reality, content, hash, smoke, and LF-01 through LF-09 passed; LF-10 remains the sole verifier failure
