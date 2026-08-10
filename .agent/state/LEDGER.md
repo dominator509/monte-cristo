@@ -232,3 +232,5 @@
 2026-08-10T03:12:03Z | codex-root | EP-010 | MILESTONE_PASS | M6 production readiness: ok; verify/live-fire/reality green; artifacts and Windows smoke verified
 2026-08-10T03:12:03Z | codex-root | EP-010 | NODE_DONE | M6 ship gate passed; 0.1.1 release candidate ready for immutable tag
 2026-08-10T03:12:03Z | codex-root | EP-010 | RUN_COMPLETE | ship gate passed, manual publish pending; Auto-Deploy Authorization is no
+2026-08-10T10:14:03Z | codex-root | - | SIG | verify.sh timed out after 300 seconds after M43
+2026-08-10T10:14:55Z | codex-root | - | SIG | integration tests rejected required ledger append as worktree residue
