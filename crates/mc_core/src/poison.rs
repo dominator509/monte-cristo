@@ -251,7 +251,7 @@ impl PoisonState {
         }
 
         // Apply tolerance decay at intervals.
-        if current_tick % self.decay_interval == 0 {
+        if self.decay_interval != 0 && current_tick % self.decay_interval == 0 {
             self.decay_tolerance(current_tick);
         }
 
@@ -393,5 +393,25 @@ mod tests {
         assert!(!damage.is_empty(), "damage should apply after onset");
         // potency = 0.25
         assert_eq!(damage[0].1, Fx::from_raw(RAW_0_25));
+    }
+
+    #[test]
+    fn zero_decay_interval_does_not_panic_or_change_tolerance() {
+        let mut state = PoisonState::new();
+        state.decay_interval = 0;
+        state.administer(
+            CharId::CHR_VALENTINE,
+            PoisonId::PSN_BRUCINE,
+            Fx::from_int(1),
+            0,
+        );
+        let before = state.tolerance_for(CharId::CHR_VALENTINE, PoisonId::PSN_BRUCINE);
+
+        let _ = state.tick(1);
+
+        assert_eq!(
+            state.tolerance_for(CharId::CHR_VALENTINE, PoisonId::PSN_BRUCINE),
+            before
+        );
     }
 }

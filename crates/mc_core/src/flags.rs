@@ -15,6 +15,15 @@ pub struct FlagSet {
 }
 
 impl FlagSet {
+    /// Return the bounded bit location for a locked flag identifier.
+    ///
+    /// `FlagId` can be constructed from untrusted serialized data, so every
+    /// bitset access must validate the raw value before indexing the word.
+    fn bit_location(flag: FlagId) -> Option<(usize, u32)> {
+        let index = flag.raw() as usize;
+        (index < FlagId::COUNT).then_some((index / 64, (index % 64) as u32))
+    }
+
     /// Create an empty flags.
     pub fn new() -> Self {
         FlagSet { bits: [0u64; 1] }
@@ -22,20 +31,23 @@ impl FlagSet {
 
     /// Set a flag.
     pub fn set(&mut self, flag: FlagId) {
-        let idx = flag.raw() as usize;
-        self.bits[idx / 64] |= 1u64 << (idx % 64);
+        if let Some((word, bit)) = Self::bit_location(flag) {
+            self.bits[word] |= 1u64 << bit;
+        }
     }
 
     /// Clear a flag.
     pub fn clear(&mut self, flag: FlagId) {
-        let idx = flag.raw() as usize;
-        self.bits[idx / 64] &= !(1u64 << (idx % 64));
+        if let Some((word, bit)) = Self::bit_location(flag) {
+            self.bits[word] &= !(1u64 << bit);
+        }
     }
 
     /// Check if a flag is set.
     pub fn is_set(&self, flag: FlagId) -> bool {
-        let idx = flag.raw() as usize;
-        (self.bits[idx / 64] & (1u64 << (idx % 64))) != 0
+        Self::bit_location(flag)
+            .map(|(word, bit)| (self.bits[word] & (1u64 << bit)) != 0)
+            .unwrap_or(false)
     }
 
     /// Check if this expression is satisfied by the current flags.
@@ -163,5 +175,17 @@ mod tests {
         assert!(fs.satisfies(&FlagExpr::Not(Box::new(FlagExpr::Set(
             FlagId::FLG_ARRESTED
         )))));
+    }
+
+    #[test]
+    fn invalid_raw_flag_is_ignored_without_panicking() {
+        let invalid = FlagId::from_raw(FlagId::COUNT as u16);
+        let mut flags = FlagSet::new();
+
+        flags.set(invalid);
+        assert!(!flags.is_set(invalid));
+        flags.clear(invalid);
+        assert!(!flags.is_set(invalid));
+        assert!(!flags.satisfies(&FlagExpr::Set(invalid)));
     }
 }
