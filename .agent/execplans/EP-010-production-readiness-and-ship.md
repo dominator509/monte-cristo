@@ -281,6 +281,10 @@ and will not alter the deterministic core or release gates.
 - M6's mandatory pre-tag check found `v0.1.0` already published to the remote and pointing
   at a pre-EP-010 commit. The plan explicitly classifies this as irreversible-action STOP
   territory; no readiness checkbox, release tag, or RUN_COMPLETE claim was fabricated.
+- The first 0.1.1 clean-gate attempt used a Git-Bash-incompatible Windows artifact path in
+  the process environment. Preflight correctly rejected it before graph execution; the
+  native archives were moved outside `target` and the `.env` artifact root was set to the
+  portable `C:/tmp/mc-0.1.1-artifacts` spelling before retrying.
 
 ## 13. Decision Log
 
